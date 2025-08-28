@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>List Your Business - InvestSherpa.in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .brand-blue { color: #1e3a8a; }
+        .brand-green { color: #166534; }
+        .brand-gold { color: #f59e0b; }
+        .btn-primary {
+            background-color: #1e3a8a;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #1c347d;
+        }
+        .btn-secondary {
+            background-color: #f59e0b;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #e4900a;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .step-card::before {
+            content: counter(step-counter);
+            counter-increment: step-counter;
+            position: absolute;
+            top: -2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4rem;
+            height: 4rem;
+            background-color: #e0e7ff;
+            color: #1e3a8a;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            border: 4px solid white;
+        }
+        .timeline {
+            position: relative;
+            border-left: 3px solid #dbeafe;
+            margin-left: 2rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="flex items-center space-x-2">
+                <div class="p-2 bg-blue-900 rounded-lg">
+                    <i class="fas fa-shield-alt text-white text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
+            </a>
+            
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Categories</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Blog</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">About Us</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Contact</a>
+            </nav>
+
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#" class="text-blue-900 font-semibold hover:underline">Login</a>
+                <a href="#" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
+            </div>
+            
+            <button class="md:hidden text-blue-900 text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section class="text-center py-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-900">Join India's Most Trusted Financial Advisor Directory</h1>
+            <p class="text-lg text-gray-600 mt-4 max-w-3xl mx-auto">Connect with thousands of potential clients looking for your expertise. List your business on InvestSherpa.in to grow your reach and build credibility.</p>
+            <a href="#submission-form" class="btn-primary font-bold py-3 px-8 rounded-lg shadow-md mt-8 inline-block">Start Your Free Listing Today</a>
+        </section>
+
+        <section class="py-16">
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-12">Why List With InvestSherpa.in?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="card bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-bullseye text-4xl text-blue-900 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Reach More Clients</h3>
+                    <p class="text-gray-600">Get discovered by a targeted audience actively searching for financial and insurance services in your area.</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-certificate text-4xl text-green-700 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Build Trust</h3>
+                    <p class="text-gray-600">Showcase your qualifications, license, and client testimonials to build confidence with potential customers.</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-lightbulb text-4xl text-yellow-500 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Showcase Your Expertise</h3>
+                    <p class="text-gray-600">Detail your services, upload a gallery, and highlight what makes your firm unique through a professional profile.</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-md text-center">
+                    <i class="fas fa-comments-dollar text-4xl text-purple-500 mb-4"></i>
+                    <h3 class="text-xl font-bold mb-2">Generate Quality Leads</h3>
+                    <p class="text-gray-600">Our built-in contact forms connect you directly with interested prospects, helping you grow your business.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16 bg-blue-50 rounded-lg">
+             <div class="text-center">
+                <h2 class="text-3xl font-bold text-blue-900">Simple & Transparent Pricing</h2>
+                <p class="text-gray-600 mt-2">Get started for free. No hidden charges, no surprises.</p>
+            </div>
+            <div class="mt-12 flex justify-center">
+                <div class="bg-white rounded-lg shadow-lg p-8 w-full max-w-md border-t-4 border-blue-900">
+                    <h3 class="text-2xl font-bold text-center">Basic Listing</h3>
+                    <p class="text-center mt-2 text-gray-500">Everything you need to get started.</p>
+                    <p class="text-5xl font-bold text-center my-6 text-blue-900">FREE</p>
+                    <ul class="space-y-4 text-gray-700">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> Detailed Business Profile Page</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> Contact & Location Information</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> List Your Products & Services</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> Image Gallery (up to 5 images)</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> "Request a Quote" Form</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-green-500 mr-3"></i> Display Client Testimonials</li>
+                    </ul>
+                    <a href="#submission-form" class="btn-primary block w-full text-center font-bold py-3 px-6 rounded-lg shadow-md mt-8">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="py-16">
+            <h2 class="text-3xl font-bold text-center text-blue-900 mb-12">Our Simple 3-Step Process</h2>
+            <div class="relative max-w-4xl mx-auto">
+                <div class="hidden md:block absolute top-8 left-1/2 w-0.5 h-4/5 bg-blue-200"></div>
+                <div class="grid md:grid-cols-3 gap-16 text-center">
+                    <div class="relative">
+                         <div class="mx-auto w-20 h-20 flex items-center justify-center bg-blue-100 text-blue-900 rounded-full text-2xl font-bold border-4 border-white shadow-md">1</div>
+                        <h3 class="text-xl font-bold mt-4">Submit Your Details</h3>
+                        <p class="text-gray-600 mt-2">Fill out our intuitive form below with your business information, services, and contact details.</p>
+                    </div>
+                     <div class="relative">
+                         <div class="mx-auto w-20 h-20 flex items-center justify-center bg-blue-100 text-blue-900 rounded-full text-2xl font-bold border-4 border-white shadow-md">2</div>
+                        <h3 class="text-xl font-bold mt-4">Verification & Approval</h3>
+                        <p class="text-gray-600 mt-2">Our team will review your submission to ensure it meets our quality standards (usually within 2-3 business days).</p>
+                    </div>
+                     <div class="relative">
+                         <div class="mx-auto w-20 h-20 flex items-center justify-center bg-blue-100 text-blue-900 rounded-full text-2xl font-bold border-4 border-white shadow-md">3</div>
+                        <h3 class="text-xl font-bold mt-4">Go Live!</h3>
+                        <p class="text-gray-600 mt-2">Once approved, your professional profile will be published and visible to thousands of potential clients.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="submission-form" class="py-16">
+            <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl">
+                <h2 class="text-3xl font-bold text-blue-900 mb-2">Create Your Business Profile</h2>
+                <p class="text-gray-600 mb-8">Please provide the following details to create your listing.</p>
+                <form class="space-y-8">
+                    <fieldset class="border-t-2 border-blue-200 pt-6">
+                        <legend class="text-xl font-bold text-blue-900 px-4">Step 1: Basic Information</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label for="business-name" class="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                                <input type="text" id="business-name" placeholder="e.g., Aditya Finance" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <div>
+                                <label for="tagline" class="block text-sm font-medium text-gray-700 mb-1">Tagline / Slogan</label>
+                                <input type="text" id="tagline" placeholder="e.g., Your Partner in Financial Growth" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="logo" class="block text-sm font-medium text-gray-700 mb-1">Business Logo</label>
+                                <input type="file" id="logo" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="border-t-2 border-blue-200 pt-6">
+                        <legend class="text-xl font-bold text-blue-900 px-4">Step 2: About & Services</legend>
+                        <div class="mt-4 space-y-6">
+                            <div>
+                                <label for="about" class="block text-sm font-medium text-gray-700 mb-1">About Your Business</label>
+                                <textarea id="about" rows="5" placeholder="Describe your company's mission, history, and what makes you unique." class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                            </div>
+                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Services Offered (Select all that apply)</label>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                    <label class="flex items-center space-x-2"><input type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Mutual Funds</span></label>
+                                    <label class="flex items-center space-x-2"><input type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Life Insurance</span></label>
+                                    <label class="flex items-center space-x-2"><input type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Health Insurance</span></label>
+                                    <label class="flex items-center space-x-2"><input type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Retirement Planning</span></label>
+                                    <label class="flex items-center space-x-2"><input type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Tax Planning</span></label>
+                                    <label class="flex items-center space-x-2"><input type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded"><span>Wealth Management</span></label>
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="border-t-2 border-blue-200 pt-6">
+                         <legend class="text-xl font-bold text-blue-900 px-4">Step 3: Contact & Location</legend>
+                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <input type="email" placeholder="Business Email Address" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <input type="tel" placeholder="Business Phone Number" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <input type="url" placeholder="Website URL (https://...)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none md:col-span-2">
+                            <textarea placeholder="Full Business Address" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none md:col-span-2"></textarea>
+                         </div>
+                    </fieldset>
+
+                    <fieldset class="border-t-2 border-blue-200 pt-6">
+                        <legend class="text-xl font-bold text-blue-900 px-4">Step 4: Professional Details</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+                            <input type="text" placeholder="SEBI License (if applicable)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <input type="text" placeholder="Service Area (e.g., Pan-India)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <input type="text" placeholder="Client Focus (e.g., Individuals, SMEs)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                    </fieldset>
+                    
+                    <fieldset class="border-t-2 border-blue-200 pt-6">
+                        <legend class="text-xl font-bold text-blue-900 px-4">Step 5: Gallery</legend>
+                         <div class="mt-4">
+                             <label for="gallery" class="block text-sm font-medium text-gray-700 mb-1">Upload Photos (up to 5)</label>
+                             <p class="text-xs text-gray-500 mb-2">Showcase your office, team, or events.</p>
+                             <input type="file" id="gallery" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                         </div>
+                    </fieldset>
+
+                    <div class="border-t-2 border-blue-200 pt-6 text-center">
+                         <label class="flex items-center justify-center space-x-2 mb-6">
+                            <input type="checkbox" required class="h-4 w-4 text-blue-600 border-gray-300 rounded">
+                            <span class="text-gray-700">I agree to the <a href="#" class="text-blue-800 hover:underline">Terms of Service</a> and <a href="#" class="text-blue-800 hover:underline">Privacy Policy</a>.</span>
+                         </label>
+                        <button type="submit" class="btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
+                            Submit for Approval
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-blue-900 text-white mt-16">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">InvestSherpa.in</h3>
+                    <p class="text-blue-200">Your guide to finding the most trusted financial and insurance advisors in India. Making financial decisions simple and secure.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-blue-200 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Blog</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">List Your Business</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-blue-200 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Disclaimer</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Connect With Us</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-12 border-t border-blue-800 pt-6 text-center text-blue-300">
+                <p>© 2024 InvestSherpa.in. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

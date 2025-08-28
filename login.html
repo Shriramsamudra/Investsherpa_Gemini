@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Register - InvestSherpa.in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .brand-blue { color: #1e3a8a; }
+        .btn-primary {
+            background-color: #1e3a8a;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #1c347d;
+        }
+        .btn-secondary {
+            background-color: #f59e0b;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #e4900a;
+        }
+        [x-cloak] { 
+            display: none !important; 
+        }
+        /* Simple transition for the professional fields */
+        .fade-in {
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center space-x-2">
+                <div class="p-2 bg-blue-900 rounded-lg">
+                    <i class="fas fa-shield-alt text-white text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
+            </a>
+            
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="/" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
+                <a href="/browselisting.html" class="text-gray-600 hover:text-blue-900 font-medium">Browse</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Blog</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">About Us</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Contact</a>
+            </nav>
+
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="/login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
+                <a href="/addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
+            </div>
+            
+            <button class="md:hidden text-blue-900 text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-6 py-12 flex items-center justify-center">
+        <div class="w-full max-w-md" x-data="authHandler()" x-cloak>
+            
+            <div id="auth-card" class="bg-white p-8 rounded-xl shadow-lg transition-all duration-300">
+                <div x-show="view === 'login'">
+                    <h2 class="text-3xl font-bold text-blue-900 text-center">Welcome Back</h2>
+                    <p class="text-gray-600 text-center mt-2 mb-8">Sign in to continue to your account.</p>
+
+                    <form @submit.prevent="handleLogin()">
+                        <div class="space-y-6">
+                            <div>
+                                <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                                <input type="email" id="login-email" x-model="credentials.email" placeholder="you@example.com" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <div>
+                                 <div class="flex justify-between items-center">
+                                    <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                    <a href="#" class="text-sm text-blue-800 hover:underline">Forgot?</a>
+                                </div>
+                                <input type="password" id="login-password" x-model="credentials.password" placeholder="••••••••" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="mt-8">
+                            <button type="submit" class="btn-primary w-full font-bold py-3 px-6 rounded-lg shadow-md" :disabled="loading">
+                                <span x-show="!loading">Sign In</span>
+                                <span x-show="loading"><i class="fas fa-spinner animate-spin"></i> Signing In...</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-6">
+                        <p class="text-gray-600">
+                            Don't have an account? 
+                            <button @click="view = 'register'" class="font-semibold text-blue-800 hover:underline">Sign Up</button>
+                        </p>
+                    </div>
+                </div>
+
+                <div x-show="view === 'register'" style="display: none;">
+                    <h2 class="text-3xl font-bold text-blue-900 text-center">Create Your Account</h2>
+                    <p class="text-gray-600 text-center mt-2 mb-8">Join our community of investors and advisors.</p>
+
+                    <form @submit.prevent="handleRegister()" class="space-y-6">
+                        <div>
+                            <label for="register-fullname" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <input type="text" id="register-fullname" x-model="newUser.full_name" placeholder="Aditya Sharma" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label for="register-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <input type="email" id="register-email" x-model="newUser.email" placeholder="you@example.com" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label for="register-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <input type="password" id="register-password" x-model="newUser.password" placeholder="Create a strong password" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Register as</label>
+                            <div class="flex gap-x-6 p-3 bg-gray-50 rounded-lg border">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="radio" x-model="newUser.role" value="end_user" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                    <span>A User</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input type="radio" x-model="newUser.role" value="professional" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500">
+                                    <span>A Professional</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div x-show="newUser.role === 'professional'" class="space-y-6 fade-in" x-transition>
+                            <hr/>
+                            <div>
+                                <label for="register-phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                                <input type="tel" id="register-phone" x-model="newUser.phone" placeholder="9876543210" :required="newUser.role === 'professional'" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                             <div>
+                                <label for="register-dob" class="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                                <input type="date" id="register-dob" x-model="newUser.date_of_birth" :required="newUser.role === 'professional'" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="register-city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                    <input type="text" id="register-city" x-model="newUser.city" placeholder="e.g., Mumbai" :required="newUser.role === 'professional'" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                </div>
+                                 <div>
+                                    <label for="register-state" class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                    <input type="text" id="register-state" x-model="newUser.state" placeholder="e.g., Maharashtra" :required="newUser.role === 'professional'" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="register-pincode" class="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
+                                <input type="text" id="register-pincode" x-model="newUser.pincode" placeholder="e.g., 400051" :required="newUser.role === 'professional'" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button type="submit" class="btn-primary w-full font-bold py-3 px-6 rounded-lg shadow-md" :disabled="loading">
+                                <span x-show="!loading">Create Account</span>
+                                <span x-show="loading"><i class="fas fa-spinner animate-spin"></i> Creating Account...</span>
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-6">
+                        <p class="text-gray-600">
+                            Already have an account? 
+                            <button @click="view = 'login'" class="font-semibold text-blue-800 hover:underline">Sign In</button>
+                        </p>
+                    </div>
+                </div>
+
+                <div x-show="message.text" class="mt-4 p-4 rounded-lg text-center"
+                     :class="{ 'bg-green-100 text-green-800': message.type === 'success', 'bg-red-100 text-red-800': message.type === 'error' }"
+                     x-text="message.text" x-transition>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-blue-900 text-white mt-16">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">InvestSherpa.in</h3>
+                    <p class="text-blue-200">Your guide to finding the most trusted financial and insurance advisors in India. Making financial decisions simple and secure.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-blue-200 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Blog</a></li>
+                        <li><a href="/addlisting.html" class="text-blue-200 hover:text-white">List Your Business</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-blue-200 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Disclaimer</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Connect With Us</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-12 border-t border-blue-800 pt-6 text-center text-blue-300">
+                <p>&copy; 2024 InvestSherpa.in. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+<script>
+    function authHandler() {
+        return {
+            // -- Supabase Client --
+            supabase: supabase.createClient(
+                'https://tapnnlkokcbzckbbdxez.supabase.co',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w'
+            ),
+
+            // -- Component State --
+            view: 'login', // 'login' or 'register'
+            loading: false,
+            message: { type: '', text: '' },
+            
+            // -- Models --
+            credentials: {
+                email: '',
+                password: ''
+            },
+            newUser: {
+                full_name: '',
+                email: '',
+                password: '',
+                role: 'end_user', // Default role
+                phone: '',
+                date_of_birth: '',
+                city: '',
+                state: '',
+                pincode: ''
+            },
+            
+            // -- Methods --
+            clearMessage() {
+                this.message.type = '';
+                this.message.text = '';
+            },
+
+            async handleLogin() {
+                this.clearMessage();
+                this.loading = true;
+
+                const { data, error } = await this.supabase.auth.signInWithPassword({
+                    email: this.credentials.email,
+                    password: this.credentials.password,
+                });
+
+                if (error) {
+                    this.message = { type: 'error', text: error.message };
+                } else {
+                    this.message = { type: 'success', text: 'Login successful! Redirecting...' };
+                    setTimeout(() => { window.location.href = '/'; }, 1500);
+                }
+                
+                this.loading = false;
+            },
+
+            async handleRegister() {
+                this.clearMessage();
+                this.loading = true;
+
+                // Prepare the metadata for Supabase
+                const userData = {
+                    full_name: this.newUser.full_name,
+                    role: this.newUser.role,
+                };
+                
+                // Add professional fields to metadata only if the role is 'professional'
+                if (this.newUser.role === 'professional') {
+                    Object.assign(userData, {
+                        phone: this.newUser.phone,
+                        date_of_birth: this.newUser.date_of_birth,
+                        city: this.newUser.city,
+                        state: this.newUser.state,
+                        pincode: this.newUser.pincode
+                    });
+                }
+
+                const { data, error } = await this.supabase.auth.signUp({
+                    email: this.newUser.email,
+                    password: this.newUser.password,
+                    options: {
+                        data: userData
+                    }
+                });
+
+                if (error) {
+                     this.message = { type: 'error', text: error.message };
+                } else {
+                     this.message = { type: 'success', text: 'Success! Please check your email to confirm your registration.' };
+                     // Clear the form
+                     this.newUser = { full_name: '', email: '', password: '', role: 'end_user', phone: '', date_of_birth: '', city: '', state: '', pincode: ''};
+                }
+                
+                this.loading = false;
+            }
+        }
+    }
+</script>
+
+</body>
+</html>

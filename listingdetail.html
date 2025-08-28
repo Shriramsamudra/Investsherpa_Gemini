@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aditya Finance - Business Details - InvestSherpa.in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .brand-blue { color: #1e3a8a; }
+        .brand-green { color: #166534; }
+        .brand-gold { color: #f59e0b; }
+        .btn-primary {
+            background-color: #1e3a8a;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #1c347d;
+        }
+        .btn-secondary {
+            background-color: #f59e0b;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #e4900a;
+        }
+        .card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .gallery-item {
+            transition: transform 0.3s ease;
+        }
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- Logo -->
+            <a href="#" class="flex items-center space-x-2">
+                <div class="p-2 bg-blue-900 rounded-lg">
+                    <i class="fas fa-shield-alt text-white text-xl"></i>
+                </div>
+                <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
+            </a>
+            
+            <!-- Navigation -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Categories</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Blog</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">About Us</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Contact</a>
+            </nav>
+
+            <!-- CTA -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#" class="text-blue-900 font-semibold hover:underline">Login</a>
+                <a href="#" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-blue-900 text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+            <!-- Left Column: Main Details -->
+            <div class="lg:col-span-2">
+                <!-- Business Header -->
+                <div class="bg-white p-8 rounded-lg shadow-md mb-8">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center">
+                        <img src="https://placehold.co/100x100/1e3a8a/ffffff?text=AF" alt="Aditya Finance Logo" class="w-24 h-24 rounded-full mr-6 mb-4 sm:mb-0 border-4 border-blue-100">
+                        <div>
+                            <h1 class="text-4xl font-bold text-blue-900">Aditya Finance</h1>
+                            <p class="text-gray-600 text-lg mt-1">Your Partner in Financial Growth</p>
+                            <div class="flex items-center text-yellow-500 mt-2">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                                <span class="text-gray-600 ml-2 text-sm">(4.8 stars from 25 reviews)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- About Us -->
+                <div class="bg-white p-8 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-bold text-blue-900 mb-4 border-b pb-2">About Us</h2>
+                    <p class="text-gray-700 leading-relaxed">Aditya Finance has been a cornerstone of the financial advisory community in Mumbai for over 15 years. Our mission is to provide personalized, unbiased, and expert financial advice to help individuals, families, and businesses achieve their long-term financial goals. We believe in building lasting relationships based on trust, transparency, and a deep understanding of our clients' unique needs. Our team of certified professionals is dedicated to navigating the complexities of the financial world for you, ensuring your journey to wealth creation is smooth and successful.</p>
+                </div>
+
+                <!-- Products/Services Offered -->
+                <div class="bg-white p-8 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-bold text-blue-900 mb-6 border-b pb-2">Products & Services</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="flex items-start space-x-4">
+                            <i class="fas fa-chart-line text-3xl text-blue-900 mt-1"></i>
+                            <div>
+                                <h3 class="font-semibold text-lg">Mutual Funds</h3>
+                                <p class="text-gray-600 text-sm">Expert guidance on equity, debt, and hybrid funds.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <i class="fas fa-umbrella text-3xl text-green-700 mt-1"></i>
+                            <div>
+                                <h3 class="font-semibold text-lg">Life Insurance</h3>
+                                <p class="text-gray-600 text-sm">Term, endowment, and ULIP plans for your family's security.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <i class="fas fa-heartbeat text-3xl text-red-500 mt-1"></i>
+                            <div>
+                                <h3 class="font-semibold text-lg">Health Insurance</h3>
+                                <p class="text-gray-600 text-sm">Comprehensive health coverage for individuals and families.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <i class="fas fa-home text-3xl text-yellow-500 mt-1"></i>
+                            <div>
+                                <h3 class="font-semibold text-lg">Retirement Planning</h3>
+                                <p class="text-gray-600 text-sm">Building a robust corpus for your golden years.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <i class="fas fa-file-invoice-dollar text-3xl text-purple-500 mt-1"></i>
+                            <div>
+                                <h3 class="font-semibold text-lg">Tax Planning</h3>
+                                <p class="text-gray-600 text-sm">Strategies to optimize your tax liabilities legally.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start space-x-4">
+                            <i class="fas fa-piggy-bank text-3xl text-indigo-500 mt-1"></i>
+                            <div>
+                                <h3 class="font-semibold text-lg">Wealth Management</h3>
+                                <p class="text-gray-600 text-sm">Holistic management of your financial portfolio.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image/Video Gallery -->
+                <div class="bg-white p-8 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-bold text-blue-900 mb-4 border-b pb-2">Gallery</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        <a href="#" class="gallery-item"><img src="https://placehold.co/400x300/e0e7ff/1e3a8a?text=Our+Office" alt="Gallery Image 1" class="rounded-lg shadow-sm"></a>
+                        <a href="#" class="gallery-item"><img src="https://placehold.co/400x300/d1fae5/166534?text=Team+Meeting" alt="Gallery Image 2" class="rounded-lg shadow-sm"></a>
+                        <a href="#" class="gallery-item"><img src="https://placehold.co/400x300/fef3c7/b45309?text=Client+Event" alt="Gallery Image 3" class="rounded-lg shadow-sm"></a>
+                        <a href="#" class="gallery-item"><img src="https://placehold.co/400x300/fee2e2/991b1b?text=Award+2023" alt="Gallery Image 4" class="rounded-lg shadow-sm"></a>
+                        <div class="relative gallery-item rounded-lg overflow-hidden shadow-sm cursor-pointer">
+                            <img src="https://placehold.co/400x300/e0f2fe/0891b2?text=Company+Video" alt="Gallery Video" class="w-full h-full object-cover">
+                            <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                                <i class="fas fa-play-circle text-white text-5xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Client Testimonials/Reviews -->
+                <div class="bg-white p-8 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-bold text-blue-900 mb-6 border-b pb-2">Client Testimonials</h2>
+                    <div class="space-y-6">
+                        <!-- Testimonial 1 -->
+                        <div class="border-l-4 border-blue-800 pl-4">
+                            <div class="flex items-center text-yellow-500 mb-1">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                            </div>
+                            <p class="text-gray-700 italic">"Aditya Finance helped me streamline my investments and create a solid plan for my retirement. Highly professional and trustworthy team!"</p>
+                            <p class="font-semibold text-gray-800 mt-2">- Priya Sharma, IT Professional</p>
+                        </div>
+                        <!-- Testimonial 2 -->
+                        <div class="border-l-4 border-blue-800 pl-4">
+                            <div class="flex items-center text-yellow-500 mb-1">
+                                <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                            </div>
+                            <p class="text-gray-700 italic">"The advice on health insurance was clear and helped us choose the best plan for our family. Excellent service."</p>
+                            <p class="font-semibold text-gray-800 mt-2">- Rohan Mehta, Business Owner</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Sidebar -->
+            <div class="lg:col-span-1 space-y-8">
+                <!-- Request Quote Form -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-blue-900 mb-4">Request a Quote</h3>
+                    <form class="space-y-4">
+                        <input type="text" placeholder="Your Name" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input type="email" placeholder="Your Email" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input type="tel" placeholder="Your Phone Number" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <textarea placeholder="Your Message (e.g., I'm interested in retirement planning)" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"></textarea>
+                        <button type="submit" class="btn-primary w-full font-bold py-3 px-6 rounded-lg shadow-md">
+                            Schedule Consultation
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Contact & Location -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-blue-900 mb-4">Contact & Location</h3>
+                    <div class="space-y-4 text-gray-700">
+                        <p><i class="fas fa-phone-alt w-6 text-blue-800"></i> +91 98765 43210</p>
+                        <p><i class="fas fa-envelope w-6 text-blue-800"></i> contact@adityafinance.com</p>
+                        <p><i class="fas fa-globe w-6 text-blue-800"></i> <a href="#" class="hover:underline">www.adityafinance.com</a></p>
+                        <p><i class="fas fa-map-marker-alt w-6 text-blue-800"></i> 123 Financial Towers, Bandra Kurla Complex, Mumbai, Maharashtra 400051</p>
+                    </div>
+                    <div class="mt-4 rounded-lg overflow-hidden">
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15082.34130456501!2d72.8561633!3d19.0728333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c6306644edc1%3A0x5da4ed8f8d648c69!2sBandra%20Kurla%20Complex!5e0!3m2!1sen!2sin!4v1690451234567!5m2!1sen!2sin" width="100%" height="250" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </div>
+                </div>
+
+                <!-- Quick Info -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-blue-900 mb-4">Quick Info</h3>
+                    <div class="space-y-3 text-gray-700">
+                        <p><i class="fas fa-certificate w-6 text-green-700"></i> <strong>License:</strong> SEBI Registered - INAxxxxxxxxxx</p>
+                        <p><i class="fas fa-globe-asia w-6 text-green-700"></i> <strong>Service Area:</strong> Pan-India</p>
+                        <p><i class="fas fa-users w-6 text-green-700"></i> <strong>Client Focus:</strong> Individuals, Families, SMEs</p>
+                    </div>
+                </div>
+
+                <!-- Share -->
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-bold text-blue-900 mb-4">Share This Profile</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-2xl text-green-500 hover:text-green-600"><i class="fab fa-whatsapp"></i></a>
+                        <a href="#" class="text-2xl text-red-500 hover:text-red-600"><i class="fas fa-envelope"></i></a>
+                        <a href="#" class="text-2xl text-blue-800 hover:text-blue-900"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-2xl text-blue-500 hover:text-blue-600"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-2xl text-blue-700 hover:text-blue-800"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-blue-900 text-white mt-16">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- About -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">InvestSherpa.in</h3>
+                    <p class="text-blue-200">Your guide to finding the most trusted financial and insurance advisors in India. Making financial decisions simple and secure.</p>
+                </div>
+                <!-- Quick Links -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-blue-200 hover:text-white">About Us</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Blog</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">List Your Business</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Contact Us</a></li>
+                    </ul>
+                </div>
+                <!-- Legal -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-blue-200 hover:text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Terms of Service</a></li>
+                        <li><a href="#" class="text-blue-200 hover:text-white">Disclaimer</a></li>
+                    </ul>
+                </div>
+                <!-- Social -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Connect With Us</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-12 border-t border-blue-800 pt-6 text-center text-blue-300">
+                <p>&copy; 2024 InvestSherpa.in. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
