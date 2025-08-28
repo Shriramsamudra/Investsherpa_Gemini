@@ -1,155 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login / Register - InvestSherpa.in</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .brand-blue { color: #1e3a8a; }
-        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
-        .btn-primary:hover { background-color: #1c347d; }
-        .btn-secondary { background-color: #f59e0b; color: white; transition: background-color 0.3s ease; }
-        .btn-secondary:hover { background-color: #e4900a; }
-        [x-cloak] { display: none !important; }
-        .fade-in { transition: opacity 0.3s ease-in-out; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login / Register - InvestSherpa.in</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </head>
 <body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
-
-    <main class="flex-grow container mx-auto px-6 py-12 flex items-center justify-center">
-        <div class="w-full max-w-md" x-data="authHandler()" x-cloak>
-            <div id="auth-card" class="bg-white p-8 rounded-xl shadow-lg transition-all duration-300">
-                <!-- Login -->
-                <div x-show="view === 'login'">
-                    <h2 class="text-3xl font-bold text-blue-900 text-center">Welcome Back</h2>
-                    <form @submit.prevent="handleLogin()" class="space-y-6 mt-6">
-                        <div>
-                            <label>Email</label>
-                            <input type="email" x-model="credentials.email" required class="w-full p-3 border rounded-lg">
-                        </div>
-                        <div>
-                            <label>Password</label>
-                            <input type="password" x-model="credentials.password" required class="w-full p-3 border rounded-lg">
-                        </div>
-                        <button type="submit" class="btn-primary w-full py-3 rounded-lg" :disabled="loading">
-                            <span x-show="!loading">Sign In</span>
-                            <span x-show="loading"><i class="fas fa-spinner animate-spin"></i> Signing In...</span>
-                        </button>
-                    </form>
-                    <p class="text-center mt-4">Don't have an account? <button @click="view = 'register'" class="text-blue-800">Sign Up</button></p>
-                </div>
-
-                <!-- Register -->
-                <div x-show="view === 'register'" style="display:none">
-                    <h2 class="text-3xl font-bold text-blue-900 text-center">Create Account</h2>
-                    <form @submit.prevent="handleRegister()" class="space-y-4 mt-6">
-                        <input type="text" x-model="newUser.full_name" placeholder="Full Name" required class="w-full p-3 border rounded-lg">
-                        <input type="email" x-model="newUser.email" placeholder="Email" required class="w-full p-3 border rounded-lg">
-                        <input type="password" x-model="newUser.password" placeholder="Password" required class="w-full p-3 border rounded-lg">
-                        <div>
-                            <label class="block mb-1">Register as</label>
-                            <label><input type="radio" x-model="newUser.role" value="end_user"> User</label>
-                            <label class="ml-4"><input type="radio" x-model="newUser.role" value="professional"> Professional</label>
-                        </div>
-                        <div x-show="newUser.role === 'professional'" class="space-y-2">
-                            <input type="tel" x-model="newUser.phone" placeholder="Phone">
-                            <input type="date" x-model="newUser.date_of_birth">
-                            <input type="text" x-model="newUser.city" placeholder="City">
-                            <input type="text" x-model="newUser.state" placeholder="State">
-                            <input type="text" x-model="newUser.pincode" placeholder="Pincode">
-                        </div>
-                        <button type="submit" class="btn-primary w-full py-3 rounded-lg" :disabled="loading">
-                            <span x-show="!loading">Create Account</span>
-                            <span x-show="loading"><i class="fas fa-spinner animate-spin"></i> Creating...</span>
-                        </button>
-                    </form>
-                    <p class="text-center mt-4">Already have an account? <button @click="view = 'login'" class="text-blue-800">Sign In</button></p>
-                </div>
-
-                <!-- Messages -->
-                <div x-show="message.text" class="mt-4 p-3 rounded text-center"
-                     :class="{ 'bg-green-100 text-green-800': message.type === 'success', 'bg-red-100 text-red-800': message.type === 'error' }"
-                     x-text="message.text">
-                </div>
-            </div>
+  <main class="flex-grow container mx-auto px-6 py-12 flex items-center justify-center">
+    <div class="w-full max-w-md" x-data="authHandler()" x-cloak>
+      <div id="auth-card" class="bg-white p-8 rounded-xl shadow-lg transition-all duration-300">
+        <!-- Login -->
+        <div x-show="view === 'login'">
+          <h2 class="text-3xl font-bold text-blue-900 text-center">Welcome Back</h2>
+          <form @submit.prevent="handleLogin()" class="space-y-6 mt-6">
+            <input type="email" x-model="credentials.email" placeholder="Email" required class="w-full p-3 border rounded-lg">
+            <input type="password" x-model="credentials.password" placeholder="Password" required class="w-full p-3 border rounded-lg">
+            <button type="submit" class="btn-primary w-full py-3 rounded-lg" :disabled="loading">
+              <span x-show="!loading">Sign In</span>
+              <span x-show="loading"><i class="fas fa-spinner animate-spin"></i> Signing In...</span>
+            </button>
+          </form>
+          <p class="text-center mt-4">Don't have an account? <button @click="view = 'register'" class="text-blue-800">Sign Up</button></p>
         </div>
-    </main>
+
+        <!-- Register -->
+        <div x-show="view === 'register'" style="display:none">
+          <h2 class="text-3xl font-bold text-blue-900 text-center">Create Account</h2>
+          <form @submit.prevent="handleRegister()" class="space-y-4 mt-6">
+            <input type="text" x-model="newUser.full_name" placeholder="Full Name" required class="w-full p-3 border rounded-lg">
+            <input type="email" x-model="newUser.email" placeholder="Email" required class="w-full p-3 border rounded-lg">
+            <input type="password" x-model="newUser.password" placeholder="Password" required class="w-full p-3 border rounded-lg">
+            <div>
+              <label class="block mb-1">Register as</label>
+              <label><input type="radio" x-model="newUser.role" value="end_user"> User</label>
+              <label class="ml-4"><input type="radio" x-model="newUser.role" value="professional"> Professional</label>
+            </div>
+            <div x-show="newUser.role === 'professional'" class="space-y-2">
+              <input type="tel" x-model="newUser.phone" placeholder="Phone">
+              <input type="date" x-model="newUser.date_of_birth">
+              <input type="text" x-model="newUser.city" placeholder="City">
+              <input type="text" x-model="newUser.state" placeholder="State">
+              <input type="text" x-model="newUser.pincode" placeholder="Pincode">
+            </div>
+            <button type="submit" class="btn-primary w-full py-3 rounded-lg" :disabled="loading">
+              <span x-show="!loading">Create Account</span>
+              <span x-show="loading"><i class="fas fa-spinner animate-spin"></i> Creating...</span>
+            </button>
+          </form>
+          <p class="text-center mt-4">Already have an account? <button @click="view = 'login'" class="text-blue-800">Sign In</button></p>
+        </div>
+
+        <!-- Messages -->
+        <div x-show="message.text" class="mt-4 p-3 rounded text-center"
+          :class="{ 'bg-green-100 text-green-800': message.type === 'success', 'bg-red-100 text-red-800': message.type === 'error' }"
+          x-text="message.text">
+        </div>
+      </div>
+    </div>
+  </main>
 
 <script>
 function authHandler() {
-    return {
-        supabase: supabase.createClient(
-            'https://tapnnlkokcbzckbbdxez.supabase.co',
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w'
-        ),
-        view: 'login',
-        loading: false,
-        message: { type: '', text: '' },
-        credentials: { email: '', password: '' },
-        newUser: { full_name: '', email: '', password: '', role: 'end_user', phone: '', date_of_birth: '', city: '', state: '', pincode: '' },
+  return {
+    supabase: supabase.createClient(
+      'https://tapnnlkokcbzckbbdxez.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w'
+    ),
+    view: 'login',
+    loading: false,
+    message: { type: '', text: '' },
+    credentials: { email: '', password: '' },
+    newUser: { full_name: '', email: '', password: '', role: 'end_user', phone: '', date_of_birth: '', city: '', state: '', pincode: '' },
 
-        clearMessage() { this.message = { type: '', text: '' }; },
+    clearMessage() { this.message = { type: '', text: '' }; },
 
-        async handleLogin() {
-            this.clearMessage();
-            this.loading = true;
-            const { error } = await this.supabase.auth.signInWithPassword(this.credentials);
-            if (error) this.message = { type: 'error', text: error.message };
-            else {
-                this.message = { type: 'success', text: 'Login successful!' };
-                setTimeout(() => window.location.href = '/', 1500);
-            }
-            this.loading = false;
-        },
+    async handleLogin() {
+      this.clearMessage();
+      this.loading = true;
+      const { error } = await this.supabase.auth.signInWithPassword(this.credentials);
+      if (error) this.message = { type: 'error', text: error.message };
+      else {
+        this.message = { type: 'success', text: 'Login successful!' };
+        setTimeout(() => window.location.href = '/', 1500);
+      }
+      this.loading = false;
+    },
 
-        async handleRegister() {
-            this.clearMessage();
-            this.loading = true;
+    async handleRegister() {
+      this.clearMessage();
+      this.loading = true;
 
-            const { data, error } = await this.supabase.auth.signUp({
-                email: this.newUser.email,
-                password: this.newUser.password
-            });
+      const { data, error } = await this.supabase.auth.signUp({
+        email: this.newUser.email,
+        password: this.newUser.password
+      });
 
-            if (error) {
-                this.message = { type: 'error', text: error.message };
-            } else {
-                // Insert into user_profiles table
-                const user = data.user;
-                if (user) {
-                    const { error: insertError } = await this.supabase.from('user_profiles').insert([{
-                        id: user.id,
-                        email: this.newUser.email,
-                        full_name: this.newUser.full_name,
-                        role: this.newUser.role,
-                        phone: this.newUser.phone || null,
-                        date_of_birth: this.newUser.date_of_birth || null,
-                        city: this.newUser.city || null,
-                        state: this.newUser.state || null,
-                        pincode: this.newUser.pincode || null
-                    }]);
+      if (error) {
+        this.message = { type: 'error', text: error.message };
+      } else if (data.user) {
+        // Wait for the user.id from auth.users
+        const userId = data.user.id;
 
-                    if (insertError) {
-                        this.message = { type: 'error', text: insertError.message };
-                        this.loading = false;
-                        return;
-                    }
-                }
-                this.message = { type: 'success', text: 'Account created! Check your email to confirm.' };
-                this.newUser = { full_name: '', email: '', password: '', role: 'end_user', phone: '', date_of_birth: '', city: '', state: '', pincode: '' };
-            }
+        // Insert into user_profiles AFTER auth user exists
+        const { error: insertError } = await this.supabase.from('user_profiles').upsert([{
+          id: userId,
+          email: this.newUser.email,
+          full_name: this.newUser.full_name,
+          role: this.newUser.role,
+          phone: this.newUser.phone || null,
+          date_of_birth: this.newUser.date_of_birth || null,
+          city: this.newUser.city || null,
+          state: this.newUser.state || null,
+          pincode: this.newUser.pincode || null
+        }]);
 
-            this.loading = false;
+        if (insertError) {
+          this.message = { type: 'error', text: insertError.message };
+          this.loading = false;
+          return;
         }
+
+        this.message = { type: 'success', text: 'Account created! Check your email to confirm.' };
+        this.newUser = { full_name: '', email: '', password: '', role: 'end_user', phone: '', date_of_birth: '', city: '', state: '', pincode: '' };
+      }
+
+      this.loading = false;
     }
+  }
 }
 </script>
-
 </body>
 </html>
