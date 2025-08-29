@@ -25,6 +25,10 @@
         .btn-primary:hover {
             background-color: #1c347d;
         }
+        .btn-primary:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
         .btn-secondary {
             background-color: #f59e0b;
             color: white;
@@ -40,6 +44,7 @@
             border-radius: 0.5rem;
             margin-bottom: 1rem;
             font-weight: 500;
+            text-align: center;
         }
         .form-message.success {
             display: block;
@@ -172,7 +177,10 @@
                     </div>
                      <input type="text" name="pincode" placeholder="Pincode" required class="w-full p-3 border border-gray-300 rounded-lg">
 
-                    <button type="submit" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md mt-4">Create Account</button>
+                    <button type="submit" id="signup-button" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md mt-4">
+                        <span class="button-text">Create Account</span>
+                        <i class="fas fa-spinner fa-spin button-loader hidden"></i>
+                    </button>
                 </form>
                 <p class="text-center text-sm text-gray-600 mt-6">
                     Already have an account? 
@@ -189,16 +197,13 @@
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             
             const messageBox = document.getElementById('form-message-box');
-
+            
             const showMessage = (message, type = 'error') => {
                 messageBox.textContent = message;
                 messageBox.className = `form-message ${type}`;
             };
-
-            const states = [
-                "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
-            ];
-
+            
+            const states = [ "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry" ];
             const stateSelect = document.getElementById('state-select');
             states.forEach(state => {
                 const option = document.createElement('option');
@@ -207,7 +212,7 @@
                 stateSelect.appendChild(option);
             });
             
-            // Handle Login Form Submission
+            // --- LOGIN FORM ---
             document.getElementById('login-form').addEventListener('submit', async (event) => {
                 event.preventDefault();
                 const form = event.target;
@@ -220,79 +225,83 @@
                     showMessage(error.message);
                 } else {
                     showMessage('Login successful! Redirecting...', 'success');
-                    // In a real app, you would redirect to a dashboard
-                    // e.g., window.location.href = '/dashboard.html';
                     console.log('Logged in user:', data.user);
+                    // Redirect based on role if needed, e.g., to admin.html
+                    // const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', data.user.id).single();
+                    // if (profile.role === 'admin') window.location.href = 'admin.html';
                 }
             });
 
-            // Handle Sign Up Form Submission
-            document.getElementById('signup-form').addEventListener('submit', async (event) => {
-                 event.preventDefault();
-                const form = event.target;
-                const formData = new FormData(form);
+            // --- SIGNUP FORM ---
+            const signupForm = document.getElementById('signup-form');
+            const signupButton = document.getElementById('signup-button');
+
+            signupForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                
+                // Disable button and show loader
+                signupButton.disabled = true;
+                signupButton.querySelector('.button-text').classList.add('hidden');
+                signupButton.querySelector('.button-loader').classList.remove('hidden');
+                messageBox.className = 'form-message'; // Clear previous messages
+
+                const formData = new FormData(signupForm);
                 const email = formData.get('email');
                 const password = formData.get('password');
-                const fullName = formData.get('full_name');
-                const phone = formData.get('phone');
-                const city = formData.get('city');
-                const state = formData.get('state');
-                const pincode = formData.get('pincode');
                 const role = formData.get('role');
-                const companyName = formData.get('company_name');
-                const professionalType = formData.get('professional_type');
 
                 // 1. Sign up the user in Supabase Auth
-                const { data: authData, error: authError } = await supabase.auth.signUp({
-                    email,
-                    password
-                });
+                const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
 
                 if (authError) {
                     showMessage(authError.message);
-                    return;
-                }
-
-                if (authData.user) {
+                } else if (authData.user) {
                     // 2. Insert profile into `user_profiles` table
                     const { error: profileError } = await supabase
                         .from('user_profiles')
                         .insert([{
                             id: authData.user.id,
                             email: email,
-                            full_name: fullName,
-                            phone: phone,
-                            city: city,
-                            state: state,
-                            pincode: pincode,
+                            full_name: formData.get('full_name'),
+                            phone: formData.get('phone'),
+                            city: formData.get('city'),
+                            state: formData.get('state'),
+                            pincode: formData.get('pincode'),
                             role: role
                         }]);
 
                     if (profileError) {
-                        showMessage('Error creating user profile: ' + profileError.message);
-                        return;
-                    }
-
-                    // 3. If professional, insert into `professional_profiles`
-                    if (role === 'professional') {
-                        const { error: profProfileError } = await supabase
-                            .from('professional_profiles')
-                            .insert([{
-                                user_id: authData.user.id,
-                                company_name: companyName,
-                                professional_type: professionalType,
-                                status: 'pending' // Default status
-                            }]);
-                        
-                        if (profProfileError) {
-                            showMessage('Error creating professional profile: ' + profProfileError.message);
-                            return;
+                        // This is the most likely point of failure due to RLS
+                        console.error('Supabase Profile Error:', profileError);
+                        showMessage(`Database error saving new user. (Hint: Check if Row Level Security is enabled and if policies allow inserts.)`);
+                    } else {
+                         // 3. If professional, insert into `professional_profiles`
+                        if (role === 'professional') {
+                            const { error: profProfileError } = await supabase
+                                .from('professional_profiles')
+                                .insert([{
+                                    user_id: authData.user.id,
+                                    company_name: formData.get('company_name'),
+                                    professional_type: formData.get('professional_type'),
+                                    status: 'pending' // Default status
+                                }]);
+                            
+                            if (profProfileError) {
+                                console.error('Supabase Professional Profile Error:', profProfileError);
+                                showMessage(`Error creating professional profile. Please contact support.`);
+                            }
                         }
+                        
+                        // Success
+                        showMessage('Sign up successful! Please check your email to verify your account.', 'success');
+                        signupForm.reset();
                     }
-
-                    showMessage('Sign up successful! Please check your email to verify your account.', 'success');
-                    form.reset();
                 }
+                
+                // Re-enable button and hide loader
+                signupButton.disabled = false;
+                signupButton.querySelector('.button-text').classList.remove('hidden');
+                signupButton.querySelector('.button-loader').classList.add('hidden');
             });
         });
     </script>
