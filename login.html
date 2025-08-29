@@ -180,8 +180,21 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- MODIFICATION: Moved state population to the top to ensure it runs first ---
+            const states = [ "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry" ];
+            const stateSelect = document.getElementById('state-select');
+            if (stateSelect) {
+                states.forEach(state => {
+                    const option = document.createElement('option');
+                    option.value = state;
+                    option.textContent = state;
+                    stateSelect.appendChild(option);
+                });
+            }
+            // --- END MODIFICATION ---
+
             const SUPABASE_URL = 'https://tapnnlkokcbzckbbdxez.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w'; //
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             
             const loginMessageBox = document.getElementById('form-message-box-login');
@@ -191,15 +204,6 @@
                 box.textContent = message;
                 box.className = `form-message ${type}`;
             };
-            
-            const states = [ "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry" ];
-            const stateSelect = document.getElementById('state-select');
-            states.forEach(state => {
-                const option = document.createElement('option');
-                option.value = state;
-                option.textContent = state;
-                stateSelect.appendChild(option);
-            });
             
             // --- LOGIN FORM ---
             document.getElementById('login-form').addEventListener('submit', async (event) => {
