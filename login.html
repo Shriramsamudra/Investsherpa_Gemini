@@ -2,15 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale-1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login or Sign Up - InvestSherpa.in</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- AlpineJS Plugins -->
     <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <!-- Supabase Client -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body {
@@ -61,10 +59,8 @@
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <!-- Logo -->
             <a href="index.html" class="flex items-center space-x-2">
                 <div class="p-2 bg-blue-900 rounded-lg">
                     <i class="fas fa-shield-alt text-white text-xl"></i>
@@ -72,30 +68,25 @@
                 <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
             </a>
             
-            <!-- Navigation -->
             <nav class="hidden md:flex items-center space-x-8">
                 <a href="index.html" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
                 <a href="browselisting.html" class="text-gray-600 hover:text-blue-900 font-medium">Browse</a>
             </nav>
 
-            <!-- CTA -->
             <div class="hidden md:flex items-center space-x-4">
                 <a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
                 <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
             </div>
             
-            <!-- Mobile Menu Button -->
             <button class="md:hidden text-blue-900 text-2xl">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="flex items-center justify-center min-h-screen py-12 form-bg">
         <div class="w-full max-w-md" x-data="{ isLogin: true, userRole: 'end_user' }">
             
-            <!-- Login Form -->
             <div x-show="isLogin" x-cloak class="bg-white p-8 rounded-xl shadow-lg">
                 <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">Welcome Back!</h2>
                 <form id="login-form" class="space-y-6">
@@ -112,7 +103,6 @@
                     </div>
                     <div>
                         <button type="submit" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md">Login</button>
-                        <!-- Login message box is correctly placed here -->
                         <div id="form-message-box-login" class="form-message mt-4"></div>
                     </div>
                 </form>
@@ -122,11 +112,9 @@
                 </p>
             </div>
 
-            <!-- Sign Up Form -->
             <div x-show="!isLogin" x-cloak class="bg-white p-8 rounded-xl shadow-lg">
                 <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">Create Your Account</h2>
                 <form id="signup-form" class="space-y-4">
-                    <!-- User Role Selection -->
                     <div class="grid grid-cols-2 gap-4">
                          <label class="flex items-center p-3 border rounded-lg cursor-pointer" :class="{ 'bg-blue-50 border-blue-500': userRole === 'end_user' }">
                             <input type="radio" name="role" value="end_user" x-model="userRole" class="hidden">
@@ -146,13 +134,11 @@
                          </label>
                     </div>
                     
-                    <!-- Common Fields -->
                     <input type="text" name="full_name" placeholder="Full Name" required class="w-full p-3 border border-gray-300 rounded-lg">
                     <input type="email" name="email" placeholder="Email Address" required class="w-full p-3 border border-gray-300 rounded-lg">
                     <input type="password" name="password" placeholder="Create Password" required class="w-full p-3 border border-gray-300 rounded-lg">
                     <input type="tel" name="phone" placeholder="Phone Number" required class="w-full p-3 border border-gray-300 rounded-lg">
 
-                    <!-- Professional-only Fields -->
                     <div x-show="userRole === 'professional'" x-collapse class="space-y-4 pt-2">
                         <hr>
                         <p class="text-sm font-semibold text-gray-700 text-center">Professional Information</p>
@@ -168,13 +154,11 @@
                         <hr>
                     </div>
 
-                    <!-- Location Fields -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                         <input type="text" name="city" placeholder="City" required class="w-full p-3 border border-gray-300 rounded-lg">
                         <select id="state-select" name="state" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-500">
                             <option value="" disabled selected>Select State</option>
-                            <!-- States will be populated by JS -->
-                        </select>
+                            </select>
                     </div>
                      <input type="text" name="pincode" placeholder="Pincode" required class="w-full p-3 border border-gray-300 rounded-lg">
 
@@ -183,7 +167,6 @@
                             <span class="button-text">Create Account</span>
                             <i class="fas fa-spinner fa-spin button-loader hidden"></i>
                         </button>
-                        <!-- Signup message box is correctly placed here -->
                         <div id="form-message-box-signup" class="form-message mt-4"></div>
                     </div>
                 </form>
@@ -198,7 +181,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const SUPABASE_URL = 'https://tapnnlkokcbzckbbdxez.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w';
+            [cite_start]// MODIFICATION 2: The incorrect API key was replaced with the correct one. [cite: 2]
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w';
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             
             const loginMessageBox = document.getElementById('form-message-box-login');
@@ -232,6 +216,7 @@
                 } else {
                     showMessage(loginMessageBox, 'Login successful! Redirecting...', 'success');
                     console.log('Logged in user:', data.user);
+                    // You would typically redirect the user here, e.g., window.location.href = '/dashboard.html';
                 }
             });
 
@@ -252,13 +237,13 @@
                 const password = formData.get('password');
                 const role = formData.get('role');
 
+                // Step 1: Sign up the user with Supabase Auth
                 const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
 
                 if (authError) {
-                    // This will catch the 500 error and other auth-related issues
-                    console.error('Supabase Auth Error:', authError);
-                    showMessage(signupMessageBox, `Auth Error: ${authError.message}. This might be a Supabase configuration issue.`);
+                    showMessage(signupMessageBox, authError.message);
                 } else if (authData.user) {
+                    // Step 2: Insert the profile information into the 'user_profiles' table
                     const { error: profileError } = await supabase
                         .from('user_profiles')
                         .insert([{
@@ -273,9 +258,11 @@
                         }]);
 
                     if (profileError) {
+                        // This error might happen due to RLS policies or database constraints.
                         console.error('Supabase Profile Error:', profileError);
-                        showMessage(signupMessageBox, `Database Error (500): Could not save user profile. This is often due to a missing value in a database enum (like 'Role' or 'Professional Type') or an RLS policy issue. Please run the commands in supabase_config_check.sql.`);
+                        showMessage(signupMessageBox, `Could not save user profile: ${profileError.message}`);
                     } else {
+                        // Step 3 (Conditional): If the user is a professional, create a professional profile
                         if (role === 'professional') {
                             const { error: profProfileError } = await supabase
                                 .from('professional_profiles')
@@ -288,15 +275,19 @@
                             
                             if (profProfileError) {
                                 console.error('Supabase Professional Profile Error:', profProfileError);
-                                showMessage(signupMessageBox, `User profile created, but could not create professional profile. Please contact support.`);
+                                showMessage(signupMessageBox, `User account created, but professional profile failed: ${profProfileError.message}`);
                             }
                         }
                         
-                        showMessage(signupMessageBox, 'Sign up successful! Please check your email to verify your account.', 'success');
-                        signupForm.reset();
+                        // If everything is successful
+                        if (!profileError && !(role === 'professional' && profProfileError)) {
+                            showMessage(signupMessageBox, 'Sign up successful! Please check your email to verify your account.', 'success');
+                            signupForm.reset();
+                        }
                     }
                 }
                 
+                // Re-enable the button
                 signupButton.disabled = false;
                 signupButton.querySelector('.button-text').classList.remove('hidden');
                 signupButton.querySelector('.button-loader').classList.add('hidden');
@@ -305,4 +296,3 @@
     </script>
 </body>
 </html>
-
