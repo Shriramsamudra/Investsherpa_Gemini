@@ -42,7 +42,6 @@
             display: none;
             padding: 1rem;
             border-radius: 0.5rem;
-            margin-bottom: 1rem;
             font-weight: 500;
             text-align: center;
         }
@@ -93,9 +92,7 @@
     <!-- Main Content -->
     <main class="flex items-center justify-center min-h-screen py-12 form-bg">
         <div class="w-full max-w-md" x-data="{ isLogin: true, userRole: 'end_user' }">
-            <!-- Universal message box -->
-            <div id="form-message-box" class="form-message"></div>
-
+            
             <!-- Login Form -->
             <div x-show="isLogin" x-cloak class="bg-white p-8 rounded-xl shadow-lg">
                 <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">Welcome Back!</h2>
@@ -113,11 +110,12 @@
                     </div>
                     <div>
                         <button type="submit" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md">Login</button>
+                         <div id="form-message-box-login" class="form-message mt-4"></div>
                     </div>
                 </form>
                 <p class="text-center text-sm text-gray-600 mt-6">
                     Don't have an account? 
-                    <button @click="isLogin = false; document.getElementById('form-message-box').className = 'form-message';" class="font-semibold text-blue-600 hover:underline">Sign Up</button>
+                    <button @click="isLogin = false; document.getElementById('form-message-box-login').className = 'form-message';" class="font-semibold text-blue-600 hover:underline">Sign Up</button>
                 </p>
             </div>
 
@@ -177,14 +175,17 @@
                     </div>
                      <input type="text" name="pincode" placeholder="Pincode" required class="w-full p-3 border border-gray-300 rounded-lg">
 
-                    <button type="submit" id="signup-button" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md mt-4">
-                        <span class="button-text">Create Account</span>
-                        <i class="fas fa-spinner fa-spin button-loader hidden"></i>
-                    </button>
+                    <div>
+                        <button type="submit" id="signup-button" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md mt-4">
+                            <span class="button-text">Create Account</span>
+                            <i class="fas fa-spinner fa-spin button-loader hidden"></i>
+                        </button>
+                        <div id="form-message-box-signup" class="form-message mt-4"></div>
+                    </div>
                 </form>
                 <p class="text-center text-sm text-gray-600 mt-6">
                     Already have an account? 
-                    <button @click="isLogin = true; document.getElementById('form-message-box').className = 'form-message';" class="font-semibold text-blue-600 hover:underline">Login</button>
+                    <button @click="isLogin = true; document.getElementById('form-message-box-signup').className = 'form-message';" class="font-semibold text-blue-600 hover:underline">Login</button>
                 </p>
             </div>
         </div>
@@ -196,11 +197,12 @@
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w';
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             
-            const messageBox = document.getElementById('form-message-box');
+            const loginMessageBox = document.getElementById('form-message-box-login');
+            const signupMessageBox = document.getElementById('form-message-box-signup');
             
-            const showMessage = (message, type = 'error') => {
-                messageBox.textContent = message;
-                messageBox.className = `form-message ${type}`;
+            const showMessage = (box, message, type = 'error') => {
+                box.textContent = message;
+                box.className = `form-message ${type}`;
             };
             
             const states = [ "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry" ];
@@ -222,13 +224,10 @@
                 const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
                 if (error) {
-                    showMessage(error.message);
+                    showMessage(loginMessageBox, error.message);
                 } else {
-                    showMessage('Login successful! Redirecting...', 'success');
+                    showMessage(loginMessageBox, 'Login successful! Redirecting...', 'success');
                     console.log('Logged in user:', data.user);
-                    // Redirect based on role if needed, e.g., to admin.html
-                    // const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', data.user.id).single();
-                    // if (profile.role === 'admin') window.location.href = 'admin.html';
                 }
             });
 
@@ -239,24 +238,21 @@
             signupForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 
-                // Disable button and show loader
                 signupButton.disabled = true;
                 signupButton.querySelector('.button-text').classList.add('hidden');
                 signupButton.querySelector('.button-loader').classList.remove('hidden');
-                messageBox.className = 'form-message'; // Clear previous messages
+                signupMessageBox.className = 'form-message';
 
                 const formData = new FormData(signupForm);
                 const email = formData.get('email');
                 const password = formData.get('password');
                 const role = formData.get('role');
 
-                // 1. Sign up the user in Supabase Auth
                 const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
 
                 if (authError) {
-                    showMessage(authError.message);
+                    showMessage(signupMessageBox, authError.message);
                 } else if (authData.user) {
-                    // 2. Insert profile into `user_profiles` table
                     const { error: profileError } = await supabase
                         .from('user_profiles')
                         .insert([{
@@ -271,11 +267,9 @@
                         }]);
 
                     if (profileError) {
-                        // This is the most likely point of failure due to RLS
                         console.error('Supabase Profile Error:', profileError);
-                        showMessage(`Database error saving new user. (Hint: Check if Row Level Security is enabled and if policies allow inserts.)`);
+                        showMessage(signupMessageBox, `Database error: Could not save user profile. This is likely a Row Level Security (RLS) issue. Please ensure you have run the policies from the SQL file in your Supabase project.`);
                     } else {
-                         // 3. If professional, insert into `professional_profiles`
                         if (role === 'professional') {
                             const { error: profProfileError } = await supabase
                                 .from('professional_profiles')
@@ -283,22 +277,20 @@
                                     user_id: authData.user.id,
                                     company_name: formData.get('company_name'),
                                     professional_type: formData.get('professional_type'),
-                                    status: 'pending' // Default status
+                                    status: 'pending'
                                 }]);
                             
                             if (profProfileError) {
                                 console.error('Supabase Professional Profile Error:', profProfileError);
-                                showMessage(`Error creating professional profile. Please contact support.`);
+                                showMessage(signupMessageBox, `User profile created, but could not create professional profile. Please contact support.`);
                             }
                         }
                         
-                        // Success
-                        showMessage('Sign up successful! Please check your email to verify your account.', 'success');
+                        showMessage(signupMessageBox, 'Sign up successful! Please check your email to verify your account.', 'success');
                         signupForm.reset();
                     }
                 }
                 
-                // Re-enable button and hide loader
                 signupButton.disabled = false;
                 signupButton.querySelector('.button-text').classList.remove('hidden');
                 signupButton.querySelector('.button-loader').classList.add('hidden');
