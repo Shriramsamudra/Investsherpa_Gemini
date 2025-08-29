@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>Login or Sign Up - InvestSherpa.in</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- AlpineJS Plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -110,6 +112,7 @@
                     </div>
                     <div>
                         <button type="submit" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md">Login</button>
+                        <!-- Login message box is correctly placed here -->
                         <div id="form-message-box-login" class="form-message mt-4"></div>
                     </div>
                 </form>
@@ -180,6 +183,7 @@
                             <span class="button-text">Create Account</span>
                             <i class="fas fa-spinner fa-spin button-loader hidden"></i>
                         </button>
+                        <!-- Signup message box is correctly placed here -->
                         <div id="form-message-box-signup" class="form-message mt-4"></div>
                     </div>
                 </form>
@@ -194,7 +198,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const SUPABASE_URL = 'https://tapnnlkokcbzckbbdxez.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w';
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
             
             const loginMessageBox = document.getElementById('form-message-box-login');
@@ -251,7 +255,9 @@
                 const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
 
                 if (authError) {
-                    showMessage(signupMessageBox, authError.message);
+                    // This will catch the 500 error and other auth-related issues
+                    console.error('Supabase Auth Error:', authError);
+                    showMessage(signupMessageBox, `Auth Error: ${authError.message}. This might be a Supabase configuration issue.`);
                 } else if (authData.user) {
                     const { error: profileError } = await supabase
                         .from('user_profiles')
@@ -268,7 +274,7 @@
 
                     if (profileError) {
                         console.error('Supabase Profile Error:', profileError);
-                        showMessage(signupMessageBox, `Database error: Could not save user profile. This is likely a Row Level Security (RLS) issue. Please ensure you have run the policies from the SQL file in your Supabase project.`);
+                        showMessage(signupMessageBox, `Database Error (500): Could not save user profile. This is often due to a missing value in a database enum (like 'Role' or 'Professional Type') or an RLS policy issue. Please run the commands in supabase_config_check.sql.`);
                     } else {
                         if (role === 'professional') {
                             const { error: profProfileError } = await supabase
@@ -288,7 +294,6 @@
                         
                         showMessage(signupMessageBox, 'Sign up successful! Please check your email to verify your account.', 'success');
                         signupForm.reset();
-                        // Alpine.js is controlling the view, so we don't need to manually switch it.
                     }
                 }
                 
