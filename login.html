@@ -3,102 +3,299 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In - InvestSherpa.in</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <title>Login or Sign Up - InvestSherpa.in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
-        .btn-primary:hover { background-color: #1c347d; }
-        .btn-primary:disabled { background-color: #6b7280; cursor: not-allowed; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .form-bg {
+            background-color: #f0f7ff;
+        }
+        .btn-primary {
+            background-color: #1e3a8a;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #1c347d;
+        }
+        .btn-secondary {
+            background-color: #f59e0b;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #e4900a;
+        }
+         [x-cloak] { display: none !important; }
+        .form-message {
+            display: none;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+        .form-message.success {
+            display: block;
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .form-message.error {
+            display: block;
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <header class="bg-white shadow-sm">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#" class="flex items-center space-x-2">
-                <div class="p-2 bg-blue-900 rounded-lg"><i class="fas fa-shield-alt text-white text-xl"></i></div>
+            <!-- Logo -->
+            <a href="index.html" class="flex items-center space-x-2">
+                <div class="p-2 bg-blue-900 rounded-lg">
+                    <i class="fas fa-shield-alt text-white text-xl"></i>
+                </div>
                 <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
             </a>
+            
+            <!-- Navigation -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
+                <a href="browselisting.html" class="text-gray-600 hover:text-blue-900 font-medium">Browse</a>
+            </nav>
+
+            <!-- CTA -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
+                <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-blue-900 text-2xl">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
     </header>
 
-    <main class="container mx-auto px-6 py-12 flex justify-center">
-        <div class="max-w-md w-full bg-white p-8 mt-10 rounded-lg shadow-xl">
-            <h2 class="text-3xl font-bold text-blue-900 mb-2 text-center">Welcome Back!</h2>
-            <p class="text-gray-600 mb-8 text-center">Log in to your account to continue.</p>
-            
-            <form class="space-y-6" id="login-form">
-                
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                    <input type="email" id="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                </div>
+    <!-- Main Content -->
+    <main class="flex items-center justify-center min-h-screen py-12 form-bg">
+        <div class="w-full max-w-md" x-data="{ isLogin: true, userRole: 'end_user' }">
+            <!-- Universal message box -->
+            <div id="form-message-box" class="form-message"></div>
 
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" id="password" name="password" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                </div>
+            <!-- Login Form -->
+            <div x-show="isLogin" x-cloak class="bg-white p-8 rounded-xl shadow-lg">
+                <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">Welcome Back!</h2>
+                <form id="login-form" class="space-y-6">
+                    <div>
+                        <label for="login-email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                        <input type="email" id="login-email" name="email" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center">
+                            <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
+                            <a href="#" class="text-sm text-blue-600 hover:underline">Forgot?</a>
+                        </div>
+                        <input type="password" id="login-password" name="password" required class="mt-1 w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md">Login</button>
+                    </div>
+                </form>
+                <p class="text-center text-sm text-gray-600 mt-6">
+                    Don't have an account? 
+                    <button @click="isLogin = false; document.getElementById('form-message-box').className = 'form-message';" class="font-semibold text-blue-600 hover:underline">Sign Up</button>
+                </p>
+            </div>
 
-                <div class="pt-4">
-                    <button type="submit" id="submit-button" class="btn-primary w-full font-bold py-3 px-10 rounded-lg shadow-md">
-                        Log In
-                    </button>
-                </div>
+            <!-- Sign Up Form -->
+            <div x-show="!isLogin" x-cloak class="bg-white p-8 rounded-xl shadow-lg">
+                <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">Create Your Account</h2>
+                <form id="signup-form" class="space-y-4">
+                    <!-- User Role Selection -->
+                    <div class="grid grid-cols-2 gap-4">
+                         <label class="flex items-center p-3 border rounded-lg cursor-pointer" :class="{ 'bg-blue-50 border-blue-500': userRole === 'end_user' }">
+                            <input type="radio" name="role" value="end_user" x-model="userRole" class="hidden">
+                            <i class="fas fa-user text-xl text-blue-800 mr-3"></i>
+                            <div>
+                                <span class="font-semibold">I'm an End User</span>
+                                <p class="text-xs text-gray-500">Seeking an advisor.</p>
+                            </div>
+                         </label>
+                         <label class="flex items-center p-3 border rounded-lg cursor-pointer" :class="{ 'bg-blue-50 border-blue-500': userRole === 'professional' }">
+                            <input type="radio" name="role" value="professional" x-model="userRole" class="hidden">
+                             <i class="fas fa-briefcase text-xl text-blue-800 mr-3"></i>
+                             <div>
+                                <span class="font-semibold">I'm a Professional</span>
+                                <p class="text-xs text-gray-500">Listing my service.</p>
+                             </div>
+                         </label>
+                    </div>
+                    
+                    <!-- Common Fields -->
+                    <input type="text" name="full_name" placeholder="Full Name" required class="w-full p-3 border border-gray-300 rounded-lg">
+                    <input type="email" name="email" placeholder="Email Address" required class="w-full p-3 border border-gray-300 rounded-lg">
+                    <input type="password" name="password" placeholder="Create Password" required class="w-full p-3 border border-gray-300 rounded-lg">
+                    <input type="tel" name="phone" placeholder="Phone Number" required class="w-full p-3 border border-gray-300 rounded-lg">
 
-                <div class="text-center pt-4 border-t">
-                    <p class="text-gray-600">
-                        Don't have an account? 
-                        <a href="signup.html" class="font-semibold text-blue-800 hover:underline">Sign up here</a>
-                    </p>
-                </div>
-            </form>
+                    <!-- Professional-only Fields -->
+                    <div x-show="userRole === 'professional'" x-collapse class="space-y-4 pt-2">
+                        <hr>
+                        <p class="text-sm font-semibold text-gray-700 text-center">Professional Information</p>
+                        <input type="text" name="company_name" placeholder="Company Name" x-bind:required="userRole === 'professional'" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <select name="professional_type" x-bind:required="userRole === 'professional'" class="w-full p-3 border border-gray-300 rounded-lg text-gray-500">
+                            <option value="" disabled selected>Select Professional Type</option>
+                            <option value="financial_advisor">Financial Advisor</option>
+                            <option value="insurance_broker">Insurance Broker</option>
+                            <option value="investment_firm">Investment Firm</option>
+                            <option value="tax_consultant">Tax Consultant</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <hr>
+                    </div>
+
+                    <!-- Location Fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                        <input type="text" name="city" placeholder="City" required class="w-full p-3 border border-gray-300 rounded-lg">
+                        <select id="state-select" name="state" required class="w-full p-3 border border-gray-300 rounded-lg text-gray-500">
+                            <option value="" disabled selected>Select State</option>
+                            <!-- States will be populated by JS -->
+                        </select>
+                    </div>
+                     <input type="text" name="pincode" placeholder="Pincode" required class="w-full p-3 border border-gray-300 rounded-lg">
+
+                    <button type="submit" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md mt-4">Create Account</button>
+                </form>
+                <p class="text-center text-sm text-gray-600 mt-6">
+                    Already have an account? 
+                    <button @click="isLogin = true; document.getElementById('form-message-box').className = 'form-message';" class="font-semibold text-blue-600 hover:underline">Login</button>
+                </p>
+            </div>
         </div>
     </main>
 
     <script>
-        // Initialize the Supabase Client with your project details
-        const supabaseUrl = 'https://tapnnlkokcbzckbbdxez.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+        document.addEventListener('DOMContentLoaded', function() {
+            const SUPABASE_URL = 'https://tapnnlkokcbzckbbdxez.supabase.co';
+            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w';
+            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            
+            const messageBox = document.getElementById('form-message-box');
 
-        const loginForm = document.getElementById('login-form');
-        const submitButton = document.getElementById('submit-button');
+            const showMessage = (message, type = 'error') => {
+                messageBox.textContent = message;
+                messageBox.className = `form-message ${type}`;
+            };
 
-        loginForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
+            const states = [
+                "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
+            ];
 
-            submitButton.disabled = true;
-            submitButton.textContent = 'Logging In...';
+            const stateSelect = document.getElementById('state-select');
+            states.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                stateSelect.appendChild(option);
+            });
+            
+            // Handle Login Form Submission
+            document.getElementById('login-form').addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const form = event.target;
+                const email = form.email.value;
+                const password = form.password.value;
 
-            try {
-                const formData = new FormData(loginForm);
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    showMessage(error.message);
+                } else {
+                    showMessage('Login successful! Redirecting...', 'success');
+                    // In a real app, you would redirect to a dashboard
+                    // e.g., window.location.href = '/dashboard.html';
+                    console.log('Logged in user:', data.user);
+                }
+            });
+
+            // Handle Sign Up Form Submission
+            document.getElementById('signup-form').addEventListener('submit', async (event) => {
+                 event.preventDefault();
+                const form = event.target;
+                const formData = new FormData(form);
                 const email = formData.get('email');
                 const password = formData.get('password');
+                const fullName = formData.get('full_name');
+                const phone = formData.get('phone');
+                const city = formData.get('city');
+                const state = formData.get('state');
+                const pincode = formData.get('pincode');
+                const role = formData.get('role');
+                const companyName = formData.get('company_name');
+                const professionalType = formData.get('professional_type');
 
-                // The core Supabase login function
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: email,
-                    password: password,
+                // 1. Sign up the user in Supabase Auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email,
+                    password
                 });
 
-                if (error) throw error;
-                
-                // If login is successful, redirect to a dashboard page
-                alert('Login successful! Redirecting...');
-                window.location.href = '/dashboard.html'; // <-- CHANGE THIS to your desired page after login
+                if (authError) {
+                    showMessage(authError.message);
+                    return;
+                }
 
-            } catch (error) {
-                console.error('Error during login:', error.message);
-                alert(`Login failed: ${error.message}`);
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Log In';
-            }
+                if (authData.user) {
+                    // 2. Insert profile into `user_profiles` table
+                    const { error: profileError } = await supabase
+                        .from('user_profiles')
+                        .insert([{
+                            id: authData.user.id,
+                            email: email,
+                            full_name: fullName,
+                            phone: phone,
+                            city: city,
+                            state: state,
+                            pincode: pincode,
+                            role: role
+                        }]);
+
+                    if (profileError) {
+                        showMessage('Error creating user profile: ' + profileError.message);
+                        return;
+                    }
+
+                    // 3. If professional, insert into `professional_profiles`
+                    if (role === 'professional') {
+                        const { error: profProfileError } = await supabase
+                            .from('professional_profiles')
+                            .insert([{
+                                user_id: authData.user.id,
+                                company_name: companyName,
+                                professional_type: professionalType,
+                                status: 'pending' // Default status
+                            }]);
+                        
+                        if (profProfileError) {
+                            showMessage('Error creating professional profile: ' + profProfileError.message);
+                            return;
+                        }
+                    }
+
+                    showMessage('Sign up successful! Please check your email to verify your account.', 'success');
+                    form.reset();
+                }
+            });
         });
     </script>
-    <script src="https://cdn.tailwindcss.com"></script>
 </body>
 </html>
+
