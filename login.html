@@ -110,7 +110,7 @@
                     </div>
                     <div>
                         <button type="submit" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md">Login</button>
-                         <div id="form-message-box-login" class="form-message mt-4"></div>
+                        <div id="form-message-box-login" class="form-message mt-4"></div>
                     </div>
                 </form>
                 <p class="text-center text-sm text-gray-600 mt-6">
@@ -288,6 +288,7 @@
                         
                         showMessage(signupMessageBox, 'Sign up successful! Please check your email to verify your account.', 'success');
                         signupForm.reset();
+                        // Alpine.js is controlling the view, so we don't need to manually switch it.
                     }
                 }
                 
