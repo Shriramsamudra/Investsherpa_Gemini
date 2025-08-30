@@ -7,256 +7,96 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .hero-bg {
-            background-color: #f0f7ff;
-        }
-        .brand-blue { color: #1e3a8a; }
-        .brand-green { color: #166534; }
-        .brand-gold { color: #f59e0b; }
-        .btn-primary {
-            background-color: #1e3a8a;
-            color: white;
-            transition: background-color 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #1c347d;
-        }
-        .btn-secondary {
-            background-color: #f59e0b;
-            color: white;
-            transition: background-color 0.3s ease;
-        }
-        .btn-secondary:hover {
-            background-color: #e4900a;
-        }
-        .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .hero-bg { background-color: #f0f7ff; }
+        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #1c347d; }
+        .btn-secondary { background-color: #f59e0b; color: white; transition: background-color 0.3s ease; }
+        .btn-secondary:hover { background-color: #e4900a; }
+        .card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <!-- Logo -->
-            <a href="#" class="flex items-center space-x-2">
-                <div class="p-2 bg-blue-900 rounded-lg">
-                    <i class="fas fa-shield-alt text-white text-xl"></i>
-                </div>
+            <a href="index.html" class="flex items-center space-x-2">
+                <div class="p-2 bg-blue-900 rounded-lg"><i class="fas fa-shield-alt text-white text-xl"></i></div>
                 <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
             </a>
-            
-            <!-- Navigation -->
             <nav class="hidden md:flex items-center space-x-8">
                 <a href="index.html" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
-                <a href="browselisting.html" class="text-gray-600 hover:text-blue-900 font-medium">Categories</a>
+                <a href="browselisting.html" class="text-gray-600 hover:text-blue-900 font-medium">Browse</a>
                 <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Blog</a>
-                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">About Us</a>
-                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Contact</a>
             </nav>
-
-            <!-- CTA -->
             <div class="hidden md:flex items-center space-x-4">
                 <a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
-                <a href="#" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
+                <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
             </div>
-            
-            <!-- Mobile Menu Button -->
-            <button class="md:hidden text-blue-900 text-2xl">
-                <i class="fas fa-bars"></i>
-            </button>
+            <button class="md:hidden text-blue-900 text-2xl"><i class="fas fa-bars"></i></button>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main>
-        <!-- Hero Section -->
         <section class="hero-bg py-20 md:py-32">
             <div class="container mx-auto px-6 text-center">
                 <h1 class="text-4xl md:text-6xl font-bold text-blue-900 mb-4">Find Your Trusted Financial Advisor</h1>
                 <p class="text-lg md:text-xl text-gray-700 mb-8 max-w-3xl mx-auto">Discover and connect with the best investment and insurance professionals across India.</p>
-                
-                <!-- Search Bar -->
                 <div class="bg-white p-4 md:p-6 rounded-lg shadow-lg max-w-4xl mx-auto">
-                    <form class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <input type="text" placeholder="Business Name or Service (e.g., Mutual Funds)" class="col-span-1 md:col-span-2 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <input type="text" placeholder="Location (City, State, Pincode)" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <form class="grid grid-cols-1 md:grid-cols-4 gap-4" onsubmit="event.preventDefault(); window.location.href=`browselisting.html?q=${document.getElementById('search-query').value}`;">
+                        <input id="search-query" type="text" placeholder="Service or Business Name..." class="col-span-1 md:col-span-3 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         <button type="submit" class="btn-primary font-bold py-3 px-6 rounded-lg shadow-md w-full">
-                            <i class="fas fa-search mr-2"></i> Find an Advisor
+                            <i class="fas fa-search mr-2"></i> Find
                         </button>
                     </form>
                 </div>
             </div>
         </section>
 
-        <!-- Popular Categories Section -->
         <section class="py-16 md:py-24 bg-white">
             <div class="container mx-auto px-6">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl md:text-4xl font-bold text-blue-900">Explore Popular Categories</h2>
                     <p class="text-gray-600 mt-2">Find experts in the financial services you need.</p>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                    <!-- Category Card -->
-                    <div class="card bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
-                        <div class="text-4xl text-blue-900 mb-4"><i class="fas fa-umbrella"></i></div>
-                        <h3 class="text-lg font-semibold text-gray-800">Life Insurance</h3>
+                <div id="categories-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
                     </div>
-                    <!-- Category Card -->
-                    <div class="card bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
-                        <div class="text-4xl text-green-700 mb-4"><i class="fas fa-chart-line"></i></div>
-                        <h3 class="text-lg font-semibold text-gray-800">Mutual Funds</h3>
-                    </div>
-                    <!-- Category Card -->
-                    <div class="card bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
-                        <div class="text-4xl text-red-500 mb-4"><i class="fas fa-heartbeat"></i></div>
-                        <h3 class="text-lg font-semibold text-gray-800">Health Insurance</h3>
-                    </div>
-                    <!-- Category Card -->
-                    <div class="card bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
-                        <div class="text-4xl text-yellow-500 mb-4"><i class="fas fa-home"></i></div>
-                        <h3 class="text-lg font-semibold text-gray-800">Retirement Planning</h3>
-                    </div>
-                     <!-- Category Card -->
-                    <div class="card bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
-                        <div class="text-4xl text-indigo-500 mb-4"><i class="fas fa-piggy-bank"></i></div>
-                        <h3 class="text-lg font-semibold text-gray-800">Wealth Management</h3>
-                    </div>
-                     <!-- Category Card -->
-                    <div class="card bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
-                        <div class="text-4xl text-teal-500 mb-4"><i class="fas fa-car"></i></div>
-                        <h3 class="text-lg font-semibold text-gray-800">General Insurance</h3>
-                    </div>
-                     <!-- Category Card -->
-                    <div class="card bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
-                        <div class="text-4xl text-purple-500 mb-4"><i class="fas fa-file-invoice-dollar"></i></div>
-                        <h3 class="text-lg font-semibold text-gray-800">Tax Planning</h3>
-                    </div>
-                     <!-- Category Card -->
-                    <div class="card bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
-                        <div class="text-4xl text-pink-500 mb-4"><i class="fas fa-graduation-cap"></i></div>
-                        <h3 class="text-lg font-semibold text-gray-800">Child's Future</h3>
-                    </div>
-                </div>
             </div>
         </section>
 
-        <!-- Featured Listings Section -->
         <section class="py-16 md:py-24 bg-gray-100">
             <div class="container mx-auto px-6">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl md:text-4xl font-bold text-blue-900">Featured Advisors</h2>
                     <p class="text-gray-600 mt-2">Top-rated professionals recommended by our users.</p>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- Featured Card -->
-                    <div class="card bg-white rounded-lg shadow-md overflow-hidden">
-                        <div class="p-6">
-                            <div class="flex items-center mb-4">
-                                <img src="https://placehold.co/64x64/1e3a8a/ffffff?text=AA" alt="Advisor Avatar" class="w-16 h-16 rounded-full mr-4 border-2 border-blue-200">
-                                <div>
-                                    <h3 class="text-xl font-bold text-blue-900">Aditya Finance</h3>
-                                    <p class="text-gray-600">Mumbai, Maharashtra</p>
-                                </div>
-                            </div>
-                            <p class="text-gray-700 mb-4">Specializing in comprehensive retirement planning and mutual fund investments for families.</p>
-                            <div class="flex items-center text-yellow-500 mb-4">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                                <span class="text-gray-600 ml-2">(4.8 stars)</span>
-                            </div>
-                            <a href="#" class="font-semibold text-blue-800 hover:underline">View Profile <i class="fas fa-arrow-right ml-1"></i></a>
-                        </div>
+                <div id="featured-advisors-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     </div>
-                    <!-- Featured Card -->
-                    <div class="card bg-white rounded-lg shadow-md overflow-hidden">
-                         <div class="p-6">
-                            <div class="flex items-center mb-4">
-                                <img src="https://placehold.co/64x64/166534/ffffff?text=SG" alt="Advisor Avatar" class="w-16 h-16 rounded-full mr-4 border-2 border-green-200">
-                                <div>
-                                    <h3 class="text-xl font-bold text-blue-900">Secure Growth Insure</h3>
-                                    <p class="text-gray-600">Delhi, NCR</p>
-                                </div>
-                            </div>
-                            <p class="text-gray-700 mb-4">Your trusted partner for life and health insurance. Protecting what matters most.</p>
-                            <div class="flex items-center text-yellow-500 mb-4">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <span class="text-gray-600 ml-2">(5.0 stars)</span>
-                            </div>
-                            <a href="#" class="font-semibold text-blue-800 hover:underline">View Profile <i class="fas fa-arrow-right ml-1"></i></a>
-                        </div>
-                    </div>
-                    <!-- Featured Card -->
-                    <div class="card bg-white rounded-lg shadow-md overflow-hidden">
-                         <div class="p-6">
-                            <div class="flex items-center mb-4">
-                                <img src="https://placehold.co/64x64/f59e0b/ffffff?text=WM" alt="Advisor Avatar" class="w-16 h-16 rounded-full mr-4 border-2 border-yellow-200">
-                                <div>
-                                    <h3 class="text-xl font-bold text-blue-900">Wealth Managers Inc.</h3>
-                                    <p class="text-gray-600">Bengaluru, Karnataka</p>
-                                </div>
-                            </div>
-                            <p class="text-gray-700 mb-4">Expert wealth management services for high-net-worth individuals and small businesses.</p>
-                            <div class="flex items-center text-yellow-500 mb-4">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="far fa-star"></i>
-                                <span class="text-gray-600 ml-2">(4.2 stars)</span>
-                            </div>
-                            <a href="#" class="font-semibold text-blue-800 hover:underline">View Profile <i class="fas fa-arrow-right ml-1"></i></a>
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
         
-        <!-- How It Works Section -->
         <section class="py-16 md:py-24 bg-white">
-            <div class="container mx-auto px-6">
+             <div class="container mx-auto px-6">
                 <div class="text-center mb-12">
                     <h2 class="text-3xl md:text-4xl font-bold text-blue-900">How It Works</h2>
                     <p class="text-gray-600 mt-2">A simple process for users and businesses.</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
-                    <!-- Step 1 -->
                     <div>
-                        <div class="bg-blue-100 text-blue-900 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                           <i class="fas fa-search text-3xl"></i>
-                        </div>
+                        <div class="bg-blue-100 text-blue-900 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-search text-3xl"></i></div>
                         <h3 class="text-xl font-semibold mb-2">1. Search & Discover</h3>
                         <p class="text-gray-600">Use our powerful search to find financial professionals by service, name, or location.</p>
                     </div>
-                    <!-- Step 2 -->
                     <div>
-                        <div class="bg-blue-100 text-blue-900 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                           <i class="fas fa-user-check text-3xl"></i>
-                        </div>
+                        <div class="bg-blue-100 text-blue-900 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-user-check text-3xl"></i></div>
                         <h3 class="text-xl font-semibold mb-2">2. Compare & Verify</h3>
                         <p class="text-gray-600">Review detailed profiles, services offered, and user ratings to find the perfect match.</p>
                     </div>
-                    <!-- Step 3 -->
                     <div>
-                        <div class="bg-blue-100 text-blue-900 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                           <i class="fas fa-hands-helping text-3xl"></i>
-                        </div>
+                        <div class="bg-blue-100 text-blue-900 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-hands-helping text-3xl"></i></div>
                         <h3 class="text-xl font-semibold mb-2">3. Connect & Grow</h3>
                         <p class="text-gray-600">Contact advisors directly to secure your financial future or list your business to reach new clients.</p>
                     </div>
@@ -264,118 +104,89 @@
             </div>
         </section>
 
-        <!-- CTA for Businesses -->
-        <section class="bg-blue-900 text-white">
-            <div class="container mx-auto px-6 py-16 text-center">
-                <h2 class="text-3xl font-bold mb-4">Are you a Financial Professional?</h2>
-                <p class="text-blue-200 text-lg mb-8 max-w-2xl mx-auto">Join India's fastest-growing directory of investment and insurance experts. Reach thousands of potential clients.</p>
-                <a href="#" class="btn-secondary font-bold py-3 px-8 rounded-lg text-lg shadow-lg">List Your Business Today</a>
-            </div>
-        </section>
-        
-        <!-- Latest Blog Posts -->
-        <section class="py-16 md:py-24 bg-gray-50">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-bold text-blue-900">Latest Financial Insights</h2>
-                    <p class="text-gray-600 mt-2">Stay informed with our expert articles and market updates.</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Blog Post Card -->
-                    <div class="card bg-white rounded-lg shadow-md overflow-hidden">
-                        <img src="https://placehold.co/400x250/a5b4fc/1e3a8a?text=Investment+Tips" alt="Blog post image" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <p class="text-sm text-gray-500 mb-2">Mutual Funds | July 26, 2024</p>
-                            <h3 class="text-lg font-bold text-blue-900 mb-3">5 Common Mistakes to Avoid When Investing in Mutual Funds</h3>
-                            <a href="#" class="font-semibold text-blue-800 hover:underline">Read More <i class="fas fa-arrow-right ml-1"></i></a>
-                        </div>
-                    </div>
-                    <!-- Blog Post Card -->
-                    <div class="card bg-white rounded-lg shadow-md overflow-hidden">
-                        <img src="https://placehold.co/400x250/a7f3d0/166534?text=Insurance+Guide" alt="Blog post image" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <p class="text-sm text-gray-500 mb-2">Insurance | July 24, 2024</p>
-                            <h3 class="text-lg font-bold text-blue-900 mb-3">How to Choose the Right Health Insurance Plan for Your Family</h3>
-                            <a href="#" class="font-semibold text-blue-800 hover:underline">Read More <i class="fas fa-arrow-right ml-1"></i></a>
-                        </div>
-                    </div>
-                     <!-- Blog Post Card -->
-                    <div class="card bg-white rounded-lg shadow-md overflow-hidden">
-                        <img src="https://placehold.co/400x250/fde68a/b45309?text=Retirement+Plan" alt="Blog post image" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <p class="text-sm text-gray-500 mb-2">Retirement | July 22, 2024</p>
-                            <h3 class="text-lg font-bold text-blue-900 mb-3">Is the National Pension System (NPS) the Best Choice for You?</h3>
-                            <a href="#" class="font-semibold text-blue-800 hover:underline">Read More <i class="fas fa-arrow-right ml-1"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- User Testimonials -->
-        <section class="py-16 md:py-24 bg-white">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-bold text-blue-900">What Our Users Say</h2>
-                    <p class="text-gray-600 mt-2">Real stories from people we've helped.</p>
-                </div>
-                <!-- Placeholder for carousel -->
-                <div class="flex items-center justify-center bg-gray-100 rounded-lg p-12 min-h-[250px]">
-                    <div class="text-center text-gray-500">
-                        <i class="fas fa-comments text-5xl mb-4"></i>
-                        <p class="text-lg font-semibold">User testimonials will be featured here soon!</p>
-                        <p>We're working on collecting feedback to share with you.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
     </main>
 
-    <!-- Footer -->
     <footer class="bg-blue-900 text-white">
-        <div class="container mx-auto px-6 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- About -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">InvestSherpa.in</h3>
-                    <p class="text-blue-200">Your guide to finding the most trusted financial and insurance advisors in India. Making financial decisions simple and secure.</p>
-                </div>
-                <!-- Quick Links -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-blue-200 hover:text-white">About Us</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">Blog</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">List Your Business</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">Contact Us</a></li>
-                    </ul>
-                </div>
-                <!-- Legal -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-blue-200 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">Terms of Service</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">Disclaimer</a></li>
-                    </ul>
-                </div>
-                <!-- Social -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Connect With Us</h3>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-linkedin"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-            </div>
+         <div class="container mx-auto px-6 py-12">
             <div class="mt-12 border-t border-blue-800 pt-6 text-center text-blue-300">
-                <p>&copy; 2024 InvestSherpa.in. All Rights Reserved.</p>
+                <p>&copy; 2025 InvestSherpa.in. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
+
+    <script type="module">
+        // Initialize Supabase client
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- FETCH AND DISPLAY CATEGORIES ---
+        async function displayCategories() {
+            const { data, error } = await supabase
+                .from('categories')
+                .select('*')
+                .limit(8);
+
+            if (error) {
+                console.error('Error fetching categories:', error);
+                return;
+            }
+
+            const categoriesGrid = document.getElementById('categories-grid');
+            categoriesGrid.innerHTML = ''; // Clear existing
+            data.forEach(category => {
+                const card = `
+                    <div class="card bg-gray-50 p-6 rounded-lg text-center border border-gray-200">
+                        <div class="text-4xl text-blue-900 mb-4"><i class="${category.icon_class}"></i></div>
+                        <h3 class="text-lg font-semibold text-gray-800">${category.name}</h3>
+                    </div>`;
+                categoriesGrid.innerHTML += card;
+            });
+        }
+
+        // --- FETCH AND DISPLAY FEATURED ADVISORS ---
+        async function displayFeaturedAdvisors() {
+            // Fetch top 3 approved profiles, ordered by creation date for simplicity.
+            // A more complex query could calculate average ratings.
+            const { data, error } = await supabase
+                .from('professional_profiles')
+                .select('id, business_name, city, state, tagline')
+                .eq('status', 'approved')
+                .order('created_at', { ascending: false })
+                .limit(3);
+
+            if (error) {
+                console.error('Error fetching advisors:', error);
+                return;
+            }
+
+            const advisorsGrid = document.getElementById('featured-advisors-grid');
+            advisorsGrid.innerHTML = '';
+            data.forEach(advisor => {
+                 const card = `
+                    <div class="card bg-white rounded-lg shadow-md overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-center mb-4">
+                                <div>
+                                    <h3 class="text-xl font-bold text-blue-900">${advisor.business_name}</h3>
+                                    <p class="text-gray-600">${advisor.city}, ${advisor.state}</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 mb-4 h-12">${advisor.tagline || 'Expert financial and insurance advice.'}</p>
+                            <a href="listingdetail.html?id=${advisor.id}" class="font-semibold text-blue-800 hover:underline">View Profile <i class="fas fa-arrow-right ml-1"></i></a>
+                        </div>
+                    </div>`;
+                advisorsGrid.innerHTML += card;
+            });
+        }
+        
+        // Load all data when the page is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            displayCategories();
+            displayFeaturedAdvisors();
+        });
+    </script>
 
 </body>
 </html>

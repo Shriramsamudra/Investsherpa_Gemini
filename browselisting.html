@@ -7,340 +7,167 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Map library integration -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .brand-blue { color: #1e3a8a; }
-        .btn-primary {
-            background-color: #1e3a8a;
-            color: white;
-            transition: background-color 0.3s ease;
-        }
-        .btn-primary:hover {
-            background-color: #1c347d;
-        }
-        .btn-secondary {
-            background-color: #f59e0b;
-            color: white;
-            transition: background-color 0.3s ease;
-        }
-        .btn-secondary:hover {
-            background-color: #e4900a;
-        }
-        .card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        /* Custom scrollbar for filter options */
-        .filter-options::-webkit-scrollbar {
-            width: 6px;
-        }
-        .filter-options::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        .filter-options::-webkit-scrollbar-thumb {
-            background: #d1d5db;
-            border-radius: 10px;
-        }
-        .filter-options::-webkit-scrollbar-thumb:hover {
-            background: #9ca3af;
-        }
-        [x-cloak] { display: none !important; }
+        body { font-family: 'Inter', sans-serif; }
+        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #1c347d; }
+        .card { transition: box-shadow 0.3s ease; }
+        .card:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
-    <!-- Header -->
     <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <!-- Logo -->
-            <a href="#" class="flex items-center space-x-2">
-                <div class="p-2 bg-blue-900 rounded-lg">
-                    <i class="fas fa-shield-alt text-white text-xl"></i>
-                </div>
+       <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-2">
+                <div class="p-2 bg-blue-900 rounded-lg"><i class="fas fa-shield-alt text-white text-xl"></i></div>
                 <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
             </a>
-            
-            <!-- Navigation -->
             <nav class="hidden md:flex items-center space-x-8">
-                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
-                <a href="#" class="text-blue-900 hover:text-blue-900 font-bold">Browse</a>
+                <a href="index.html" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
+                <a href="browselisting.html" class="text-gray-600 hover:text-blue-900 font-medium">Browse</a>
                 <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Blog</a>
-                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">About Us</a>
-                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Contact</a>
             </nav>
-
-            <!-- CTA -->
             <div class="hidden md:flex items-center space-x-4">
-                <a href="#" class="text-blue-900 font-semibold hover:underline">Login</a>
-                <a href="#" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
+                <a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
+                <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
             </div>
-            
-            <!-- Mobile Menu Button -->
-            <button class="md:hidden text-blue-900 text-2xl">
-                <i class="fas fa-bars"></i>
-            </button>
+            <button class="md:hidden text-blue-900 text-2xl"><i class="fas fa-bars"></i></button>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-6 py-8" x-data="{ view: 'list' }">
+    <main class="container mx-auto px-6 py-8">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             
-            <!-- Filters Sidebar -->
             <aside class="lg:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit sticky top-28">
                 <h2 class="text-2xl font-bold text-blue-900 mb-6">Filters</h2>
-                
-                <!-- Search Input -->
                 <div class="mb-6">
                     <div class="relative">
-                        <input type="text" placeholder="Search by name..." class="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <input type="text" id="search-input" placeholder="Search by name..." class="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
                         <i class="fas fa-search absolute top-1/2 right-3 -translate-y-1/2 text-gray-400"></i>
                     </div>
                 </div>
-
-                <!-- Filter Sections -->
                 <div class="space-y-6">
-                    <!-- Category Filter -->
-                    <div x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center text-left font-semibold text-gray-700">
-                            <span>Category</span>
-                            <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                        </button>
-                        <div x-show="open" x-collapse class="mt-2 space-y-2 filter-options max-h-48 overflow-y-auto pr-2">
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> Mutual Funds</label>
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> Life Insurance</label>
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> Health Insurance</label>
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> Wealth Management</label>
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> Tax Planning</label>
-                        </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-700">Category</h3>
+                        <div id="filter-categories" class="mt-2 space-y-2 max-h-48 overflow-y-auto pr-2">
+                            </div>
                     </div>
-                    
-                    <!-- Location Filter -->
-                    <div x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center text-left font-semibold text-gray-700">
-                            <span>Location</span>
-                            <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                        </button>
-                        <div x-show="open" x-collapse class="mt-2 space-y-3">
-                            <input type="text" placeholder="City" class="w-full p-2 border border-gray-300 rounded-lg">
-                            <input type="text" placeholder="Pincode" class="w-full p-2 border border-gray-300 rounded-lg">
-                            <button class="w-full text-left text-blue-600 font-medium hover:underline"><i class="fas fa-location-arrow mr-2"></i>Use my current location</button>
-                        </div>
-                    </div>
-
-                    <!-- Business Type Filter -->
-                     <div x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center text-left font-semibold text-gray-700">
-                            <span>Business Type</span>
-                            <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                        </button>
-                        <div x-show="open" x-collapse class="mt-2 space-y-2">
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> Financial Advisor</label>
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> Insurance Broker</label>
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> Investment Firm</label>
-                        </div>
-                    </div>
-
-                    <!-- Regulatory Body Filter -->
-                     <div x-data="{ open: false }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center text-left font-semibold text-gray-700">
-                            <span>Regulatory Body</span>
-                            <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                        </button>
-                        <div x-show="open" x-collapse class="mt-2 space-y-2">
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> SEBI Registered</label>
-                            <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> IRDAI Licensed</label>
-                        </div>
-                    </div>
-                    
-                    <!-- Rating Filter -->
-                    <div x-data="{ open: true }">
-                        <button @click="open = !open" class="w-full flex justify-between items-center text-left font-semibold text-gray-700">
-                            <span>Rating</span>
-                            <i class="fas" :class="open ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
-                        </button>
-                        <div x-show="open" x-collapse class="mt-2 space-y-2">
-                            <label class="flex items-center"><input type="radio" name="rating" class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> Any</label>
-                            <label class="flex items-center"><input type="radio" name="rating" class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> 4+ Stars</label>
-                            <label class="flex items-center"><input type="radio" name="rating" class="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 mr-2"> 3+ Stars</label>
-                        </div>
-                    </div>
-
                 </div>
-                
                 <div class="mt-8">
-                    <button class="btn-primary w-full py-3 rounded-lg font-bold">Apply Filters</button>
-                    <button class="w-full mt-2 text-gray-600 hover:text-blue-900 font-medium">Reset</button>
+                    <button id="apply-filters-btn" class="btn-primary w-full py-3 rounded-lg font-bold">Apply Filters</button>
                 </div>
-
             </aside>
 
-            <!-- Results Section -->
             <section class="lg:col-span-3">
-                <!-- Header: Title, Sort, View Toggle -->
-                <div class="flex flex-col md:flex-row justify-between items-center mb-6">
-                    <h1 class="text-3xl font-bold text-blue-900 mb-4 md:mb-0">Showing 125 Results</h1>
-                    <div class="flex items-center space-x-4">
-                        <select class="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                            <option>Sort by: Relevance</option>
-                            <option>Sort by: Highest Rated</option>
-                            <option>Sort by: Newest</option>
-                        </select>
-                        <div class="flex items-center border border-gray-300 rounded-lg">
-                            <button @click="view = 'list'" :class="{'bg-blue-900 text-white': view === 'list', 'bg-white text-gray-600': view !== 'list'}" class="p-2 rounded-l-lg transition">
-                                <i class="fas fa-list"></i>
-                            </button>
-                            <button @click="view = 'map'" :class="{'bg-blue-900 text-white': view === 'map', 'bg-white text-gray-600': view !== 'map'}" class="p-2 rounded-r-lg transition">
-                                <i class="fas fa-map-marked-alt"></i>
-                            </button>
-                        </div>
-                    </div>
+                <div class="flex justify-between items-center mb-6">
+                    <h1 id="results-count" class="text-3xl font-bold text-blue-900">Loading Results...</h1>
                 </div>
 
-                <!-- Listings View -->
-                <div x-show="view === 'list'">
-                    <div class="grid grid-cols-1 gap-6">
-                        <!-- Sample Listing Card 1 -->
-                        <div class="card bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row">
-                            <img src="https://placehold.co/200x200/1e3a8a/ffffff?text=AF" alt="Advisor Logo" class="w-full md:w-48 h-48 md:h-auto object-cover">
-                            <div class="p-6 flex-grow">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-blue-900">Aditya Finance</h3>
-                                        <p class="text-gray-600 mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Mumbai, Maharashtra</p>
-                                    </div>
-                                    <div class="flex items-center text-yellow-500">
-                                        <i class="fas fa-star"></i>
-                                        <span class="text-gray-800 font-bold ml-1">4.8</span>
-                                    </div>
-                                </div>
-                                <p class="text-gray-700 my-3">Specializing in comprehensive retirement planning and mutual fund investments for families.</p>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">SEBI Registered</span>
-                                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">Individuals</span>
-                                </div>
-                                <a href="#" class="font-semibold text-blue-800 hover:underline">View Profile <i class="fas fa-arrow-right ml-1"></i></a>
-                            </div>
-                        </div>
-                        <!-- Sample Listing Card 2 -->
-                        <div class="card bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row">
-                            <img src="https://placehold.co/200x200/166534/ffffff?text=SG" alt="Advisor Logo" class="w-full md:w-48 h-48 md:h-auto object-cover">
-                            <div class="p-6 flex-grow">
-                                <div class="flex justify-between items-start">
-                                    <div>
-                                        <h3 class="text-xl font-bold text-blue-900">Secure Growth Insure</h3>
-                                        <p class="text-gray-600 mb-2"><i class="fas fa-map-marker-alt mr-2"></i>Delhi, NCR</p>
-                                    </div>
-                                    <div class="flex items-center text-yellow-500">
-                                        <i class="fas fa-star"></i>
-                                        <span class="text-gray-800 font-bold ml-1">5.0</span>
-                                    </div>
-                                </div>
-                                <p class="text-gray-700 my-3">Your trusted partner for life and health insurance. Protecting what matters most.</p>
-                                <div class="flex flex-wrap gap-2 mb-4">
-                                    <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">IRDAI Licensed</span>
-                                    <span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">SMEs</span>
-                                </div>
-                                <a href="#" class="font-semibold text-blue-800 hover:underline">View Profile <i class="fas fa-arrow-right ml-1"></i></a>
-                            </div>
-                        </div>
-                         <!-- More cards... -->
+                <div id="listings-container" class="grid grid-cols-1 gap-6">
                     </div>
-                    <!-- Pagination -->
-                    <div class="mt-8 flex justify-center items-center space-x-2">
-                        <a href="#" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">Previous</a>
-                        <a href="#" class="px-4 py-2 bg-blue-900 text-white border border-blue-900 rounded-lg">1</a>
-                        <a href="#" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">2</a>
-                        <a href="#" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">3</a>
-                        <span>...</span>
-                        <a href="#" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">10</a>
-                        <a href="#" class="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">Next</a>
-                    </div>
-                </div>
-
-                <!-- Map View -->
-                <div x-show="view === 'map'" x-cloak>
-                    <div id="map" class="w-full h-[600px] rounded-lg shadow-md" x-init="
-                        setTimeout(() => {
-                            const map = L.map('map').setView([19.0760, 72.8777], 12);
-                            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                                maxZoom: 19,
-                                attribution: '© OpenStreetMap'
-                            }).addTo(map);
-
-                            const locations = [
-                                { lat: 19.0760, lng: 72.8777, name: 'Aditya Finance', rating: 4.8 },
-                                { lat: 19.1197, lng: 72.8464, name: 'Mumbai Wealth', rating: 4.5 },
-                                { lat: 19.0213, lng: 72.8424, name: 'Dadar Investments', rating: 4.9 }
-                            ];
-
-                            locations.forEach(loc => {
-                                L.marker([loc.lat, loc.lng]).addTo(map)
-                                    .bindPopup(`<b>${loc.name}</b><br>Rating: ${loc.rating} ★`);
-                            });
-                        }, 100);
-                    ">
-                    </div>
-                </div>
-
-            </section>
+                </section>
         </div>
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-blue-900 text-white mt-16">
-        <div class="container mx-auto px-6 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- About -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">InvestSherpa.in</h3>
-                    <p class="text-blue-200">Your guide to finding the most trusted financial and insurance advisors in India. Making financial decisions simple and secure.</p>
-                </div>
-                <!-- Quick Links -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-blue-200 hover:text-white">About Us</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">Blog</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">List Your Business</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">Contact Us</a></li>
-                    </ul>
-                </div>
-                <!-- Legal -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Legal</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-blue-200 hover:text-white">Privacy Policy</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">Terms of Service</a></li>
-                        <li><a href="#" class="text-blue-200 hover:text-white">Disclaimer</a></li>
-                    </ul>
-                </div>
-                <!-- Social -->
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Connect With Us</h3>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-facebook"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-twitter"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-linkedin"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white text-2xl"><i class="fab fa-instagram"></i></a>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-12 border-t border-blue-800 pt-6 text-center text-blue-300">
-                <p>&copy; 2024 InvestSherpa.in. All Rights Reserved.</p>
-            </div>
-        </div>
-    </footer>
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        const listingsContainer = document.getElementById('listings-container');
+        const resultsCountEl = document.getElementById('results-count');
+        const searchInput = document.getElementById('search-input');
+        const applyFiltersBtn = document.getElementById('apply-filters-btn');
+
+        // --- FETCH AND DISPLAY LISTINGS ---
+        async function displayListings() {
+            listingsContainer.innerHTML = '<p>Loading...</p>';
+            
+            let query = supabase
+                .from('professional_profiles')
+                .select(`
+                    id,
+                    business_name,
+                    city,
+                    state,
+                    tagline,
+                    professional_categories(categories(name))
+                `, { count: 'exact' })
+                .eq('status', 'approved');
+
+            // --- Apply Search Filter ---
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                query = query.ilike('business_name', `%${searchTerm}%`);
+            }
+            
+            const { data, error, count } = await query;
+
+            if (error) {
+                console.error('Error fetching listings:', error);
+                listingsContainer.innerHTML = '<p class="text-red-500">Could not load listings.</p>';
+                return;
+            }
+
+            resultsCountEl.textContent = `Showing ${count} Results`;
+            listingsContainer.innerHTML = '';
+
+            if (data.length === 0) {
+                listingsContainer.innerHTML = '<p>No advisors found matching your criteria.</p>';
+            }
+
+            data.forEach(listing => {
+                const categories = listing.professional_categories.map(pc => pc.categories.name).join(', ');
+
+                const card = `
+                    <div class="card bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row">
+                        <div class="p-6 flex-grow">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="text-xl font-bold text-blue-900">${listing.business_name}</h3>
+                                    <p class="text-gray-600 mb-2"><i class="fas fa-map-marker-alt mr-2"></i>${listing.city}, ${listing.state}</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 my-3">${listing.tagline || 'Expert financial and insurance advice.'}</p>
+                            <div class="flex flex-wrap gap-2 mb-4">
+                                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${categories}</span>
+                            </div>
+                            <a href="listingdetail.html?id=${listing.id}" class="font-semibold text-blue-800 hover:underline">View Profile <i class="fas fa-arrow-right ml-1"></i></a>
+                        </div>
+                    </div>`;
+                listingsContainer.innerHTML += card;
+            });
+        }
+
+        // --- POPULATE FILTER CATEGORIES ---
+        async function populateCategories() {
+            const { data, error } = await supabase.from('categories').select('id, name');
+            if (error) return;
+
+            const container = document.getElementById('filter-categories');
+            container.innerHTML = '';
+            data.forEach(cat => {
+                const item = `<label class="flex items-center"><input type="checkbox" data-cat-id="${cat.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 mr-2"> ${cat.name}</label>`;
+                container.innerHTML += item;
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const query = urlParams.get('q');
+            if (query) {
+                searchInput.value = query;
+            }
+            
+            displayListings();
+            populateCategories();
+            
+            applyFiltersBtn.addEventListener('click', displayListings);
+        });
+
+    </script>
 </body>
 </html>
