@@ -178,8 +178,9 @@
         </div>
     </main>
 
-    <script>
+<script>
         document.addEventListener('DOMContentLoaded', function() {
+            // --- State dropdown population (no changes) ---
             const states = [ "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry" ];
             const stateSelect = document.getElementById('state-select');
             if (stateSelect) {
@@ -191,6 +192,7 @@
                 });
             }
 
+            // --- Supabase client setup (no changes) ---
             const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
             const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
             const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -216,123 +218,61 @@
                     showMessage(loginMessageBox, error.message);
                 } else {
                     showMessage(loginMessageBox, 'Login successful! Redirecting...', 'success');
-                    console.log('Logged in user:', data.user);
                     // You would typically redirect the user here, e.g., window.location.href = '/dashboard.html';
                 }
             });
 
-            // --- REVISED SIGNUP FORM LOGIC ---
+            // --- REVISED AND SIMPLIFIED SIGNUP FORM LOGIC ---
             const signupForm = document.getElementById('signup-form');
             const signupButton = document.getElementById('signup-button');
 
             signupForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 
-                // --- UI updates for loading state ---
                 signupButton.disabled = true;
                 signupButton.querySelector('.button-text').classList.add('hidden');
                 signupButton.querySelector('.button-loader').classList.remove('hidden');
-                showMessage(signupMessageBox, '', 'success'); // Clear previous messages
+                showMessage(signupMessageBox, '', 'success');
 
                 const formData = new FormData(signupForm);
                 const email = formData.get('email');
                 const password = formData.get('password');
                 const role = formData.get('role');
 
-                // === STEP 1: Sign up the user (Auth only) ===
-                const { data: signUpData, error: signUpError } = await supabase.auth.signUp({ email, password });
-
-                if (signUpError) {
-                    showMessage(signupMessageBox, `Auth error: ${signUpError.message}`);
-                    signupButton.disabled = false;
-                    signupButton.querySelector('.button-text').classList.remove('hidden');
-                    signupButton.querySelector('.button-loader').classList.add('hidden');
-                    return;
-                }
+                // Step 1: Gather all form data into a metadata object
+                const userMetadata = {
+                    role: role,
+                    full_name: formData.get('full_name'),
+                    phone: formData.get('phone'),
+                    city: formData.get('city'),
+                    state: formData.get('state'),
+                    pincode: formData.get('pincode'),
+                };
                 
-                if (!signUpData.user) {
-                     showMessage(signupMessageBox, 'Sign up succeeded, but no user data was returned. Please try logging in.');
-                     signupButton.disabled = false;
-                     // ... reset button UI
-                     return;
+                // Add professional info only if the role is 'professional'
+                if (role === 'professional') {
+                    userMetadata.company_name = formData.get('company_name');
+                    userMetadata.professional_type = formData.get('professional_type');
                 }
 
-                // === STEP 2: Get a session. If email confirmation is on, the session will be null.
-                // In that case, we sign in to create a session for the subsequent database operations.
-                let { data: { session } } = await supabase.auth.getSession();
-                
-                if (!session) {
-                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                        email,
-                        password,
-                    });
-
-                    if (signInError) {
-                        showMessage(signupMessageBox, `Could not log in after sign up: ${signInError.message}`);
-                        // ... reset button UI
-                        return;
+                // Step 2: Call signUp and pass the form data in the 'options.data' field.
+                // Supabase will store this data temporarily with the new user account.
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: userMetadata
                     }
-                    session = signInData.session;
-                }
+                });
 
-                if (!session) {
-                    showMessage(signupMessageBox, 'Could not obtain a session after sign-up. Please try logging in manually.');
-                    // ... reset button UI
-                    return;
-                }
-
-                // === STEP 3: Now that we are authenticated, insert profiles ===
-                let allSucceeded = true;
-                
-                // Insert into the main user_profiles table for ALL users
-                const { error: profileError } = await supabase
-                    .from('user_profiles')
-                    .insert([{
-                        id: session.user.id,
-                        email: email,
-                        full_name: formData.get('full_name'),
-                        phone: formData.get('phone'),
-                        city: formData.get('city'),
-                        state: formData.get('state'),
-                        pincode: formData.get('pincode'),
-                        role: role
-                    }]);
-
-                if (profileError) {
-                    allSucceeded = false;
-                    console.error('Supabase User Profile Error:', profileError);
-                    showMessage(signupMessageBox, `User account created, but could not save profile: ${profileError.message}`);
-                }
-                
-                // If the user is a professional, also insert into professional_profiles
-                if (allSucceeded && role === 'professional') {
-                    const { error: profProfileError } = await supabase
-                        .from('professional_profiles')
-                        .insert([{
-                            user_id: session.user.id,
-                            company_name: formData.get('company_name'),
-                            professional_type: formData.get('professional_type'),
-                            status: 'pending' // Default status
-                        }]);
-                    
-                    if (profProfileError) {
-                        allSucceeded = false;
-                        console.error('Supabase Professional Profile Error:', profProfileError);
-                        showMessage(signupMessageBox, `User profile created, but professional details failed: ${profProfileError.message}`);
-                    }
-                }
-                
-                // === STEP 4: Final success message ===
-                if (allSucceeded) {
-                    // Message might depend on whether email confirmation is enabled in Supabase
-                    const successMessage = signUpData.user.identities && signUpData.user.identities.length > 0
-                        ? 'Sign up successful! Please check your email to verify your account.'
-                        : 'Sign up and profile creation successful!';
-                    showMessage(signupMessageBox, successMessage, 'success');
+                if (error) {
+                    showMessage(signupMessageBox, error.message);
+                } else {
+                    showMessage(signupMessageBox, 'Sign up successful! Please check your email to verify your account.', 'success');
                     signupForm.reset();
                 }
                 
-                // --- Reset button UI ---
+                // Re-enable the button
                 signupButton.disabled = false;
                 signupButton.querySelector('.button-text').classList.remove('hidden');
                 signupButton.querySelector('.button-loader').classList.add('hidden');
