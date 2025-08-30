@@ -1,155 +1,150 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up - InvestSherpa.in</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
-        .btn-primary:hover { background-color: #1c347d; }
-        .btn-primary:disabled { background-color: #6b7280; cursor: not-allowed; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Professional Sign‑up</title>
+  <style>
+    body {font-family:Arial,sans-serif; max-width:480px; margin:auto; padding:2rem;}
+    .field {margin-bottom:1rem;}
+    label {display:block; margin-bottom:.25rem;}
+    input, select {width:100%; padding:.5rem; border:1px solid #ccc; border-radius:4px;}
+    button {padding:.75rem 1.5rem; background:#0069ff; color:#fff; border:none; border-radius:4px; cursor:pointer;}
+    .msg {margin-top:1rem; padding:.75rem; border-radius:4px;}
+    .error {background:#fdd; color:#900;}
+    .success {background:#dfd; color:#060;}
+  </style>
+  <!-- Load Supabase JS client (you can replace the CDN with a local bundle) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/index.min.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body>
 
-    <header class="bg-white shadow-sm">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="#" class="flex items-center space-x-2">
-                <div class="p-2 bg-blue-900 rounded-lg"><i class="fas fa-shield-alt text-white text-xl"></i></div>
-                <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
-            </a>
-        </div>
-    </header>
+<h2>Professional Sign‑up</h2>
 
-    <main class="container mx-auto px-6 py-12 flex justify-center">
-        <div class="max-w-xl w-full bg-white p-8 rounded-lg shadow-xl">
-            <h2 class="text-3xl font-bold text-blue-900 mb-2 text-center">Create Your Account</h2>
-            <p class="text-gray-600 mb-8 text-center">Join our community of users and professionals.</p>
-            
-            <form class="space-y-6" id="signup-form">
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="full_name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                        <input type="text" id="full_name" name="full_name" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                        <input type="tel" id="phone" name="phone" class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                </div>
+<form id="signup-form">
+  <div class="field">
+    <label for="email">Email</label>
+    <input type="email" id="email" required />
+  </div>
 
-                <div>
-                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                    <input type="email" id="email" name="email" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <input type="password" id="password" required />
+  </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                        <input type="password" id="password" name="password" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                    <div>
-                        <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
-                        <input type="password" id="confirm_password" name="confirm_password" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                    </div>
-                </div>
+  <!-- Required fields for professional_profiles -->
+  <div class="field">
+    <label for="business_name">Business name</label>
+    <input type="text" id="business_name" required />
+  </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                     <div>
-                        <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
-                        <input type="text" id="city" name="city" class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                     <div>
-                        <label for="state" class="block text-sm font-medium text-gray-700 mb-1">State</label>
-                        <input type="text" id="state" name="state" class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                     <div>
-                        <label for="pincode" class="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
-                        <input type="text" id="pincode" name="pincode" class="w-full p-3 border border-gray-300 rounded-lg">
-                    </div>
-                </div>
+  <div class="field">
+    <label for="professional_type">Professional type</label>
+    <select id="professional_type" required>
+      <option value="">Select …</option>
+      <option value="financial_advisor">Financial Advisor</option>
+      <option value="insurance_broker">Insurance Broker</option>
+      <option value="investment_firm">Investment Firm</option>
+      <option value="tax_consultant">Tax Consultant</option>
+      <option value="other">Other</option>
+    </select>
+  </div>
 
-                <div>
-                    <label for="role" class="block text-sm font-medium text-gray-700 mb-1">I am a...</label>
-                    <select id="role" name="role" class="w-full p-3 border border-gray-300 rounded-lg" required>
-                        <option value="end_user">General User (Looking for advice)</option>
-                        <option value="professional_user">Professional (Want to be listed)</option>
-                    </select>
-                </div>
+  <button type="submit">Sign up</button>
+</form>
 
-                <div class="pt-4">
-                    <button type="submit" id="submit-button" class="btn-primary w-full font-bold py-3 px-10 rounded-lg shadow-md">
-                        Create Account
-                    </button>
-                </div>
-            </form>
-        </div>
-    </main>
+<div id="msg" class="msg" style="display:none;"></div>
 
-    <script>
-        // Initialize the Supabase Client with your project details
-        const supabaseUrl = 'https://tapnnlkokcbzckbbdxez.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRhcG5ubGtva2NiemNrYmJkeGV6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM1Mzc4NDEsImV4cCI6MjA2OTExMzg0MX0.ks3HUfeA-KNJmsgKNhb5xYlv-VXkZkRJC-3EG6D6R-w';
-        const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+<script>
+// ------------------------------------------------------------------
+// 1️⃣  Initialise Supabase client – replace with your own keys
+// ------------------------------------------------------------------
+const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co'; // <-- your project URL
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';               // <-- anon key
 
-        const signUpForm = document.getElementById('signup-form');
-        const submitButton = document.getElementById('submit-button');
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        signUpForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
+// ------------------------------------------------------------------
+// 2️⃣  Helper to show status messages
+// ------------------------------------------------------------------
+function showMessage(text, type = 'error') {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = `msg ${type}`;
+  el.style.display = 'block';
+}
 
-            // Basic validation: Check if passwords match
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirm_password').value;
-            if (password !== confirmPassword) {
-                alert('Passwords do not match.');
-                return; // Stop the function
-            }
-            
-            submitButton.disabled = true;
-            submitButton.textContent = 'Creating Account...';
+// ------------------------------------------------------------------
+// 3️⃣  Main sign‑up flow
+// ------------------------------------------------------------------
+document.getElementById('signup-form').addEventListener('submit', async (e) => {
+  e.preventDefault();          // stop normal form submit
+  showMessage('', '');         // clear previous messages
 
-            try {
-                const formData = new FormData(signUpForm);
-                const email = formData.get('email');
+  // ---- gather inputs -------------------------------------------------
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const businessName = document.getElementById('business_name').value.trim();
+  const professionalType = document.getElementById('professional_type').value;
 
-                // The options.data object is where you pass the extra information.
-                // The SQL trigger you created will read from this data.
-                const { data, error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: {
-                            full_name: formData.get('full_name'),
-                            phone: formData.get('phone'),
-                            role: formData.get('role'),
-                            city: formData.get('city'),
-                            state: formData.get('state'),
-                            pincode: formData.get('pincode')
-                        }
-                    }
-                });
+  // ---- 1️⃣  Sign‑up user (Auth only) --------------------------------
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      // optional: you can set a redirect URL after email confirmation
+      // emailRedirectTo: 'https://your-site.com/after-confirm'
+    }
+  });
 
-                if (error) throw error;
-                
-                // Success!
-                alert('Account created successfully! Please check your email to confirm your registration.');
-                signUpForm.reset();
+  if (signUpError) {
+    // Auth failed – show the error returned by Supabase
+    showMessage(`Auth error: ${signUpError.message}`, 'error');
+    return;
+  }
 
-            } catch (error) {
-                console.error('Error during sign up:', error.message);
-                alert(`Sign up failed: ${error.message}`);
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Create Account';
-            }
-        });
-    </script>
-    <script src="https://cdn.tailwindcss.com"></script>
+  // ---- 2️⃣  Wait for the session to be established -------------------
+  // In most browsers the session is available immediately after signUp.
+  // However, break out if the user is still not logged in.
+  const {
+    data: { session },
+    error: sessionError,
+  } = await supabase.auth.getSession();
+
+  if (sessionError || !session) {
+    showMessage('Could not obtain a session after sign‑up.', 'error');
+    return;
+  }
+
+  // ------------------------------------------------------------------
+  // 3️⃣  Insert the professional profile using the **authenticated**
+  //     client (it has the JWT for auth.uid()).
+  // ------------------------------------------------------------------
+  const { data: profile, error: profileError } = await supabase
+    .from('professional_profiles')
+    .insert([
+      {
+        // user_id will be filled by the trigger `set_professional_user_id`
+        business_name: businessName,
+        professional_type: professionalType,
+        // any other optional columns you want to set can go here
+        // e.g. city: 'Delhi', status: 'pending'
+      },
+    ]);
+
+  if (profileError) {
+    // Something went wrong inserting the profile – show the DB error message
+    showMessage(`Profile insert error: ${profileError.message}`, 'error');
+    return;
+  }
+
+  // ------------------------------------------------------------------
+  // 4️⃣  Success 🎉
+  // ------------------------------------------------------------------
+  showMessage('✅ Signed up successfully! Your professional profile was created.', 'success');
+
+  // (optional) redirect the user to a dashboard
+  // window.location.href = '/dashboard';
+});
+</script>
 </body>
 </html>
