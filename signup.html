@@ -13,8 +13,6 @@
     .error   {background:#fdd; color:#900;}
     .success {background:#dfd; color:#060;}
   </style>
-  <!-- Supabase JS client (CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/index.min.js"></script>
 </head>
 
 <body>
@@ -31,7 +29,6 @@
     <input type="password" id="password" required />
   </div>
 
-  <!-- Required columns for professional_profiles -->
   <div class="field">
     <label for="business_name">Business name</label>
     <input type="text" id="business_name" required />
@@ -54,98 +51,103 @@
 
 <div id="msg" class="msg"></div>
 
-<script>
-/* -------------------------------------------------------------
-   1️⃣ Initialise Supabase client – **different variable name**
-   ------------------------------------------------------------- */
-const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co'; // ← your project URL
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';               // ← anon public key
+<!-- -------------------------------------------------------------
+     1️⃣ Load Supabase client as an ES‑module.
+     ------------------------------------------------------------- -->
+<script type="module">
+  // Import the client‑factory from a CDN that serves ES modules
+  import { createClient } from "https://esm.run/@supabase/supabase-js@2.44.4";
 
-// The CDN exposes a global `supabase` object with `createClient`
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // -------------------------------------------------------------
+  // 2️⃣ Initialise the client (use a different variable name)
+  // -------------------------------------------------------------
+  const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co'; // ← your project URL
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';               // ← anon public key
 
-/* -------------------------------------------------------------
-   2️⃣ Helper to display status messages
-   ------------------------------------------------------------- */
-function showMessage(text, type = 'error') {
-  const el = document.getElementById('msg');
-  el.textContent = text;
-  el.className = `msg ${type}`;
-  el.style.display = text ? 'block' : 'none';
-}
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-/* -------------------------------------------------------------
-   3️⃣ Main flow – sign‑up → (optional) sign‑in → insert profile
-   ------------------------------------------------------------- */
-document.getElementById('signup-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  showMessage('');               // clear old messages
-
-  // ---- collect form values --------------------------------------
-  const email            = document.getElementById('email').value.trim();
-  const password         = document.getElementById('password').value;
-  const businessName     = document.getElementById('business_name').value.trim();
-  const professionalType = document.getElementById('professional_type').value;
-
-  // ---- 1️⃣ Sign‑up (Auth only) ----------------------------------
-  const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
-    email,
-    password,
-    options: {
-      // If you keep email‑confirmation enabled you can set a redirect URL:
-      // emailRedirectTo: 'https://your‑site.com/after‑confirm'
-    }
-  });
-
-  if (signUpError) {
-    showMessage(`Auth error: ${signUpError.message}`, 'error');
-    return;
+  // -------------------------------------------------------------
+  // 3️⃣ Helper to display status messages
+  // -------------------------------------------------------------
+  function showMessage(text, type = 'error') {
+    const el = document.getElementById('msg');
+    el.textContent = text;
+    el.className = `msg ${type}`;
+    el.style.display = text ? 'block' : 'none';
   }
 
-  // ---- 2️⃣ Get a session (may be null if email‑confirmation is on) ----
-  let { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+  // -------------------------------------------------------------
+  // 4️⃣ Main flow – sign‑up → (optional) sign‑in → insert profile
+  // -------------------------------------------------------------
+  document.getElementById('signup-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    showMessage(''); // clear previous messages
 
-  // If there is still no session, sign‑in with the same credentials
-  if (!session) {
-    const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
+    // ---- gather form data -----------------------------------------
+    const email            = document.getElementById('email').value.trim();
+    const password         = document.getElementById('password').value;
+    const businessName     = document.getElementById('business_name').value.trim();
+    const professionalType = document.getElementById('professional_type').value;
+
+    // ---- 1️⃣ Sign‑up (Auth only) ------------------------------------
+    const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
       email,
       password,
+      options: {
+        // If you keep email‑confirmation enabled you can optionally set a redirect:
+        // emailRedirectTo: 'https://your‑site.com/after‑confirm'
+      }
     });
 
-    if (signInError) {
-      showMessage(`Sign‑in error: ${signInError.message}`, 'error');
+    if (signUpError) {
+      showMessage(`Auth error: ${signUpError.message}`, 'error');
       return;
     }
-    session = signInData.session;
-  }
 
-  if (!session) {
-    showMessage('Could not obtain a session after sign‑up/in.', 'error');
-    return;
-  }
+    // ---- 2️⃣ Get a session (may be null if email‑confirmation is on) ----
+    let { data: { session } } = await supabaseClient.auth.getSession();
 
-  // ---- 3️⃣ Insert professional profile (authenticated request) ---
-  const { data: profile, error: profileError } = await supabaseClient
-    .from('professional_profiles')
-    .insert([{
-      // `user_id` is auto‑filled by the trigger `set_professional_user_id`
-      business_name: businessName,
-      professional_type: professionalType,
-      // any other optional columns can be added here
-    }]);
+    // If still no session, sign‑in with the same credentials.
+    if (!session) {
+      const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-  if (profileError) {
-    // Shows exact Postgres constraint errors (e.g., NOT NULL violations)
-    showMessage(`Profile insert error: ${profileError.message}`, 'error');
-    return;
-  }
+      if (signInError) {
+        showMessage(`Sign‑in error: ${signInError.message}`, 'error');
+        return;
+      }
+      session = signInData.session;
+    }
 
-  // ---- 4️⃣ Success ------------------------------------------------
-  showMessage('✅ Signed up and professional profile created!', 'success');
+    if (!session) {
+      showMessage('Could not obtain a session after sign‑up/in.', 'error');
+      return;
+    }
 
-  // (optional) redirect to a protected page:
-  // window.location.href = '/dashboard';
-});
+    // ---- 3️⃣ Insert professional profile (authenticated request) ---
+    const { data: profile, error: profileError } = await supabaseClient
+      .from('professional_profiles')
+      .insert([{
+        // `user_id` is filled automatically by the trigger `set_professional_user_id`
+        business_name: businessName,
+        professional_type: professionalType,
+        // add any optional columns here
+      }]);
+
+    if (profileError) {
+      // Shows exact Postgres constraint errors (e.g., NOT NULL violations)
+      showMessage(`Profile insert error: ${profileError.message}`, 'error');
+      return;
+    }
+
+    // ---- 4️⃣ Success ------------------------------------------------
+    showMessage('✅ Signed up and professional profile created!', 'success');
+
+    // (optional) redirect to a protected page:
+    // window.location.href = '/dashboard';
+  });
 </script>
 </body>
 </html>
