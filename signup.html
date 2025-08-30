@@ -7,17 +7,17 @@
     body {font-family:Arial,sans-serif; max-width:480px; margin:auto; padding:2rem;}
     .field {margin-bottom:1rem;}
     label {display:block; margin-bottom:.25rem;}
-    input, select {width:100%; padding:.5rem; border:1px solid #ccc; border-radius:4px;}
+    input,select {width:100%; padding:.5rem; border:1px solid #ccc; border-radius:4px;}
     button {padding:.75rem 1.5rem; background:#0069ff; color:#fff; border:none; border-radius:4px; cursor:pointer;}
-    .msg {margin-top:1rem; padding:.75rem; border-radius:4px;}
-    .error {background:#fdd; color:#900;}
+    .msg {margin-top:1rem; padding:.75rem; border-radius:4px; display:none;}
+    .error   {background:#fdd; color:#900;}
     .success {background:#dfd; color:#060;}
   </style>
-  <!-- Load Supabase JS client (you can replace the CDN with a local bundle) -->
+  <!-- Supabase JS client (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.44.4/dist/umd/index.min.js"></script>
 </head>
-<body>
 
+<body>
 <h2>Professional Sign‑up</h2>
 
 <form id="signup-form">
@@ -31,7 +31,7 @@
     <input type="password" id="password" required />
   </div>
 
-  <!-- Required fields for professional_profiles -->
+  <!-- Required columns for professional_profiles -->
   <div class="field">
     <label for="business_name">Business name</label>
     <input type="text" id="business_name" required />
@@ -52,97 +52,98 @@
   <button type="submit">Sign up</button>
 </form>
 
-<div id="msg" class="msg" style="display:none;"></div>
+<div id="msg" class="msg"></div>
 
 <script>
-// ------------------------------------------------------------------
-// 1️⃣  Initialise Supabase client – replace with your own keys
-// ------------------------------------------------------------------
-const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co'; // <-- your project URL
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';               // <-- anon key
+/* -------------------------------------------------------------
+   1️⃣ Initialise Supabase client – **different variable name**
+   ------------------------------------------------------------- */
+const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co'; // ← your project URL
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';               // ← anon public key
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// The CDN exposes a global `supabase` object with `createClient`
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ------------------------------------------------------------------
-// 2️⃣  Helper to show status messages
-// ------------------------------------------------------------------
+/* -------------------------------------------------------------
+   2️⃣ Helper to display status messages
+   ------------------------------------------------------------- */
 function showMessage(text, type = 'error') {
   const el = document.getElementById('msg');
   el.textContent = text;
   el.className = `msg ${type}`;
-  el.style.display = 'block';
+  el.style.display = text ? 'block' : 'none';
 }
 
-// ------------------------------------------------------------------
-// 3️⃣  Main sign‑up flow
-// ------------------------------------------------------------------
+/* -------------------------------------------------------------
+   3️⃣ Main flow – sign‑up → (optional) sign‑in → insert profile
+   ------------------------------------------------------------- */
 document.getElementById('signup-form').addEventListener('submit', async (e) => {
-  e.preventDefault();          // stop normal form submit
-  showMessage('', '');         // clear previous messages
+  e.preventDefault();
+  showMessage('');               // clear old messages
 
-  // ---- gather inputs -------------------------------------------------
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const businessName = document.getElementById('business_name').value.trim();
+  // ---- collect form values --------------------------------------
+  const email            = document.getElementById('email').value.trim();
+  const password         = document.getElementById('password').value;
+  const businessName     = document.getElementById('business_name').value.trim();
   const professionalType = document.getElementById('professional_type').value;
 
-  // ---- 1️⃣  Sign‑up user (Auth only) --------------------------------
-  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+  // ---- 1️⃣ Sign‑up (Auth only) ----------------------------------
+  const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
     email,
     password,
     options: {
-      // optional: you can set a redirect URL after email confirmation
-      // emailRedirectTo: 'https://your-site.com/after-confirm'
+      // If you keep email‑confirmation enabled you can set a redirect URL:
+      // emailRedirectTo: 'https://your‑site.com/after‑confirm'
     }
   });
 
   if (signUpError) {
-    // Auth failed – show the error returned by Supabase
     showMessage(`Auth error: ${signUpError.message}`, 'error');
     return;
   }
 
-  // ---- 2️⃣  Wait for the session to be established -------------------
-  // In most browsers the session is available immediately after signUp.
-  // However, break out if the user is still not logged in.
-  const {
-    data: { session },
-    error: sessionError,
-  } = await supabase.auth.getSession();
+  // ---- 2️⃣ Get a session (may be null if email‑confirmation is on) ----
+  let { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
 
-  if (sessionError || !session) {
-    showMessage('Could not obtain a session after sign‑up.', 'error');
+  // If there is still no session, sign‑in with the same credentials
+  if (!session) {
+    const { data: signInData, error: signInError } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      showMessage(`Sign‑in error: ${signInError.message}`, 'error');
+      return;
+    }
+    session = signInData.session;
+  }
+
+  if (!session) {
+    showMessage('Could not obtain a session after sign‑up/in.', 'error');
     return;
   }
 
-  // ------------------------------------------------------------------
-  // 3️⃣  Insert the professional profile using the **authenticated**
-  //     client (it has the JWT for auth.uid()).
-  // ------------------------------------------------------------------
-  const { data: profile, error: profileError } = await supabase
+  // ---- 3️⃣ Insert professional profile (authenticated request) ---
+  const { data: profile, error: profileError } = await supabaseClient
     .from('professional_profiles')
-    .insert([
-      {
-        // user_id will be filled by the trigger `set_professional_user_id`
-        business_name: businessName,
-        professional_type: professionalType,
-        // any other optional columns you want to set can go here
-        // e.g. city: 'Delhi', status: 'pending'
-      },
-    ]);
+    .insert([{
+      // `user_id` is auto‑filled by the trigger `set_professional_user_id`
+      business_name: businessName,
+      professional_type: professionalType,
+      // any other optional columns can be added here
+    }]);
 
   if (profileError) {
-    // Something went wrong inserting the profile – show the DB error message
+    // Shows exact Postgres constraint errors (e.g., NOT NULL violations)
     showMessage(`Profile insert error: ${profileError.message}`, 'error');
     return;
   }
 
-  // ------------------------------------------------------------------
-  // 4️⃣  Success 🎉
-  // ------------------------------------------------------------------
-  showMessage('✅ Signed up successfully! Your professional profile was created.', 'success');
+  // ---- 4️⃣ Success ------------------------------------------------
+  showMessage('✅ Signed up and professional profile created!', 'success');
 
-  // (optional) redirect the user to a dashboard
+  // (optional) redirect to a protected page:
   // window.location.href = '/dashboard';
 });
 </script>
