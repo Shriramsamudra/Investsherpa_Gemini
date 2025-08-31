@@ -7,17 +7,33 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- The Supabase script is loaded in the body -->
     <style>
         body { font-family: 'Inter', sans-serif; }
         .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
         .btn-primary:hover { background-color: #1c347d; }
+        /* Style for loading spinner */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1e3a8a;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
-        </header>
+        <!-- Navigation can be added here -->
+    </header>
 
     <main class="container mx-auto px-6 py-12">
         <section id="submission-form" class="py-16">
@@ -27,48 +43,67 @@
                 <p class="text-gray-600 mb-8">Please provide the following details to create your listing.</p>
                 
                 <form id="listing-form" class="space-y-8">
+                    <!-- Step 1: Basic Information -->
                     <fieldset class="border-t-2 border-blue-200 pt-6">
                         <legend class="text-xl font-bold text-blue-900 px-4">Step 1: Basic Information</legend>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <div>
                                 <label for="business-name" class="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
-                                <input type="text" id="business-name" name="business_name" required class="w-full p-3 border">
+                                <input type="text" id="business-name" name="business_name" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
                                 <label for="tagline" class="block text-sm font-medium text-gray-700 mb-1">Tagline / Slogan</label>
-                                <input type="text" id="tagline" name="tagline" class="w-full p-3 border">
+                                <input type="text" id="tagline" name="tagline" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             </div>
                         </div>
                     </fieldset>
 
+                    <!-- Step 2: About & Services -->
                     <fieldset class="border-t-2 border-blue-200 pt-6">
                         <legend class="text-xl font-bold text-blue-900 px-4">Step 2: About & Services</legend>
                         <div class="mt-4 space-y-6">
                             <div>
                                 <label for="about" class="block text-sm font-medium text-gray-700 mb-1">About Your Business</label>
-                                <textarea id="about" name="about" rows="5" class="w-full p-3 border"></textarea>
+                                <textarea id="about" name="about" rows="5" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></textarea>
                             </div>
                              <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Services Offered * (Select at least one)</label>
                                 <div id="services-checkboxes" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    </div>
+                                    <!-- Checkboxes will be dynamically loaded here -->
+                                    <p class="text-gray-500">Loading services...</p>
+                                </div>
                             </div>
                         </div>
                     </fieldset>
 
+                    <!-- Step 3: Contact & Location -->
                     <fieldset class="border-t-2 border-blue-200 pt-6">
                          <legend class="text-xl font-bold text-blue-900 px-4">Step 3: Contact & Location</legend>
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                            <input type="email" name="email" placeholder="Business Email Address *" required class="w-full p-3 border">
-                            <input type="tel" name="phone" placeholder="Business Phone Number *" required class="w-full p-3 border">
-                            <input type="url" name="website_url" placeholder="Website URL (https://...)" class="w-full p-3 border md:col-span-2">
-                            <textarea name="address" placeholder="Full Business Address *" required rows="3" class="w-full p-3 border md:col-span-2"></textarea>
+                            <!-- ERROR FIX: Added IDs to these inputs to correctly capture their values -->
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Business Email Address *</label>
+                                <input type="email" id="email" name="email" placeholder="you@example.com" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div>
+                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Business Phone Number *</label>
+                                <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="website_url" class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
+                                <input type="url" id="website_url" name="website_url" placeholder="https://your-business.com" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Full Business Address *</label>
+                                <textarea id="address" name="address" required rows="3" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            </div>
                          </div>
                     </fieldset>
                     
                     <div class="border-t-2 border-blue-200 pt-6 text-center">
-                        <button type="submit" class="btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
-                            Submit for Approval
+                        <button type="submit" id="submit-button" class="btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md inline-flex items-center justify-center">
+                            <span id="submit-button-text">Submit for Approval</span>
+                            <span id="submit-spinner" class="hidden loader"></span>
                         </button>
                     </div>
                 </form>
@@ -77,118 +112,151 @@
     </main>
     
     <script type="module">
+        // Using Supabase ESM module
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        
+        // Supabase credentials
         const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Form elements
         const form = document.getElementById('listing-form');
         const messageEl = document.getElementById('form-message');
         const servicesContainer = document.getElementById('services-checkboxes');
+        const submitButton = document.getElementById('submit-button');
+        const submitButtonText = document.getElementById('submit-button-text');
+        const submitSpinner = document.getElementById('submit-spinner');
         
         let currentUser = null;
 
-        // --- CHECK USER SESSION AND ROLE ---
-        async function checkSession() {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) {
-                window.location.href = 'login.html'; // Redirect if not logged in
-                return;
-            }
-            // You might add a check here to ensure the user has the 'professional' role
-            currentUser = user;
-        }
-
         // --- LOAD CATEGORIES FOR CHECKBOXES ---
         async function loadCategories() {
-            const { data, error } = await supabase.from('categories').select('id, name');
-            if (error) {
-                console.error("Could not load categories");
-                return;
+            try {
+                const { data, error } = await supabase.from('categories').select('id, name');
+                if (error) throw error;
+
+                servicesContainer.innerHTML = ''; // Clear loading message
+                data.forEach(cat => {
+                    const checkboxHTML = `
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" name="categories" value="${cat.id}" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="text-gray-700">${cat.name}</span>
+                        </label>`;
+                    servicesContainer.insertAdjacentHTML('beforeend', checkboxHTML);
+                });
+            } catch (error) {
+                 servicesContainer.innerHTML = '<p class="text-red-500">Could not load service categories.</p>';
+                 console.error("Error loading categories:", error);
             }
-            servicesContainer.innerHTML = '';
-            data.forEach(cat => {
-                const checkbox = `
-                    <label class="flex items-center space-x-2">
-                        <input type="checkbox" name="categories" value="${cat.id}" class="h-4 w-4">
-                        <span>${cat.name}</span>
-                    </label>`;
-                servicesContainer.innerHTML += checkbox;
-            });
         }
         
         // --- HANDLE FORM SUBMISSION ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) {
-                alert("You must be logged in to submit a listing.");
+                showMessage("Authentication error. Please refresh and log in.", 'error');
                 return;
             }
 
+            // Disable button and show spinner
+            setLoading(true);
+
             const formData = new FormData(form);
-            const formProps = Object.fromEntries(formData);
             
             // 1. Get selected category IDs
-            const selectedCategoryIds = Array.from(formData.getAll('categories')).map(id => parseInt(id));
+            const selectedCategoryIds = formData.getAll('categories').map(id => parseInt(id));
             if (selectedCategoryIds.length === 0) {
                 showMessage("Please select at least one service category.", 'error');
+                setLoading(false);
                 return;
             }
 
             // 2. Insert into professional_profiles table
-            const { data: newProfile, error: profileError } = await supabase
-                .from('professional_profiles')
-                .insert({
-                    user_id: currentUser.id,
-                    business_name: formProps.business_name,
-                    tagline: formProps.tagline,
-                    about: formProps.about,
-                    email: formProps.email,
-                    phone: formProps.phone,
-                    website_url: formProps.website_url,
-                    address: formProps.address
-                    // Note: Other fields like city, state can be added here
-                })
-                .select()
-                .single();
+            const profileData = {
+                user_id: currentUser.id,
+                business_name: document.getElementById('business-name').value,
+                tagline: document.getElementById('tagline').value,
+                about: document.getElementById('about').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                website_url: document.getElementById('website_url').value,
+                address: document.getElementById('address').value,
+            };
+            
+            try {
+                const { data: newProfile, error: profileError } = await supabase
+                    .from('professional_profiles')
+                    .insert(profileData)
+                    .select()
+                    .single();
 
-            if (profileError) {
-                console.error('Error creating profile:', profileError);
-                showMessage(`Error: ${profileError.message}`, 'error');
-                return;
+                if (profileError) throw profileError;
+
+                // 3. Insert into professional_categories join table
+                const categoriesToInsert = selectedCategoryIds.map(catId => ({
+                    profile_id: newProfile.id,
+                    category_id: catId
+                }));
+
+                const { error: categoriesError } = await supabase
+                    .from('professional_categories')
+                    .insert(categoriesToInsert);
+
+                if (categoriesError) throw categoriesError;
+
+                showMessage('Success! Your profile has been submitted for approval.', 'success');
+                form.reset();
+                window.scrollTo(0, 0); // Scroll to top to show message
+
+            } catch (error) {
+                console.error('Submission Error:', error);
+                showMessage(`An error occurred: ${error.message}`, 'error');
+            } finally {
+                // Re-enable button and hide spinner
+                setLoading(false);
             }
-
-            // 3. Insert into professional_categories join table
-            const categoriesToInsert = selectedCategoryIds.map(catId => ({
-                profile_id: newProfile.id,
-                category_id: catId
-            }));
-
-            const { error: categoriesError } = await supabase
-                .from('professional_categories')
-                .insert(categoriesToInsert);
-
-            if (categoriesError) {
-                console.error('Error linking categories:', categoriesError);
-                // Note: You might want to delete the profile here to avoid orphaned data
-                showMessage(`Profile created, but failed to link services: ${categoriesError.message}`, 'error');
-                return;
-            }
-
-            showMessage('Your profile has been submitted for approval!', 'success');
-            form.reset();
         });
 
+        // --- UTILITY FUNCTIONS ---
         function showMessage(text, type) {
             messageEl.textContent = text;
-            messageEl.className = `p-4 rounded-md ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            messageEl.className = `p-4 rounded-md mb-6 text-center ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
             messageEl.classList.remove('hidden');
         }
 
+        function setLoading(isLoading) {
+            if (isLoading) {
+                submitButton.disabled = true;
+                submitButtonText.classList.add('hidden');
+                submitSpinner.classList.remove('hidden');
+            } else {
+                submitButton.disabled = false;
+                submitButtonText.classList.remove('hidden');
+                submitSpinner.classList.add('hidden');
+            }
+        }
+
         // --- INITIALIZE PAGE ---
-        checkSession();
-        loadCategories();
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) {
+                currentUser = session.user;
+                loadCategories();
+            } else {
+                // ERROR FIX: Changed to construct a full URL for the redirect
+                // to prevent the "not a valid URL" error.
+                try {
+                    const loginUrl = new URL('login.html', window.location.href);
+                    window.location.href = loginUrl.href;
+                } catch (e) {
+                    console.error("Failed to construct login URL:", e);
+                    // Fallback in case of unexpected URL issues
+                    window.location.href = window.location.origin + '/login.html';
+                }
+            }
+        });
 
     </script>
 </body>
 </html>
+
