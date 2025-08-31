@@ -13,6 +13,7 @@
         .btn-primary:hover { background-color: #1c347d; }
         .btn-secondary { background-color: #f59e0b; color: white; transition: background-color 0.3s ease; }
         .btn-secondary:hover { background-color: #e4900a; }
+        .btn { display: inline-flex; align-items: center; justify-content: center; }
         /* Style for loading spinner */
         .loader {
             border: 4px solid #f3f3f3;
@@ -111,10 +112,13 @@
                     </fieldset>
                     
                     <div class="border-t-2 border-blue-200 pt-6 text-center">
-                        <button type="submit" id="submit-button" class="btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md inline-flex items-center justify-center">
+                        <button type="submit" id="submit-button" class="btn btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
                             <span id="submit-button-text">Submit for Approval</span>
                             <span id="submit-spinner" class="hidden loader"></span>
                         </button>
+                        <a href="index.html" id="home-button" class="hidden btn btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
+                            Go to Homepage
+                        </a>
                         <div id="form-message" class="hidden mt-6 p-4 rounded-md"></div>
                     </div>
                 </form>
@@ -133,6 +137,7 @@
         const messageEl = document.getElementById('form-message');
         const servicesContainer = document.getElementById('services-checkboxes');
         const submitButton = document.getElementById('submit-button');
+        const homeButton = document.getElementById('home-button'); // NEW: Get the home button
         const submitButtonText = document.getElementById('submit-button-text');
         const submitSpinner = document.getElementById('submit-spinner');
         
@@ -142,7 +147,6 @@
             try {
                 const { data, error } = await supabase.from('categories').select('id, name');
                 if (error) throw error;
-
                 servicesContainer.innerHTML = ''; 
                 data.forEach(cat => {
                     const checkboxHTML = `
@@ -168,7 +172,6 @@
             setLoading(true);
 
             const formData = new FormData(form);
-            
             const selectedCategoryIds = formData.getAll('categories').map(id => parseInt(id));
             if (selectedCategoryIds.length === 0) {
                 showMessage("Please select at least one service category.", 'error');
@@ -189,61 +192,41 @@
             };
             
             try {
-                const { data: existingProfile, error: fetchError } = await supabase
+                const { data: existingProfile } = await supabase
                     .from('professional_profiles')
                     .select('id')
                     .eq('user_id', currentUser.id)
                     .single();
 
-                if (fetchError && fetchError.code !== 'PGRST116') {
-                    throw fetchError;
-                }
-
                 let savedProfile;
 
                 if (existingProfile) {
-                    const { data: updatedProfile, error: updateError } = await supabase
-                        .from('professional_profiles')
-                        .update(profileData)
-                        .eq('user_id', currentUser.id)
-                        .select()
-                        .single();
-
+                    const { data: updatedProfile, error: updateError } = await supabase.from('professional_profiles').update(profileData).eq('user_id', currentUser.id).select().single();
                     if (updateError) throw updateError;
                     savedProfile = updatedProfile;
-
                     await supabase.from('professional_categories').delete().eq('profile_id', savedProfile.id);
                 } else {
-                    const { data: newProfile, error: profileError } = await supabase
-                        .from('professional_profiles')
-                        .insert(profileData)
-                        .select()
-                        .single();
-
+                    const { data: newProfile, error: profileError } = await supabase.from('professional_profiles').insert(profileData).select().single();
                     if (profileError) throw profileError;
                     savedProfile = newProfile;
                 }
 
-                const categoriesToInsert = selectedCategoryIds.map(catId => ({
-                    profile_id: savedProfile.id,
-                    category_id: catId
-                }));
-
-                const { error: categoriesError } = await supabase
-                    .from('professional_categories')
-                    .insert(categoriesToInsert);
-
+                const categoriesToInsert = selectedCategoryIds.map(catId => ({ profile_id: savedProfile.id, category_id: catId }));
+                const { error: categoriesError } = await supabase.from('professional_categories').insert(categoriesToInsert);
                 if (categoriesError) throw categoriesError;
 
-                // UPDATED success message and REMOVED form.reset()
+                // --- SUCCESS LOGIC ---
                 const successMessage = "Success! Your profile is submitted for approval. It should be live within 24 hours. For queries or feedback, feel free to contact us.";
                 showMessage(successMessage, 'success');
+                
+                // NEW: Hide submit button and show home button
+                submitButton.classList.add('hidden');
+                homeButton.classList.remove('hidden');
 
             } catch (error) {
                 console.error('Submission Error:', error);
                 showMessage(`An error occurred: ${error.message}`, 'error');
-            } finally {
-                setLoading(false);
+                setLoading(false); // Only reset loading state on error
             }
         });
 
@@ -258,7 +241,7 @@
                 submitButton.disabled = true;
                 submitButtonText.classList.add('hidden');
                 submitSpinner.classList.remove('hidden');
-                messageEl.classList.add('hidden'); // Hide previous messages on new submit
+                messageEl.classList.add('hidden');
             } else {
                 submitButton.disabled = false;
                 submitButtonText.classList.remove('hidden');
@@ -280,7 +263,6 @@
                 }
             }
         });
-
     </script>
 </body>
 </html>
