@@ -7,7 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- The Supabase script is loaded in the body -->
     <style>
         body { font-family: 'Inter', sans-serif; }
         .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
@@ -32,8 +31,7 @@
 <body class="bg-gray-50 text-gray-800">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
-        <!-- Navigation can be added here -->
-    </header>
+        </header>
 
     <main class="container mx-auto px-6 py-12">
         <section id="submission-form" class="py-16">
@@ -43,7 +41,6 @@
                 <p class="text-gray-600 mb-8">Please provide the following details to create your listing.</p>
                 
                 <form id="listing-form" class="space-y-8">
-                    <!-- Step 1: Basic Information -->
                     <fieldset class="border-t-2 border-blue-200 pt-6">
                         <legend class="text-xl font-bold text-blue-900 px-4">Step 1: Basic Information</legend>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
@@ -58,7 +55,6 @@
                         </div>
                     </fieldset>
 
-                    <!-- Step 2: About & Services -->
                     <fieldset class="border-t-2 border-blue-200 pt-6">
                         <legend class="text-xl font-bold text-blue-900 px-4">Step 2: About & Services</legend>
                         <div class="mt-4 space-y-6">
@@ -69,18 +65,15 @@
                              <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Services Offered * (Select at least one)</label>
                                 <div id="services-checkboxes" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    <!-- Checkboxes will be dynamically loaded here -->
                                     <p class="text-gray-500">Loading services...</p>
                                 </div>
                             </div>
                         </div>
                     </fieldset>
 
-                    <!-- Step 3: Contact & Location -->
                     <fieldset class="border-t-2 border-blue-200 pt-6">
                          <legend class="text-xl font-bold text-blue-900 px-4">Step 3: Contact & Location</legend>
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                            <!-- ERROR FIX: Added IDs to these inputs to correctly capture their values -->
                             <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Business Email Address *</label>
                                 <input type="email" id="email" name="email" placeholder="you@example.com" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
@@ -172,9 +165,9 @@
                 return;
             }
 
-            // 2. Insert into professional_profiles table
+            // 2. Prepare profile data from the form
             const profileData = {
-                user_id: currentUser.id,
+                user_id: currentUser.id, // This is set once and never updated
                 business_name: document.getElementById('business-name').value,
                 tagline: document.getElementById('tagline').value,
                 about: document.getElementById('about').value,
@@ -182,20 +175,57 @@
                 phone: document.getElementById('phone').value,
                 website_url: document.getElementById('website_url').value,
                 address: document.getElementById('address').value,
+                status: 'pending' // Reset status to pending on every update
             };
             
             try {
-                const { data: newProfile, error: profileError } = await supabase
+                // 3. Check if a profile already exists for this user
+                const { data: existingProfile, error: fetchError } = await supabase
                     .from('professional_profiles')
-                    .insert(profileData)
-                    .select()
-                    .single();
+                    .select('id')
+                    .eq('user_id', currentUser.id)
+                    .single(); // .single() is key here
 
-                if (profileError) throw profileError;
+                // Ignore the error if it's because no rows were found, that's expected for new users.
+                if (fetchError && fetchError.code !== 'PGRST116') {
+                    throw fetchError;
+                }
 
-                // 3. Insert into professional_categories join table
+                let savedProfile;
+
+                // 4. Decide whether to UPDATE the existing profile or INSERT a new one
+                if (existingProfile) {
+                    // --- UPDATE PATH ---
+                    // A profile exists, so update it with the new data.
+                    const { data: updatedProfile, error: updateError } = await supabase
+                        .from('professional_profiles')
+                        .update(profileData)
+                        .eq('user_id', currentUser.id)
+                        .select()
+                        .single();
+
+                    if (updateError) throw updateError;
+                    savedProfile = updatedProfile;
+
+                    // To sync categories, first delete the old ones...
+                    await supabase.from('professional_categories').delete().eq('profile_id', savedProfile.id);
+
+                } else {
+                    // --- INSERT PATH ---
+                    // No profile exists, so create a new one.
+                    const { data: newProfile, error: profileError } = await supabase
+                        .from('professional_profiles')
+                        .insert(profileData)
+                        .select()
+                        .single();
+
+                    if (profileError) throw profileError;
+                    savedProfile = newProfile;
+                }
+
+                // 5. ...then insert the newly selected categories. This runs for both insert and update.
                 const categoriesToInsert = selectedCategoryIds.map(catId => ({
-                    profile_id: newProfile.id,
+                    profile_id: savedProfile.id,
                     category_id: catId
                 }));
 
@@ -211,7 +241,12 @@
 
             } catch (error) {
                 console.error('Submission Error:', error);
-                showMessage(`An error occurred: ${error.message}`, 'error');
+                // Check for the specific unique constraint violation error
+                if (error.code === '23505') {
+                     showMessage('An error occurred: A profile for this user already exists. Could not update.', 'error');
+                } else {
+                     showMessage(`An error occurred: ${error.message}`, 'error');
+                }
             } finally {
                 // Re-enable button and hide spinner
                 setLoading(false);
@@ -243,8 +278,6 @@
                 currentUser = session.user;
                 loadCategories();
             } else {
-                // ERROR FIX: Changed to construct a full URL for the redirect
-                // to prevent the "not a valid URL" error.
                 try {
                     const loginUrl = new URL('login.html', window.location.href);
                     window.location.href = loginUrl.href;
@@ -259,4 +292,3 @@
     </script>
 </body>
 </html>
-
