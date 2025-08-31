@@ -11,6 +11,8 @@
         body { font-family: 'Inter', sans-serif; }
         .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
         .btn-primary:hover { background-color: #1c347d; }
+        .btn-secondary { background-color: #f59e0b; color: white; transition: background-color 0.3s ease; }
+        .btn-secondary:hover { background-color: #e4900a; }
         /* Style for loading spinner */
         .loader {
             border: 4px solid #f3f3f3;
@@ -31,12 +33,27 @@
 <body class="bg-gray-50 text-gray-800">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
-        </header>
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-2">
+                <div class="p-2 bg-blue-900 rounded-lg"><i class="fas fa-shield-alt text-white text-xl"></i></div>
+                <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a class="text-gray-400 font-medium cursor-not-allowed">Home</a>
+                <a class="text-gray-400 font-medium cursor-not-allowed">Browse</a>
+                <a class="text-gray-400 font-medium cursor-not-allowed">Blog</a>
+            </nav>
+            <div class="hidden md:flex items-center space-x-4">
+                <a class="text-gray-400 font-semibold cursor-not-allowed">Login</a>
+                <a class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md opacity-50 cursor-not-allowed">List Your Business</a>
+            </div>
+            <button class="md:hidden text-blue-900 text-2xl"><i class="fas fa-bars"></i></button>
+        </div>
+    </header>
 
     <main class="container mx-auto px-6 py-12">
         <section id="submission-form" class="py-16">
             <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl">
-                <div id="form-message" class="hidden mb-4 p-4 rounded-md"></div>
                 <h2 class="text-3xl font-bold text-blue-900 mb-2">Create Your Business Profile</h2>
                 <p class="text-gray-600 mb-8">Please provide the following details to create your listing.</p>
                 
@@ -98,6 +115,7 @@
                             <span id="submit-button-text">Submit for Approval</span>
                             <span id="submit-spinner" class="hidden loader"></span>
                         </button>
+                        <div id="form-message" class="hidden mt-6 p-4 rounded-md"></div>
                     </div>
                 </form>
             </div>
@@ -105,15 +123,12 @@
     </main>
     
     <script type="module">
-        // Using Supabase ESM module
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
         
-        // Supabase credentials
         const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Form elements
         const form = document.getElementById('listing-form');
         const messageEl = document.getElementById('form-message');
         const servicesContainer = document.getElementById('services-checkboxes');
@@ -123,13 +138,12 @@
         
         let currentUser = null;
 
-        // --- LOAD CATEGORIES FOR CHECKBOXES ---
         async function loadCategories() {
             try {
                 const { data, error } = await supabase.from('categories').select('id, name');
                 if (error) throw error;
 
-                servicesContainer.innerHTML = ''; // Clear loading message
+                servicesContainer.innerHTML = ''; 
                 data.forEach(cat => {
                     const checkboxHTML = `
                         <label class="flex items-center space-x-2 cursor-pointer">
@@ -144,7 +158,6 @@
             }
         }
         
-        // --- HANDLE FORM SUBMISSION ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) {
@@ -152,12 +165,10 @@
                 return;
             }
 
-            // Disable button and show spinner
             setLoading(true);
 
             const formData = new FormData(form);
             
-            // 1. Get selected category IDs
             const selectedCategoryIds = formData.getAll('categories').map(id => parseInt(id));
             if (selectedCategoryIds.length === 0) {
                 showMessage("Please select at least one service category.", 'error');
@@ -165,9 +176,8 @@
                 return;
             }
 
-            // 2. Prepare profile data from the form
             const profileData = {
-                user_id: currentUser.id, // This is set once and never updated
+                user_id: currentUser.id,
                 business_name: document.getElementById('business-name').value,
                 tagline: document.getElementById('tagline').value,
                 about: document.getElementById('about').value,
@@ -175,28 +185,23 @@
                 phone: document.getElementById('phone').value,
                 website_url: document.getElementById('website_url').value,
                 address: document.getElementById('address').value,
-                status: 'pending' // Reset status to pending on every update
+                status: 'pending'
             };
             
             try {
-                // 3. Check if a profile already exists for this user
                 const { data: existingProfile, error: fetchError } = await supabase
                     .from('professional_profiles')
                     .select('id')
                     .eq('user_id', currentUser.id)
-                    .single(); // .single() is key here
+                    .single();
 
-                // Ignore the error if it's because no rows were found, that's expected for new users.
                 if (fetchError && fetchError.code !== 'PGRST116') {
                     throw fetchError;
                 }
 
                 let savedProfile;
 
-                // 4. Decide whether to UPDATE the existing profile or INSERT a new one
                 if (existingProfile) {
-                    // --- UPDATE PATH ---
-                    // A profile exists, so update it with the new data.
                     const { data: updatedProfile, error: updateError } = await supabase
                         .from('professional_profiles')
                         .update(profileData)
@@ -207,12 +212,8 @@
                     if (updateError) throw updateError;
                     savedProfile = updatedProfile;
 
-                    // To sync categories, first delete the old ones...
                     await supabase.from('professional_categories').delete().eq('profile_id', savedProfile.id);
-
                 } else {
-                    // --- INSERT PATH ---
-                    // No profile exists, so create a new one.
                     const { data: newProfile, error: profileError } = await supabase
                         .from('professional_profiles')
                         .insert(profileData)
@@ -223,7 +224,6 @@
                     savedProfile = newProfile;
                 }
 
-                // 5. ...then insert the newly selected categories. This runs for both insert and update.
                 const categoriesToInsert = selectedCategoryIds.map(catId => ({
                     profile_id: savedProfile.id,
                     category_id: catId
@@ -235,28 +235,21 @@
 
                 if (categoriesError) throw categoriesError;
 
-                showMessage('Success! Your profile has been submitted for approval.', 'success');
-                form.reset();
-                window.scrollTo(0, 0); // Scroll to top to show message
+                // UPDATED success message and REMOVED form.reset()
+                const successMessage = "Success! Your profile is submitted for approval. It should be live within 24 hours. For queries or feedback, feel free to contact us.";
+                showMessage(successMessage, 'success');
 
             } catch (error) {
                 console.error('Submission Error:', error);
-                // Check for the specific unique constraint violation error
-                if (error.code === '23505') {
-                     showMessage('An error occurred: A profile for this user already exists. Could not update.', 'error');
-                } else {
-                     showMessage(`An error occurred: ${error.message}`, 'error');
-                }
+                showMessage(`An error occurred: ${error.message}`, 'error');
             } finally {
-                // Re-enable button and hide spinner
                 setLoading(false);
             }
         });
 
-        // --- UTILITY FUNCTIONS ---
         function showMessage(text, type) {
             messageEl.textContent = text;
-            messageEl.className = `p-4 rounded-md mb-6 text-center ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            messageEl.className = `mt-6 p-4 rounded-md text-center ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
             messageEl.classList.remove('hidden');
         }
 
@@ -265,6 +258,7 @@
                 submitButton.disabled = true;
                 submitButtonText.classList.add('hidden');
                 submitSpinner.classList.remove('hidden');
+                messageEl.classList.add('hidden'); // Hide previous messages on new submit
             } else {
                 submitButton.disabled = false;
                 submitButtonText.classList.remove('hidden');
@@ -272,7 +266,6 @@
             }
         }
 
-        // --- INITIALIZE PAGE ---
         supabase.auth.onAuthStateChange((event, session) => {
             if (session) {
                 currentUser = session.user;
@@ -283,7 +276,6 @@
                     window.location.href = loginUrl.href;
                 } catch (e) {
                     console.error("Failed to construct login URL:", e);
-                    // Fallback in case of unexpected URL issues
                     window.location.href = window.location.origin + '/login.html';
                 }
             }
