@@ -86,7 +86,6 @@
         </main>
     </div>
 
-    <!-- Modal -->
     <div x-show="isModalOpen" @keydown.escape.window="closeModal()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-cloak>
         <div @click.outside="closeModal()" class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
             <div class="p-6 border-b flex justify-between items-center">
@@ -97,18 +96,18 @@
             <div class="p-8 overflow-y-auto" x-html="modalContent"></div>
             
             <div class="p-6 bg-gray-50 border-t mt-auto">
-                <div x-data="{ showRejectionInput: false }">
+                <div>
                     <div x-show="showRejectionInput" class="mb-4">
                         <label for="rejection" class="block text-sm font-medium text-gray-700 mb-1">Reason for Rejection (required)</label>
-                        <input type="text" id="rejection" x-model="rejectionReason" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                        <input type="text" id="rejection" x-model="rejectionReason" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter reason here...">
                     </div>
                     <div class="flex justify-end items-center space-x-4">
                         <button @click="showRejectionInput = !showRejectionInput" x-text="showRejectionInput ? 'Cancel' : 'Reject'" class="font-semibold text-red-600 hover:text-red-800"></button>
-                        <button x-show="showRejectionInput" @click="rejectProfile()" :disabled="!rejectionReason || actionLoading" class="btn-danger font-bold py-2 px-6 rounded-lg disabled:opacity-50 flex items-center">
+                        <button x-show="showRejectionInput" @click="rejectProfile()" :disabled="!rejectionReason.trim() || actionLoading" class="btn-danger font-bold py-2 px-6 rounded-lg disabled:opacity-50 flex items-center">
                             <i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i>
                             <span x-text="actionLoading ? 'Rejecting...' : 'Confirm Rejection'"></span>
                         </button>
-                        <button @click="approveProfile()" :disabled="actionLoading" class="btn-primary font-bold py-2 px-8 rounded-lg disabled:opacity-50 flex items-center">
+                        <button @click="approveProfile()" :disabled="actionLoading || showRejectionInput" class="btn-primary font-bold py-2 px-8 rounded-lg disabled:opacity-50 flex items-center">
                              <i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i>
                             <span x-text="actionLoading ? 'Approving...' : 'Approve'"></span>
                         </button>
@@ -123,13 +122,14 @@
         
         // --- SUPABASE CLIENT SETUP ---
         const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('adminPanel', () => ({
                 // --- STATE ---
                 isModalOpen: false,
+                showRejectionInput: false,
                 rejectionReason: '',
                 currentProfileId: null,
                 profiles: [],
@@ -192,6 +192,7 @@
                     this.rejectionReason = '';
                     this.currentProfileId = null;
                     this.modalContent = '';
+                    this.showRejectionInput = false;
                 },
 
                 async approveProfile() {
@@ -218,7 +219,7 @@
                 },
 
                 async rejectProfile() {
-                    if (!this.currentProfileId || !this.rejectionReason || this.actionLoading) return;
+                    if (!this.currentProfileId || !this.rejectionReason.trim() || this.actionLoading) return;
                     this.actionLoading = true;
                      
                     try {
@@ -244,4 +245,3 @@
     </script>
 </body>
 </html>
-
