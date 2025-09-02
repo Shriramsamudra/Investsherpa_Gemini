@@ -19,95 +19,107 @@
 </head>
 <body class="bg-gray-100 text-gray-800" x-data="adminPanel">
 
-    <div id="script-error-message" class="p-4 m-4 rounded-lg bg-red-100 text-red-800 border border-red-300">
-        <strong>Application Error:</strong> The page's script failed to load. This can be caused by network issues, firewalls, or ad-blockers. Please open the browser's developer console (press F12) and check the 'Console' and 'Network' tabs for specific errors.
+    <div x-show="!session" x-cloak class="fixed inset-0 bg-gray-200 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-8">
+            <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Admin Login</h2>
+            <form @submit.prevent="login()">
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="email" x-model="email" required class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="admin@example.com">
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" x-model="password" required class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••">
+                </div>
+                <div x-show="authError" class="mb-4 p-3 rounded-lg bg-red-100 text-red-800 text-sm" x-text="authError"></div>
+                <button type="submit" :disabled="authLoading" class="w-full btn-primary font-bold py-2 px-4 rounded-lg disabled:opacity-50 flex items-center justify-center">
+                    <i x-show="authLoading" class="fas fa-spinner fa-spin mr-2"></i>
+                    <span x-text="authLoading ? 'Signing In...' : 'Sign In'"></span>
+                </button>
+            </form>
+        </div>
     </div>
 
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex-shrink-0">
-                    <h1 class="text-xl font-bold text-blue-900">InvestSherpa.in Admin</h1>
+    <template x-if="session">
+        <div>
+            <header class="bg-white shadow-sm sticky top-0 z-40">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center h-16">
+                        <div class="flex-shrink-0">
+                            <h1 class="text-xl font-bold text-blue-900">InvestSherpa.in Admin</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                             <span class="text-sm text-gray-600" x-text="session.user.email"></span>
+                             <button @click="logout()" class="font-semibold text-red-600 hover:text-red-800 text-sm">Logout</button>
+                        </div>
+                    </div>
                 </div>
+            </header>
+
+            <div class="flex">
+                <aside class="w-64 bg-white shadow-md h-screen sticky top-16">
+                    <nav class="mt-5">
+                        <a href="#" class="flex items-center mt-4 py-2 px-6 text-gray-700 bg-gray-200">
+                            <i class="fas fa-user-clock mr-3"></i>
+                            <span>Pending Approvals</span>
+                        </a>
+                    </nav>
+                </aside>
+
+                <main class="flex-1 p-8">
+                    <h1 class="text-3xl font-bold text-blue-900 mb-2">Pending Professional Sign-ups</h1>
+                    
+                    <div x-show="status.message" class="mb-4 p-4 rounded-lg text-sm"
+                         :class="{
+                             'bg-blue-100 text-blue-800': status.type === 'info',
+                             'bg-green-100 text-green-800': status.type === 'success',
+                             'bg-red-100 text-red-800': status.type === 'error'
+                         }" x-text="status.message">
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 border-b">
+                                    <tr>
+                                        <th class="p-4 font-semibold">Company / Professional</th>
+                                        <th class="p-4 font-semibold">Contact Email</th>
+                                        <th class="p-4 font-semibold">Location</th>
+                                        <th class="p-4 font-semibold">Submitted On</th>
+                                        <th class="p-4 font-semibold text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-if="loading">
+                                        <tr><td colspan="5" class="text-center p-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr>
+                                    </template>
+                                    <template x-if="!loading && profiles.length === 0">
+                                        <tr><td colspan="5" class="text-center p-8 text-gray-500">No pending profiles found.</td></tr>
+                                    </template>
+                                    <template x-for="(profile, index) in profiles" :key="profile.id">
+                                        <tr class="border-b hover:bg-gray-50">
+                                            <td class="p-4 font-bold" x-text="profile.business_name"></td>
+                                            <td class="p-4" x-text="profile.email"></td>
+                                            <td class="p-4" x-text="profile.city || 'N/A'"></td>
+                                            <td class="p-4" x-text="new Date(profile.created_at).toLocaleDateString()"></td>
+                                            <td class="p-4 text-center">
+                                                <button @click="openReviewModal(index)" class="bg-blue-600 text-white py-1 px-4 rounded-lg font-semibold hover:bg-blue-700"><i class="fas fa-search-plus mr-1"></i> Review</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </main>
             </div>
         </div>
-    </header>
-
-    <div class="flex">
-        <aside class="w-64 bg-white shadow-md h-screen sticky top-16">
-            <nav class="mt-5">
-                <a href="#" class="flex items-center mt-4 py-2 px-6 text-gray-700 bg-gray-200">
-                    <i class="fas fa-user-clock mr-3"></i>
-                    <span>Pending Approvals</span>
-                </a>
-            </nav>
-        </aside>
-
-        <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold text-blue-900 mb-2">Pending Professional Sign-ups</h1>
-            
-            <div x-show="status.message" class="mb-4 p-4 rounded-lg text-sm"
-                 :class="{
-                     'bg-blue-100 text-blue-800': status.type === 'info',
-                     'bg-green-100 text-green-800': status.type === 'success',
-                     'bg-red-100 text-red-800': status.type === 'error'
-                 }" x-text="status.message">
-            </div>
-
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="p-4 font-semibold">Company / Professional</th>
-                                <th class="p-4 font-semibold">Contact Email</th>
-                                <th class="p-4 font-semibold">Location</th>
-                                <th class="p-4 font-semibold">Submitted On</th>
-                                <th class="p-4 font-semibold text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template x-if="loading">
-                                <tr>
-                                    <td colspan="5" class="text-center p-8">
-                                        <i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i>
-                                    </td>
-                                </tr>
-                            </template>
-                            <template x-if="!loading && profiles.length === 0">
-                                <tr>
-                                    <td colspan="5" class="text-center p-8 text-gray-500">No pending profiles found.</td>
-                                </tr>
-                            </template>
-                            <template x-for="(profile, index) in profiles" :key="profile.id">
-                                <tr class="border-b hover:bg-gray-50">
-                                    <td class="p-4 font-bold" x-text="profile.business_name"></td>
-                                    <td class="p-4" x-text="profile.email"></td>
-                                    <td class="p-4" x-text="profile.city || 'N/A'"></td>
-                                    <td class="p-4" x-text="new Date(profile.created_at).toLocaleDateString()"></td>
-                                    <td class="p-4 text-center">
-                                        <button @click="openReviewModal(index)" class="bg-blue-600 text-white py-1 px-4 rounded-lg font-semibold hover:bg-blue-700">
-                                            <i class="fas fa-search-plus mr-1"></i> Review
-                                        </button>
-                                    </td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
-    </div>
-
+    </template>
+    
     <div x-show="isModalOpen" @keydown.escape.window="closeModal()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-cloak>
         <div @click.outside="closeModal()" class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-            <div class="p-6 border-b flex justify-between items-center">
-                <h2 class="text-2xl font-bold text-blue-900">Review Professional Profile</h2>
-                <button @click="closeModal()" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
-            </div>
-            
+            <div class="p-6 border-b flex justify-between items-center"><h2 class="text-2xl font-bold text-blue-900">Review Professional Profile</h2><button @click="closeModal()" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
             <div class="p-8 overflow-y-auto" x-html="modalContent"></div>
-            
             <div class="p-6 bg-gray-50 border-t mt-auto">
                 <div>
                     <div x-show="showRejectionInput" class="mb-4">
@@ -116,14 +128,8 @@
                     </div>
                     <div class="flex justify-end items-center space-x-4">
                         <button @click="showRejectionInput = !showRejectionInput" x-text="showRejectionInput ? 'Cancel' : 'Reject'" class="font-semibold text-red-600 hover:text-red-800"></button>
-                        <button x-show="showRejectionInput" @click="rejectProfile()" :disabled="!rejectionReason.trim() || actionLoading" class="btn-danger font-bold py-2 px-6 rounded-lg disabled:opacity-50 flex items-center">
-                            <i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i>
-                            <span x-text="actionLoading ? 'Rejecting...' : 'Confirm Rejection'"></span>
-                        </button>
-                        <button @click="approveProfile()" :disabled="actionLoading || showRejectionInput" class="btn-primary font-bold py-2 px-8 rounded-lg disabled:opacity-50 flex items-center">
-                             <i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i>
-                            <span x-text="actionLoading ? 'Approving...' : 'Approve'"></span>
-                        </button>
+                        <button x-show="showRejectionInput" @click="rejectProfile()" :disabled="!rejectionReason.trim() || actionLoading" class="btn-danger font-bold py-2 px-6 rounded-lg disabled:opacity-50 flex items-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Rejecting...' : 'Confirm Rejection'"></span></button>
+                        <button @click="approveProfile()" :disabled="actionLoading || showRejectionInput" class="btn-primary font-bold py-2 px-8 rounded-lg disabled:opacity-50 flex items-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Approving...' : 'Approve'"></span></button>
                     </div>
                 </div>
             </div>
@@ -131,9 +137,6 @@
     </div>
     
     <script type="module">
-        // Hide the script error message if this module starts executing successfully.
-        document.getElementById('script-error-message').style.display = 'none';
-
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
         
         const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
@@ -142,6 +145,14 @@
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('adminPanel', () => ({
+                // --- NEW properties for Authentication ---
+                session: null,
+                email: '',
+                password: '',
+                authError: '',
+                authLoading: false,
+
+                // --- Existing properties ---
                 profiles: [],
                 loading: true,
                 status: { message: '', type: 'info' },
@@ -153,10 +164,56 @@
                 modalContent: '',
 
                 init() {
-                    this.fetchPendingProfiles();
+                    // Check for an existing session on page load
+                    supabase.auth.getSession().then(({ data: { session } }) => {
+                        this.session = session;
+                        if (session) {
+                            this.fetchPendingProfiles();
+                        }
+                    });
+
+                    // Listen for changes in authentication state (login/logout)
+                    supabase.auth.onAuthStateChange((_event, session) => {
+                        this.session = session;
+                        if (session) {
+                            this.fetchPendingProfiles();
+                        } else {
+                            // Clear data on logout
+                            this.profiles = [];
+                        }
+                    });
                 },
 
+                // --- NEW methods for Authentication ---
+                async login() {
+                    this.authLoading = true;
+                    this.authError = '';
+                    try {
+                        const { error } = await supabase.auth.signInWithPassword({
+                            email: this.email,
+                            password: this.password,
+                        });
+                        if (error) throw error;
+                        // onAuthStateChange will handle success
+                    } catch (error) {
+                        this.authError = error.message;
+                    } finally {
+                        this.authLoading = false;
+                    }
+                },
+
+                async logout() {
+                    this.status = { message: 'Logging out...', type: 'info' };
+                    await supabase.auth.signOut();
+                    // onAuthStateChange will handle UI update
+                },
+
+                // --- Existing methods (mostly unchanged) ---
                 async fetchPendingProfiles() {
+                    if (!this.session) {
+                        this.status = { message: 'Please log in to view data.', type: 'info'};
+                        return; // Don't fetch if not logged in
+                    }
                     this.loading = true;
                     this.status = { message: 'Fetching data from Supabase...', type: 'info' };
                     try {
@@ -177,7 +234,7 @@
                         console.error('Error fetching pending profiles:', error);
                         this.profiles = [];
                         this.status = { 
-                            message: `Failed to fetch data. This is often due to Row Level Security (RLS) policies. Please check the browser console for technical details. Error: ${error.message}`, 
+                            message: `Failed to fetch data. Your account may not have the required permissions. Error: ${error.message}`, 
                             type: 'error' 
                         };
                     } finally {
@@ -191,7 +248,7 @@
                     this.modalContent = `
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
                             <div><strong class="font-semibold text-gray-900">Business Name:</strong> <p class="inline">${profile.business_name}</p></div>
-                            <div><strong class="font-semibold text-gray-900">Submitted by:</strong> <p class="inline">${profile.user_profiles.full_name}</p></div>
+                            <div><strong class="font-semibold text-gray-900">Submitted by:</strong> <p class="inline">${profile.user_profiles?.full_name || 'N/A'}</p></div>
                             <div><strong class="font-semibold text-gray-900">Contact Email:</strong> <p class="inline">${profile.email}</p></div>
                             <div><strong class="font-semibold text-gray-900">Contact Phone:</strong> <p class="inline">${profile.phone || 'N/A'}</p></div>
                             <div><strong class="font-semibold text-gray-900">Professional Type:</strong> <p class="inline">${profile.professional_type}</p></div>
@@ -211,7 +268,6 @@
                 },
 
                 async approveProfile() {
-                    // Method content unchanged
                     if (!this.currentProfileId || this.actionLoading) return;
                     this.actionLoading = true;
                     try {
@@ -228,7 +284,6 @@
                 },
 
                 async rejectProfile() {
-                    // Method content unchanged
                     if (!this.currentProfileId || !this.rejectionReason.trim() || this.actionLoading) return;
                     this.actionLoading = true;
                     try {
