@@ -40,7 +40,16 @@
         </aside>
 
         <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold text-blue-900 mb-6">Pending Professional Sign-ups</h1>
+            <h1 class="text-3xl font-bold text-blue-900 mb-2">Pending Professional Sign-ups</h1>
+            
+            <div x-show="status.message" class="mb-4 p-4 rounded-lg text-sm"
+                 :class="{
+                     'bg-blue-100 text-blue-800': status.type === 'info',
+                     'bg-green-100 text-green-800': status.type === 'success',
+                     'bg-red-100 text-red-800': status.type === 'error'
+                 }" x-text="status.message">
+            </div>
+
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
@@ -121,47 +130,60 @@
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
         
         // --- SUPABASE CLIENT SETUP ---
-        const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
+        [cite_start]const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co'; // [cite: 1]
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ'; [cite_start]// [cite: 1]
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('adminPanel', () => ({
                 // --- STATE ---
+                profiles: [],
+                loading: true,
+                status: { message: '', type: 'info' }, // NEW: For user feedback
+                
+                // Modal State
                 isModalOpen: false,
                 showRejectionInput: false,
                 rejectionReason: '',
                 currentProfileId: null,
-                profiles: [],
-                loading: true,
                 actionLoading: false,
                 modalContent: '',
 
                 // --- METHODS ---
                 init() {
-                    // This method is called automatically by AlpineJS when the component initializes.
-                    // In a real app, you would have authentication and check for an admin role here.
                     this.fetchPendingProfiles();
                 },
 
                 async fetchPendingProfiles() {
                     this.loading = true;
+                    this.status = { message: 'Fetching data from Supabase...', type: 'info' };
                     try {
-                        const { data, error } = await supabase
+                        const { data, error, count } = await supabase
                             .from('professional_profiles')
                             .select(`
                                 *,
                                 user_profiles ( full_name )
-                            `)
-                            .eq('status', 'pending')
+                            `, { count: 'exact' })
+                            [cite_start].eq('status', 'pending') // [cite: 6]
                             .order('created_at', { ascending: true });
 
                         if (error) throw error;
                         
                         this.profiles = data;
+
+                        if (data.length > 0) {
+                            this.status = { message: `Successfully loaded ${count} pending profile(s).`, type: 'success' };
+                        } else {
+                            this.status = { message: 'Successfully connected. There are currently no profiles awaiting approval.', type: 'info' };
+                        }
+
                     } catch (error) {
                         console.error('Error fetching pending profiles:', error);
-                        alert('Failed to fetch pending profiles. See console for details.');
+                        this.profiles = []; // Clear any stale data
+                        this.status = { 
+                            message: `Failed to fetch data. This is often due to Row Level Security (RLS) policies. Please check the browser console for technical details. Error: ${error.message}`, 
+                            type: 'error' 
+                        };
                     } finally {
                         this.loading = false;
                     }
@@ -171,7 +193,6 @@
                     const profile = this.profiles[index];
                     this.currentProfileId = profile.id;
                     
-                    // Generate detailed HTML for the modal
                     this.modalContent = `
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
                             <div><strong class="font-semibold text-gray-900">Business Name:</strong> <p class="inline">${profile.business_name}</p></div>
@@ -202,19 +223,18 @@
                     try {
                         const { error } = await supabase
                             .from('professional_profiles')
-                            .update({ status: 'approved', approved_at: new Date().toISOString() })
+                            [cite_start].update({ status: 'approved', approved_at: new Date().toISOString() }) // [cite: 6]
                             .eq('id', this.currentProfileId);
                         
                         if (error) throw error;
-
-                        alert('Profile approved successfully!');
-                        this.closeModal();
-                        await this.fetchPendingProfiles(); // Refresh the list
+                        
+                        await this.fetchPendingProfiles();
                     } catch (error) {
                         console.error('Error approving profile:', error);
                         alert(`Error approving profile: ${error.message}`);
                     } finally {
                         this.actionLoading = false;
+                        this.closeModal();
                     }
                 },
 
@@ -225,19 +245,18 @@
                     try {
                         const { error } = await supabase
                             .from('professional_profiles')
-                            .update({ status: 'rejected', rejection_reason: this.rejectionReason.trim() })
+                            [cite_start].update({ status: 'rejected', rejection_reason: this.rejectionReason.trim() }) // [cite: 6]
                             .eq('id', this.currentProfileId);
                         
                         if (error) throw error;
 
-                        alert('Profile rejected.');
-                        this.closeModal();
-                        await this.fetchPendingProfiles(); // Refresh the list
+                        await this.fetchPendingProfiles();
                     } catch (error) {
                         console.error('Error rejecting profile:', error);
                         alert(`Error rejecting profile: ${error.message}`);
                     } finally {
                         this.actionLoading = false;
+                        this.closeModal();
                     }
                 }
             }));
