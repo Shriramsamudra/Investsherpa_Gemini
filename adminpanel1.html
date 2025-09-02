@@ -5,11 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - InvestSherpa.in</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.comcom/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
@@ -138,23 +137,21 @@
         </div>
     </div>
     
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    <script>
+        const { createClient } = supabase;
         
         const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('adminPanel', () => ({
-                // --- NEW properties for Authentication ---
                 session: null,
                 email: '',
                 password: '',
                 authError: '',
                 authLoading: false,
-
-                // --- Existing properties ---
                 profiles: [],
                 loading: true,
                 status: { message: '', type: 'info' },
@@ -166,37 +163,32 @@
                 modalContent: '',
 
                 init() {
-                    // Check for an existing session on page load
-                    supabase.auth.getSession().then(({ data: { session } }) => {
+                    supabaseClient.auth.getSession().then(({ data: { session } }) => {
                         this.session = session;
                         if (session) {
                             this.fetchPendingProfiles();
                         }
                     });
 
-                    // Listen for changes in authentication state (login/logout)
-                    supabase.auth.onAuthStateChange((_event, session) => {
+                    supabaseClient.auth.onAuthStateChange((_event, session) => {
                         this.session = session;
                         if (session) {
                             this.fetchPendingProfiles();
                         } else {
-                            // Clear data on logout
                             this.profiles = [];
                         }
                     });
                 },
 
-                // --- NEW methods for Authentication ---
                 async login() {
                     this.authLoading = true;
                     this.authError = '';
                     try {
-                        const { error } = await supabase.auth.signInWithPassword({
+                        const { error } = await supabaseClient.auth.signInWithPassword({
                             email: this.email,
                             password: this.password,
                         });
                         if (error) throw error;
-                        // onAuthStateChange will handle success
                     } catch (error) {
                         this.authError = error.message;
                     } finally {
@@ -206,22 +198,21 @@
 
                 async logout() {
                     this.status = { message: 'Logging out...', type: 'info' };
-                    await supabase.auth.signOut();
-                    // onAuthStateChange will handle UI update
+                    await supabaseClient.auth.signOut();
                 },
 
-                // --- Existing methods (mostly unchanged) ---
                 async fetchPendingProfiles() {
                     if (!this.session) {
                         this.status = { message: 'Please log in to view data.', type: 'info'};
-                        return; // Don't fetch if not logged in
+                        return;
                     }
                     this.loading = true;
                     this.status = { message: 'Fetching data from Supabase...', type: 'info' };
                     try {
-                        const { data, error, count } = await supabase
+                        const { data, error, count } = await supabaseClient
                             .from('professional_profiles')
-                            .select(`*, user_profiles ( full_name )`, { count: 'exact' })
+                            // THIS IS THE CORRECTED LINE
+                            .select(`*, user_profiles!user_id ( full_name )`, { count: 'exact' })
                             .eq('status', 'pending')
                             .order('created_at', { ascending: true });
 
@@ -273,7 +264,7 @@
                     if (!this.currentProfileId || this.actionLoading) return;
                     this.actionLoading = true;
                     try {
-                        const { error } = await supabase.from('professional_profiles').update({ status: 'approved', approved_at: new Date().toISOString() }).eq('id', this.currentProfileId);
+                        const { error } = await supabaseClient.from('professional_profiles').update({ status: 'approved', approved_at: new Date().toISOString() }).eq('id', this.currentProfileId);
                         if (error) throw error;
                         await this.fetchPendingProfiles();
                     } catch (error) {
@@ -289,7 +280,7 @@
                     if (!this.currentProfileId || !this.rejectionReason.trim() || this.actionLoading) return;
                     this.actionLoading = true;
                     try {
-                        const { error } = await supabase.from('professional_profiles').update({ status: 'rejected', rejection_reason: this.rejectionReason.trim() }).eq('id', this.currentProfileId);
+                        const { error } = await supabaseClient.from('professional_profiles').update({ status: 'rejected', rejection_reason: this.rejectionReason.trim() }).eq('id', this.currentProfileId);
                         if (error) throw error;
                         await this.fetchPendingProfiles();
                     } catch (error) {
