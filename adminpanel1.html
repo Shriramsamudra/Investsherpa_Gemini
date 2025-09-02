@@ -19,6 +19,10 @@
 </head>
 <body class="bg-gray-100 text-gray-800" x-data="adminPanel">
 
+    <div id="script-error-message" class="p-4 m-4 rounded-lg bg-red-100 text-red-800 border border-red-300">
+        <strong>Application Error:</strong> The page's script failed to load. This can be caused by network issues, firewalls, or ad-blockers. Please open the browser's developer console (press F12) and check the 'Console' and 'Network' tabs for specific errors.
+    </div>
+
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -127,21 +131,20 @@
     </div>
     
     <script type="module">
+        // Hide the script error message if this module starts executing successfully.
+        document.getElementById('script-error-message').style.display = 'none';
+
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
         
-        // --- SUPABASE CLIENT SETUP ---
-        [cite_start]const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co'; // [cite: 1]
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ'; [cite_start]// [cite: 1]
+        const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         document.addEventListener('alpine:init', () => {
             Alpine.data('adminPanel', () => ({
-                // --- STATE ---
                 profiles: [],
                 loading: true,
-                status: { message: '', type: 'info' }, // NEW: For user feedback
-                
-                // Modal State
+                status: { message: '', type: 'info' },
                 isModalOpen: false,
                 showRejectionInput: false,
                 rejectionReason: '',
@@ -149,7 +152,6 @@
                 actionLoading: false,
                 modalContent: '',
 
-                // --- METHODS ---
                 init() {
                     this.fetchPendingProfiles();
                 },
@@ -160,26 +162,20 @@
                     try {
                         const { data, error, count } = await supabase
                             .from('professional_profiles')
-                            .select(`
-                                *,
-                                user_profiles ( full_name )
-                            `, { count: 'exact' })
-                            [cite_start].eq('status', 'pending') // [cite: 6]
+                            .select(`*, user_profiles ( full_name )`, { count: 'exact' })
+                            .eq('status', 'pending')
                             .order('created_at', { ascending: true });
 
                         if (error) throw error;
-                        
                         this.profiles = data;
-
                         if (data.length > 0) {
                             this.status = { message: `Successfully loaded ${count} pending profile(s).`, type: 'success' };
                         } else {
                             this.status = { message: 'Successfully connected. There are currently no profiles awaiting approval.', type: 'info' };
                         }
-
                     } catch (error) {
                         console.error('Error fetching pending profiles:', error);
-                        this.profiles = []; // Clear any stale data
+                        this.profiles = [];
                         this.status = { 
                             message: `Failed to fetch data. This is often due to Row Level Security (RLS) policies. Please check the browser console for technical details. Error: ${error.message}`, 
                             type: 'error' 
@@ -192,7 +188,6 @@
                 openReviewModal(index) {
                     const profile = this.profiles[index];
                     this.currentProfileId = profile.id;
-                    
                     this.modalContent = `
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
                             <div><strong class="font-semibold text-gray-900">Business Name:</strong> <p class="inline">${profile.business_name}</p></div>
@@ -203,8 +198,7 @@
                             <div><strong class="font-semibold text-gray-900">Website:</strong> <p class="inline">${profile.website_url ? `<a href="${profile.website_url}" target="_blank" class="text-blue-600 hover:underline">${profile.website_url}</a>` : 'N/A'}</p></div>
                             <div class="md:col-span-2"><strong class="font-semibold text-gray-900">Location:</strong> <p class="inline">${[profile.address, profile.city, profile.state, profile.pincode].filter(Boolean).join(', ')}</p></div>
                             <div class="md:col-span-2"><strong class="font-semibold text-gray-900">About:</strong> <p class="mt-1">${profile.about || 'Not provided.'}</p></div>
-                        </div>
-                    `;
+                        </div>`;
                     this.isModalOpen = true;
                 },
 
@@ -217,17 +211,12 @@
                 },
 
                 async approveProfile() {
+                    // Method content unchanged
                     if (!this.currentProfileId || this.actionLoading) return;
                     this.actionLoading = true;
-
                     try {
-                        const { error } = await supabase
-                            .from('professional_profiles')
-                            [cite_start].update({ status: 'approved', approved_at: new Date().toISOString() }) // [cite: 6]
-                            .eq('id', this.currentProfileId);
-                        
+                        const { error } = await supabase.from('professional_profiles').update({ status: 'approved', approved_at: new Date().toISOString() }).eq('id', this.currentProfileId);
                         if (error) throw error;
-                        
                         await this.fetchPendingProfiles();
                     } catch (error) {
                         console.error('Error approving profile:', error);
@@ -239,17 +228,12 @@
                 },
 
                 async rejectProfile() {
+                    // Method content unchanged
                     if (!this.currentProfileId || !this.rejectionReason.trim() || this.actionLoading) return;
                     this.actionLoading = true;
-                     
                     try {
-                        const { error } = await supabase
-                            .from('professional_profiles')
-                            [cite_start].update({ status: 'rejected', rejection_reason: this.rejectionReason.trim() }) // [cite: 6]
-                            .eq('id', this.currentProfileId);
-                        
+                        const { error } = await supabase.from('professional_profiles').update({ status: 'rejected', rejection_reason: this.rejectionReason.trim() }).eq('id', this.currentProfileId);
                         if (error) throw error;
-
                         await this.fetchPendingProfiles();
                     } catch (error) {
                         console.error('Error rejecting profile:', error);
