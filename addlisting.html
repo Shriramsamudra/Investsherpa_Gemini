@@ -11,10 +11,11 @@
         body { font-family: 'Inter', sans-serif; }
         .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
         .btn-primary:hover { background-color: #1c347d; }
-        .btn-secondary { background-color: #f59e0b; color: white; transition: background-color 0.3s ease; }
-        .btn-secondary:hover { background-color: #e4900a; }
+        .btn-secondary { background-color: #6b7280; color: white; transition: background-color 0.3s ease; }
+        .btn-secondary:hover { background-color: #4b5563; }
+        .btn-danger { background-color: #dc2626; color: white; transition: background-color 0.3s ease; }
+        .btn-danger:hover { background-color: #b91c1c; }
         .btn { display: inline-flex; align-items: center; justify-content: center; }
-        /* Style for loading spinner */
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #1e3a8a;
@@ -39,14 +40,8 @@
                 <div class="p-2 bg-blue-900 rounded-lg"><i class="fas fa-shield-alt text-white text-xl"></i></div>
                 <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
             </a>
-            <nav class="hidden md:flex items-center space-x-8">
-                <a class="text-gray-400 font-medium cursor-not-allowed">Home</a>
-                <a class="text-gray-400 font-medium cursor-not-allowed">Browse</a>
-                <a class="text-gray-400 font-medium cursor-not-allowed">Blog</a>
-            </nav>
-            <div class="hidden md:flex items-center space-x-4">
-                <a class="text-gray-400 font-semibold cursor-not-allowed">Login</a>
-                <a class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md opacity-50 cursor-not-allowed">List Your Business</a>
+            <div id="user-actions" class="hidden md:flex items-center space-x-4">
+                 <button id="logout-button" class="btn btn-danger font-semibold py-2 px-4 rounded-lg shadow-md">Logout</button>
             </div>
             <button class="md:hidden text-blue-900 text-2xl"><i class="fas fa-bars"></i></button>
         </div>
@@ -55,8 +50,8 @@
     <main class="container mx-auto px-6 py-12">
         <section id="submission-form" class="py-16">
             <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl">
-                <h2 class="text-3xl font-bold text-blue-900 mb-2">Create Your Business Profile</h2>
-                <p class="text-gray-600 mb-8">Please provide the following details to create your listing.</p>
+                <h2 id="form-title" class="text-3xl font-bold text-blue-900 mb-2">Create Your Business Profile</h2>
+                <p class="text-gray-600 mb-8">Please provide the following details to create or update your listing.</p>
                 
                 <form id="listing-form" class="space-y-8">
                     <fieldset class="border-t-2 border-blue-200 pt-6">
@@ -69,6 +64,22 @@
                             <div>
                                 <label for="tagline" class="block text-sm font-medium text-gray-700 mb-1">Tagline / Slogan</label>
                                 <input type="text" id="tagline" name="tagline" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div class="md:col-span-2">
+                                <label for="logo_url" class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
+                                <input type="url" id="logo_url" name="logo_url" placeholder="https://your-business.com/logo.png" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="professional_type" class="block text-sm font-medium text-gray-700 mb-1">Type of Professional *</label>
+                                <select id="professional_type" name="professional_type" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="" disabled selected>Select your profession</option>
+                                    <option value="financial_advisor">Financial Advisor</option>
+                                    <option value="insurance_agent">Insurance Agent</option>
+                                    <option value="chartered_accountant">Chartered Accountant</option>
+                                    <option value="tax_consultant">Tax Consultant</option>
+                                    <option value="stock_broker">Stock Broker</option>
+                                    <option value="other">Other</option>
+                                </select>
                             </div>
                         </div>
                     </fieldset>
@@ -89,8 +100,26 @@
                         </div>
                     </fieldset>
 
+                     <fieldset class="border-t-2 border-blue-200 pt-6">
+                        <legend class="text-xl font-bold text-blue-900 px-4">Step 3: Professional Details</legend>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label for="license_info" class="block text-sm font-medium text-gray-700 mb-1">License Information</label>
+                                <input type="text" id="license_info" name="license_info" placeholder="e.g., SEBI Registered RIA" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="client_focus" class="block text-sm font-medium text-gray-700 mb-1">Client Focus</label>
+                                <input type="text" id="client_focus" name="client_focus" placeholder="e.g., Salaried Individuals, HNIs" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="service_area" class="block text-sm font-medium text-gray-700 mb-1">Service Area</label>
+                                <input type="text" id="service_area" name="service_area" placeholder="e.g., Pan India, Mumbai, Delhi" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                    </fieldset>
+                    
                     <fieldset class="border-t-2 border-blue-200 pt-6">
-                         <legend class="text-xl font-bold text-blue-900 px-4">Step 3: Contact & Location</legend>
+                         <legend class="text-xl font-bold text-blue-900 px-4">Step 4: Contact & Location</legend>
                          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                             <div>
                                 <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Business Email Address *</label>
@@ -98,20 +127,32 @@
                             </div>
                              <div>
                                 <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Business Phone Number *</label>
-                                <input type="tel" id="phone" name="phone" placeholder="(555) 123-4567" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                                <input type="tel" id="phone" name="phone" placeholder="91-9876543210" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div class="md:col-span-2">
                                 <label for="website_url" class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
                                 <input type="url" id="website_url" name="website_url" placeholder="https://your-business.com" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             </div>
-                            <div class="md:col-span-2">
-                                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Full Business Address *</label>
-                                <textarea id="address" name="address" required rows="3" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></textarea>
+                             <div class="md:col-span-2">
+                                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Street Address *</label>
+                                <input id="address" name="address" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
+                            </div>
+                            <div>
+                                <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City *</label>
+                                <input type="text" id="city" name="city" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div>
+                                <label for="state" class="block text-sm font-medium text-gray-700 mb-1">State *</label>
+                                <input type="text" id="state" name="state" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                             <div>
+                                <label for="pincode" class="block text-sm font-medium text-gray-700 mb-1">Pincode *</label>
+                                <input type="text" id="pincode" name="pincode" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
                             </div>
                          </div>
                     </fieldset>
                     
-                    <div class="border-t-2 border-blue-200 pt-6 text-center">
+                    <div class="border-t-2 border-blue-200 pt-6 flex flex-col items-center space-y-4 md:space-y-0 md:flex-row md:justify-center md:space-x-4">
                         <button type="submit" id="submit-button" class="btn btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
                             <span id="submit-button-text">Submit for Approval</span>
                             <span id="submit-spinner" class="hidden loader"></span>
@@ -119,7 +160,10 @@
                         <a href="index.html" id="home-button" class="hidden btn btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
                             Go to Homepage
                         </a>
-                        <div id="form-message" class="hidden mt-6 p-4 rounded-md"></div>
+                        <a id="cancel-edit-button" class="hidden btn btn-secondary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
+                            Cancel Edit
+                        </a>
+                        <div id="form-message" class="hidden mt-6 p-4 rounded-md w-full"></div>
                     </div>
                 </form>
             </div>
@@ -133,25 +177,35 @@
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // Form Elements
         const form = document.getElementById('listing-form');
         const messageEl = document.getElementById('form-message');
         const servicesContainer = document.getElementById('services-checkboxes');
+        
+        // Buttons & Spinners
         const submitButton = document.getElementById('submit-button');
-        const homeButton = document.getElementById('home-button'); // NEW: Get the home button
+        const homeButton = document.getElementById('home-button');
+        const cancelEditButton = document.getElementById('cancel-edit-button');
+        const logoutButton = document.getElementById('logout-button');
+        const userActions = document.getElementById('user-actions');
         const submitButtonText = document.getElementById('submit-button-text');
         const submitSpinner = document.getElementById('submit-spinner');
         
+        // State Variables
         let currentUser = null;
+        let editingProfile = null; // To hold existing profile data if in edit mode
 
-        async function loadCategories() {
+        // Load categories and pre-select them if editing
+        async function loadCategories(checkedCategoryIds = []) {
             try {
                 const { data, error } = await supabase.from('categories').select('id, name');
                 if (error) throw error;
                 servicesContainer.innerHTML = ''; 
                 data.forEach(cat => {
+                    const isChecked = checkedCategoryIds.includes(cat.id) ? 'checked' : '';
                     const checkboxHTML = `
                         <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" name="categories" value="${cat.id}" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <input type="checkbox" name="categories" value="${cat.id}" ${isChecked} class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300">
                             <span class="text-gray-700">${cat.name}</span>
                         </label>`;
                     servicesContainer.insertAdjacentHTML('beforeend', checkboxHTML);
@@ -162,6 +216,33 @@
             }
         }
         
+        // Populate form with existing data
+        function populateForm(profile) {
+            if (!profile) return;
+            document.getElementById('business-name').value = profile.business_name || '';
+            document.getElementById('tagline').value = profile.tagline || '';
+            document.getElementById('logo_url').value = profile.logo_url || '';
+            document.getElementById('professional_type').value = profile.professional_type || '';
+            document.getElementById('about').value = profile.about || '';
+            document.getElementById('license_info').value = profile.license_info || '';
+            document.getElementById('client_focus').value = profile.client_focus || '';
+            document.getElementById('service_area').value = profile.service_area || '';
+            document.getElementById('email').value = profile.email || '';
+            document.getElementById('phone').value = profile.phone || '';
+            document.getElementById('website_url').value = profile.website_url || '';
+            document.getElementById('address').value = profile.address || '';
+            document.getElementById('city').value = profile.city || '';
+            document.getElementById('state').value = profile.state || '';
+            document.getElementById('pincode').value = profile.pincode || '';
+            
+            // Update UI for editing mode
+            document.getElementById('form-title').textContent = 'Edit Your Business Profile';
+            submitButtonText.textContent = 'Update Profile';
+            cancelEditButton.href = `listingdetail.html?id=${profile.id}`;
+            cancelEditButton.classList.remove('hidden');
+        }
+
+        // Handle Form Submission (Create or Update)
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentUser) {
@@ -178,49 +259,55 @@
                 setLoading(false);
                 return;
             }
-
+            
+            // Collect all form data
             const profileData = {
                 user_id: currentUser.id,
-                business_name: document.getElementById('business-name').value,
-                tagline: document.getElementById('tagline').value,
-                about: document.getElementById('about').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                website_url: document.getElementById('website_url').value,
-                address: document.getElementById('address').value,
-                status: 'pending'
+                business_name: formData.get('business_name'),
+                tagline: formData.get('tagline'),
+                logo_url: formData.get('logo_url'),
+                professional_type: formData.get('professional_type'),
+                about: formData.get('about'),
+                license_info: formData.get('license_info'),
+                client_focus: formData.get('client_focus'),
+                service_area: formData.get('service_area'),
+                email: formData.get('email'),
+                phone: formData.get('phone'),
+                website_url: formData.get('website_url'),
+                address: formData.get('address'),
+                city: formData.get('city'),
+                state: formData.get('state'),
+                pincode: formData.get('pincode'),
+                status: 'pending' // Always reset to pending for re-approval
             };
             
             try {
-                const { data: existingProfile } = await supabase
-                    .from('professional_profiles')
-                    .select('id')
-                    .eq('user_id', currentUser.id)
-                    .single();
-
                 let savedProfile;
 
-                if (existingProfile) {
+                if (editingProfile) { // UPDATE existing profile
                     const { data: updatedProfile, error: updateError } = await supabase.from('professional_profiles').update(profileData).eq('user_id', currentUser.id).select().single();
                     if (updateError) throw updateError;
                     savedProfile = updatedProfile;
+                    // Delete old categories before inserting new ones
                     await supabase.from('professional_categories').delete().eq('profile_id', savedProfile.id);
-                } else {
+                } else { // INSERT new profile
                     const { data: newProfile, error: profileError } = await supabase.from('professional_profiles').insert(profileData).select().single();
                     if (profileError) throw profileError;
                     savedProfile = newProfile;
                 }
 
+                // Insert the new set of categories
                 const categoriesToInsert = selectedCategoryIds.map(catId => ({ profile_id: savedProfile.id, category_id: catId }));
                 const { error: categoriesError } = await supabase.from('professional_categories').insert(categoriesToInsert);
                 if (categoriesError) throw categoriesError;
-
+                
                 // --- SUCCESS LOGIC ---
-                const successMessage = "Success! Your profile is submitted for approval. It should be live within 24 hours. For queries or feedback, feel free to contact us.";
+                const successMessage = "Success! Your profile is submitted for approval. It should be live within 24 hours after review.";
                 showMessage(successMessage, 'success');
                 
-                // NEW: Hide submit button and show home button
+                // Hide form buttons and show home button
                 submitButton.classList.add('hidden');
+                cancelEditButton.classList.add('hidden');
                 homeButton.classList.remove('hidden');
 
             } catch (error) {
@@ -232,8 +319,7 @@
 
         function showMessage(text, type) {
             messageEl.textContent = text;
-            messageEl.className = `mt-6 p-4 rounded-md text-center ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
-            messageEl.classList.remove('hidden');
+            messageEl.className = `mt-6 p-4 rounded-md text-center w-full ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
         }
 
         function setLoading(isLoading) {
@@ -241,19 +327,54 @@
                 submitButton.disabled = true;
                 submitButtonText.classList.add('hidden');
                 submitSpinner.classList.remove('hidden');
-                messageEl.classList.add('hidden');
+                messageEl.className = 'hidden'; // Hide previous messages
             } else {
                 submitButton.disabled = false;
                 submitButtonText.classList.remove('hidden');
                 submitSpinner.classList.add('hidden');
             }
         }
+        
+        // Handle Logout
+        logoutButton.addEventListener('click', async () => {
+            setLoading(true);
+            await supabase.auth.signOut();
+        });
 
+        // Main function to run on page load
+        async function initializePage(user) {
+            currentUser = user;
+            userActions.classList.remove('hidden');
+
+            // Check if user has an existing profile
+            const { data: profile, error } = await supabase
+                .from('professional_profiles')
+                .select('*, professional_categories(category_id)')
+                .eq('user_id', user.id)
+                .single();
+            
+            if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine.
+                 console.error("Error fetching profile:", error);
+                 showMessage("Could not fetch your profile data. Please refresh.", "error");
+                 return;
+            }
+
+            if (profile) {
+                editingProfile = profile;
+                const existingCategoryIds = profile.professional_categories.map(pc => pc.category_id);
+                await loadCategories(existingCategoryIds);
+                populateForm(profile);
+            } else {
+                await loadCategories([]);
+            }
+        }
+
+        // --- AUTHENTICATION ---
         supabase.auth.onAuthStateChange((event, session) => {
             if (session) {
-                currentUser = session.user;
-                loadCategories();
+                initializePage(session.user);
             } else {
+                // If no session, redirect to login page
                 try {
                     const loginUrl = new URL('login.html', window.location.href);
                     window.location.href = loginUrl.href;

@@ -7,175 +7,318 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #1c357a; }
         .btn-danger { background-color: #dc2626; color: white; transition: background-color 0.3s ease; }
+        .btn-danger:hover { background-color: #b91c1c; }
         [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800" x-data="adminPanel()">
+<body class="bg-gray-100 text-gray-800" x-data="adminPanel">
 
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        </header>
-
-    <div class="flex">
-        <aside class="w-64 bg-white shadow-md h-screen sticky top-[76px]">
-            </aside>
-
-        <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold text-blue-900 mb-6">Pending Professional Sign-ups</h1>
-            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-50 border-b">
-                            <tr>
-                                <th class="p-4 font-semibold">Company / Professional</th>
-                                <th class="p-4 font-semibold">Contact Email</th>
-                                <th class="p-4 font-semibold">Location</th>
-                                <th class="p-4 font-semibold">Submitted On</th>
-                                <th class="p-4 font-semibold text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="pending-profiles-tbody">
-                            </tbody>
-                    </table>
+    <div x-show="!session" x-cloak class="fixed inset-0 bg-gray-200 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-8">
+            <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Admin Login</h2>
+            <form @submit.prevent="login()">
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="email" x-model="email" required class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="admin@example.com">
                 </div>
-            </div>
-        </main>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" x-model="password" required class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••">
+                </div>
+                <div x-show="authError" class="mb-4 p-3 rounded-lg bg-red-100 text-red-800 text-sm" x-text="authError"></div>
+                <button type="submit" :disabled="authLoading" class="w-full btn-primary font-bold py-2 px-4 rounded-lg disabled:opacity-50 flex items-center justify-center">
+                    <i x-show="authLoading" class="fas fa-spinner fa-spin mr-2"></i>
+                    <span x-text="authLoading ? 'Signing In...' : 'Sign In'"></span>
+                </button>
+            </form>
+        </div>
     </div>
 
-    <div x-show="isModalOpen" @keydown.escape.window="isModalOpen = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-cloak>
-        <div @click.outside="isModalOpen = false" class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-            <div class="p-6 border-b flex justify-between items-center">
-                <h2 class="text-2xl font-bold text-blue-900">Review Professional Profile</h2>
-                <button @click="isModalOpen = false" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+    <template x-if="session">
+        <div>
+            <header class="bg-white shadow-sm sticky top-0 z-40">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between items-center h-16">
+                        <div class="flex-shrink-0">
+                            <h1 class="text-xl font-bold text-blue-900">InvestSherpa.in Admin</h1>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                             <span class="text-sm text-gray-600" x-text="session.user.email"></span>
+                             <button @click="logout()" class="font-semibold text-red-600 hover:text-red-800 text-sm">Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex">
+                <aside class="w-64 bg-white shadow-md h-screen sticky top-16">
+                    <nav class="mt-5">
+                        <a href="#" class="flex items-center mt-4 py-2 px-6 text-gray-700 bg-gray-200">
+                            <i class="fas fa-user-clock mr-3"></i>
+                            <span>Pending Approvals</span>
+                        </a>
+                    </nav>
+                </aside>
+
+                <main class="flex-1 p-8">
+                    <h1 class="text-3xl font-bold text-blue-900 mb-2">Pending Professional Sign-ups</h1>
+                    
+                    <div x-show="status.message" class="mb-4 p-4 rounded-lg text-sm"
+                         :class="{
+                             'bg-blue-100 text-blue-800': status.type === 'info',
+                             'bg-green-100 text-green-800': status.type === 'success',
+                             'bg-red-100 text-red-800': status.type === 'error'
+                         }" x-text="status.message">
+                    </div>
+
+                    <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 border-b">
+                                    <tr>
+                                        <th class="p-4 font-semibold">Company / Professional</th>
+                                        <th class="p-4 font-semibold">Contact Email</th>
+                                        <th class="p-4 font-semibold">Location</th>
+                                        <th class="p-4 font-semibold">Submitted On</th>
+                                        <th class="p-4 font-semibold text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template x-if="loading">
+                                        <tr><td colspan="5" class="text-center p-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr>
+                                    </template>
+                                    <template x-if="!loading && profiles.length === 0">
+                                        <tr><td colspan="5" class="text-center p-8 text-gray-500">No pending profiles found.</td></tr>
+                                    </template>
+                                    <template x-for="(profile, index) in profiles" :key="profile.id">
+                                        <tr class="border-b hover:bg-gray-50">
+                                            <td class="p-4 font-bold" x-text="profile.business_name"></td>
+                                            <td class="p-4" x-text="profile.email"></td>
+                                            <td class="p-4" x-text="profile.city || 'N/A'"></td>
+                                            <td class="p-4" x-text="new Date(profile.created_at).toLocaleDateString()"></td>
+                                            <td class="p-4 text-center">
+                                                <button @click="openReviewModal(index)" class="bg-blue-600 text-white py-1 px-4 rounded-lg font-semibold hover:bg-blue-700"><i class="fas fa-search-plus mr-1"></i> Review</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </main>
             </div>
-            
-            <div class="p-8 overflow-y-auto">
-                <div id="modal-content"></div>
-            </div>
-            
+        </div>
+    </template>
+    
+    <div x-show="isModalOpen" @keydown.escape.window="closeModal()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-cloak>
+        <div @click.outside="closeModal()" class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b flex justify-between items-center"><h2 class="text-2xl font-bold text-blue-900">Review Professional Profile</h2><button @click="closeModal()" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
+            <div class="p-8 overflow-y-auto" x-html="modalContent"></div>
             <div class="p-6 bg-gray-50 border-t mt-auto">
-                <div x-data="{ showRejectionInput: false }">
+                <div>
                     <div x-show="showRejectionInput" class="mb-4">
                         <label for="rejection" class="block text-sm font-medium text-gray-700 mb-1">Reason for Rejection (required)</label>
-                        <input type="text" id="rejection" x-model="rejectionReason" class="w-full p-2 border rounded-lg">
+                        <input type="text" id="rejection" x-model="rejectionReason" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter reason here...">
                     </div>
                     <div class="flex justify-end items-center space-x-4">
-                        <button @click="showRejectionInput = !showRejectionInput" x-text="showRejectionInput ? 'Cancel' : 'Reject'" class="font-semibold"></button>
-                        <button x-show="showRejectionInput" @click="rejectProfile()" :disabled="!rejectionReason" class="btn-danger font-bold py-2 px-6 rounded-lg disabled:opacity-50">Confirm Rejection</button>
-                        <button @click="approveProfile()" class="btn-primary font-bold py-2 px-8 rounded-lg">Approve</button>
+                        <button @click="showRejectionInput = !showRejectionInput" x-text="showRejectionInput ? 'Cancel' : 'Reject'" class="font-semibold text-red-600 hover:text-red-800"></button>
+                        <button x-show="showRejectionInput" @click="rejectProfile()" :disabled="!rejectionReason.trim() || actionLoading" class="btn-danger font-bold py-2 px-6 rounded-lg disabled:opacity-50 flex items-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Rejecting...' : 'Confirm Rejection'"></span></button>
+                        <button @click="approveProfile()" :disabled="actionLoading || showRejectionInput" class="btn-primary font-bold py-2 px-8 rounded-lg disabled:opacity-50 flex items-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Approving...' : 'Approve'"></span></button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    <script>
+        const { createClient } = supabase;
+        
         const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
-        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        function adminPanel() {
-            return {
-                isModalOpen: false,
-                rejectionReason: '',
-                currentProfile: null,
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('adminPanel', () => ({
+                session: null,
+                email: '',
+                password: '',
+                authError: '',
+                authLoading: false,
                 profiles: [],
+                loading: true,
+                status: { message: '', type: 'info' },
+                isModalOpen: false,
+                showRejectionInput: false,
+                rejectionReason: '',
+                currentProfileId: null,
+                actionLoading: false,
+                modalContent: '',
 
-                async init() {
-                    // TODO: Add a check for admin role here
-                    await this.fetchPendingProfiles();
-                },
+                init() {
+                    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+                        this.handleSession(session);
+                    });
 
-                async fetchPendingProfiles() {
-                    const { data, error } = await supabase
-                        .from('professional_profiles')
-                        .select('*, user_profiles(full_name)')
-                        .eq('status', 'pending')
-                        .order('created_at', { ascending: true });
-
-                    if (error) {
-                        console.error('Error fetching pending profiles:', error);
-                        return;
-                    }
-                    this.profiles = data;
-                    this.renderTable();
-                },
-                
-                renderTable() {
-                    const tbody = document.getElementById('pending-profiles-tbody');
-                    tbody.innerHTML = '';
-                    this.profiles.forEach((profile, index) => {
-                        const tr = document.createElement('tr');
-                        tr.className = 'border-b hover:bg-gray-50';
-                        tr.innerHTML = `
-                            <td class="p-4 font-bold">${profile.business_name}</td>
-                            <td class="p-4">${profile.email}</td>
-                            <td class="p-4">${profile.city || 'N/A'}</td>
-                            <td class="p-4">${new Date(profile.created_at).toLocaleDateString()}</td>
-                            <td class="p-4 text-center">
-                                <button @click="openReviewModal(${index})" class="bg-blue-600 text-white py-1 px-4 rounded-lg font-semibold hover:bg-blue-700">
-                                    <i class="fas fa-search-plus mr-1"></i> Review
-                                </button>
-                            </td>`;
-                        tbody.appendChild(tr);
+                    supabaseClient.auth.onAuthStateChange((_event, session) => {
+                        this.handleSession(session);
                     });
                 },
 
+                async handleSession(session) {
+                    if (!session) {
+                        this.session = null;
+                        return;
+                    }
+
+                    try {
+                        const { data: userProfile, error } = await supabaseClient
+                            .from('user_profiles')
+                            .select('role')
+                            .eq('id', session.user.id)
+                            .single();
+
+                        if (error) throw error;
+
+                        if (userProfile && userProfile.role === 'admin') {
+                            this.session = session;
+                            this.authError = '';
+                            this.fetchPendingProfiles();
+                        } else {
+                            // UPDATED ERROR MESSAGE
+                            this.authError = 'Invalid Permissions. This account does not have administrator access.';
+                            await supabaseClient.auth.signOut();
+                            this.session = null; 
+                        }
+                    } catch (error) {
+                        this.authError = `Error verifying permissions: ${error.message}`;
+                        await supabaseClient.auth.signOut();
+                        this.session = null;
+                    }
+                },
+
+                async login() {
+                    this.authLoading = true;
+                    this.authError = '';
+                    try {
+                        const { data, error } = await supabaseClient.auth.signInWithPassword({
+                            email: this.email,
+                            password: this.password,
+                        });
+                        if (error) throw error;
+                    } catch (error) {
+                        this.authError = error.message;
+                    } finally {
+                        this.authLoading = false;
+                    }
+                },
+
+                async logout() {
+                    this.status = { message: 'Logging out...', type: 'info' };
+                    await supabaseClient.auth.signOut();
+                    this.session = null;
+                    this.profiles = [];
+                    this.authError = '';
+                },
+
+                async fetchPendingProfiles() {
+                    if (!this.session) {
+                        this.status = { message: 'Please log in to view data.', type: 'info'};
+                        return;
+                    }
+                    this.loading = true;
+                    this.status = { message: 'Fetching data from Supabase...', type: 'info' };
+                    try {
+                        const { data, error, count } = await supabaseClient
+                            .from('professional_profiles')
+                            .select(`*, user_profiles ( full_name )`, { count: 'exact' })
+                            .eq('status', 'pending')
+                            .order('created_at', { ascending: true });
+
+                        if (error) throw error;
+                        this.profiles = data;
+                        if (data.length > 0) {
+                            this.status = { message: `Successfully loaded ${count} pending profile(s).`, type: 'success' };
+                        } else {
+                            this.status = { message: 'Successfully connected. There are currently no profiles awaiting approval.', type: 'info' };
+                        }
+                    } catch (error) {
+                        console.error('Error fetching pending profiles:', error);
+                        this.profiles = [];
+                        this.status = { 
+                            message: `Failed to fetch data. Your account may not have the required permissions. Error: ${error.message}`, 
+                            type: 'error' 
+                        };
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                
                 openReviewModal(index) {
-                    this.currentProfile = this.profiles[index];
-                    const modalContent = document.getElementById('modal-content');
-                    modalContent.innerHTML = `
-                        <h3 class="font-bold text-lg">Business Name: ${this.currentProfile.business_name}</h3>
-                        <p><strong>Submitted by:</strong> ${this.currentProfile.user_profiles.full_name}</p>
-                        <p><strong>Contact:</strong> ${this.currentProfile.email}</p>
-                        <p><strong>About:</strong> ${this.currentProfile.about || 'Not provided.'}</p>
-                    `;
+                    const profile = this.profiles[index];
+                    this.currentProfileId = profile.id;
+                    this.modalContent = `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-gray-700">
+                            <div><strong class="font-semibold text-gray-900">Business Name:</strong> <p class="inline">${profile.business_name}</p></div>
+                            <div><strong class="font-semibold text-gray-900">Submitted by:</strong> <p class="inline">${profile.user_profiles?.full_name || 'N/A'}</p></div>
+                            <div><strong class="font-semibold text-gray-900">Contact Email:</strong> <p class="inline">${profile.email}</p></div>
+                            <div><strong class="font-semibold text-gray-900">Contact Phone:</strong> <p class="inline">${profile.phone || 'N/A'}</p></div>
+                            <div><strong class="font-semibold text-gray-900">Professional Type:</strong> <p class="inline">${profile.professional_type}</p></div>
+                            <div><strong class="font-semibold text-gray-900">Website:</strong> <p class="inline">${profile.website_url ? `<a href="${profile.website_url}" target="_blank" class="text-blue-600 hover:underline">${profile.website_url}</a>` : 'N/A'}</p></div>
+                            <div class="md:col-span-2"><strong class="font-semibold text-gray-900">Location:</strong> <p class="inline">${[profile.address, profile.city, profile.state, profile.pincode].filter(Boolean).join(', ')}</p></div>
+                            <div class="md:col-span-2"><strong class="font-semibold text-gray-900">About:</strong> <p class="mt-1">${profile.about || 'Not provided.'}</p></div>
+                        </div>`;
                     this.isModalOpen = true;
                 },
 
+                closeModal() {
+                    this.isModalOpen = false;
+                    this.rejectionReason = '';
+                    this.currentProfileId = null;
+                    this.modalContent = '';
+                    this.showRejectionInput = false;
+                },
+
                 async approveProfile() {
-                    if (!this.currentProfile) return;
-                    const { error } = await supabase
-                        .from('professional_profiles')
-                        .update({ status: 'approved', approved_at: new Date() })
-                        .eq('id', this.currentProfile.id);
-                    
-                    if (error) {
-                        alert(`Error approving profile: ${error.message}`);
-                    } else {
-                        alert('Profile approved successfully!');
-                        this.isModalOpen = false;
+                    if (!this.currentProfileId || this.actionLoading) return;
+                    this.actionLoading = true;
+                    try {
+                        const { error } = await supabaseClient.from('professional_profiles').update({ status: 'approved', approved_at: new Date().toISOString() }).eq('id', this.currentProfileId);
+                        if (error) throw error;
                         await this.fetchPendingProfiles();
+                    } catch (error) {
+                        console.error('Error approving profile:', error);
+                        alert(`Error approving profile: ${error.message}`);
+                    } finally {
+                        this.actionLoading = false;
+                        this.closeModal();
                     }
                 },
 
                 async rejectProfile() {
-                    if (!this.currentProfile || !this.rejectionReason) return;
-                     const { error } = await supabase
-                        .from('professional_profiles')
-                        .update({ status: 'rejected', rejection_reason: this.rejectionReason })
-                        .eq('id', this.currentProfile.id);
-                    
-                    if (error) {
-                        alert(`Error rejecting profile: ${error.message}`);
-                    } else {
-                        alert('Profile rejected.');
-                        this.isModalOpen = false;
-                        this.rejectionReason = '';
+                    if (!this.currentProfileId || !this.rejectionReason.trim() || this.actionLoading) return;
+                    this.actionLoading = true;
+                    try {
+                        const { error } = await supabaseClient.from('professional_profiles').update({ status: 'rejected', rejection_reason: this.rejectionReason.trim() }).eq('id', this.currentProfileId);
+                        if (error) throw error;
                         await this.fetchPendingProfiles();
+                    } catch (error) {
+                        console.error('Error rejecting profile:', error);
+                        alert(`Error rejecting profile: ${error.message}`);
+                    } finally {
+                        this.actionLoading = false;
+                        this.closeModal();
                     }
                 }
-            };
-        }
-        
-        // Expose the function to the global scope for Alpine.js
-        window.adminPanel = adminPanel;
+            }));
+        });
     </script>
 </body>
 </html>
