@@ -7,26 +7,32 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
-        .btn-primary:hover { background-color: #1c347d; }
-        .card { transition: box-shadow 0.3s ease; }
-        .card:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        html { scroll-behavior: smooth; } /* Optional: enhances smooth scrolling */
+        .btn-primary { background-color: #f59e0b; color: white; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #d97706; }
+        .btn-secondary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
+        .btn-secondary:hover { background-color: #1c347d; }
+        .card { transition: all 0.3s ease; border: 1px solid transparent; }
+        .card:hover { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #f59e0b; }
+        .filter-section { border-bottom: 1px solid #e5e7eb; padding-bottom: 1.5rem; margin-bottom: 1.5rem; }
+        .filter-section:last-child { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-2">
-                <div class="p-2 bg-blue-900 rounded-lg"><i class="fas fa-shield-alt text-white text-xl"></i></div>
-                <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
+            <a href="index.html" class="flex items-center space-x-3">
+                <img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-14 w-auto">
+                <span class="text-2xl font-bold">
+                    <span class="text-blue-900">Invest</span><span class="text-amber-500">Sherpa</span>
+                </span>
             </a>
             <nav class="hidden md:flex items-center space-x-8">
                 <a href="index.html" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
-                <a href="browselisting.html" class="text-gray-600 hover:text-blue-900 font-medium">Browse</a>
+                <a href="browselisting.html" class="text-blue-900 font-bold">Browse</a>
                 <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Blog</a>
             </nav>
             <div class="hidden md:flex items-center space-x-4">
@@ -41,22 +47,71 @@
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             
             <aside class="lg:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit sticky top-28">
-                <h2 class="text-2xl font-bold text-blue-900 mb-6">Filters</h2>
-                <div class="mb-6">
-                    <div class="relative">
-                        <input type="text" id="search-input" placeholder="Search by name..." class="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
-                        <i class="fas fa-search absolute top-1/2 right-3 -translate-y-1/2 text-gray-400"></i>
-                    </div>
+                <div class="flex justify-between items-center mb-6 border-b pb-4">
+                    <h2 class="text-2xl font-bold text-blue-900">Filters</h2>
+                    <button id="reset-filters-btn" class="text-sm font-semibold text-blue-800 hover:underline">Reset</button>
                 </div>
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="font-semibold text-gray-700">Category</h3>
-                        <div id="filter-categories" class="mt-2 space-y-2 max-h-48 overflow-y-auto pr-2">
-                            </div>
+                <div id="filters-form">
+                    <div class="filter-section">
+                        <div class="relative">
+                            <input type="text" id="search-input" placeholder="Search by name, email..." class="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                            <button id="search-btn" class="absolute top-0 right-0 h-full px-3 text-gray-400 hover:text-blue-900" aria-label="Search">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3 class="font-semibold text-gray-700 mb-3">Location</h3>
+                        <button id="location-btn" class="w-full text-sm text-center p-2 border border-gray-300 rounded-lg hover:bg-gray-100 mb-3">Use My Location</button>
+                        <select id="radius-select" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <option value="5000">Within 5 km</option>
+                            <option value="10000">Within 10 km</option>
+                            <option value="25000" selected>Within 25 km</option>
+                            <option value="50000">Within 50 km</option>
+                        </select>
+                         <p id="location-status" class="text-xs text-gray-500 mt-2"></p>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3 class="font-semibold text-gray-700 mb-3">Advisor Type</h3>
+                        <div class="space-y-2 text-sm">
+                            <label class="flex items-center"><input type="checkbox" name="license_info" value="AMFI registered MFD" class="mr-2 h-4 w-4 rounded text-amber-600"> AMFI registered MFD</label>
+                            <label class="flex items-center"><input type="checkbox" name="license_info" value="SEBI registered RIA" class="mr-2 h-4 w-4 rounded text-amber-600"> SEBI registered RIA</label>
+                            <label class="flex items-center"><input type="checkbox" name="license_info" value="IRDA Registered Insurance Agent" class="mr-2 h-4 w-4 rounded text-amber-600"> IRDA Agent</label>
+                            <label class="flex items-center"><input type="checkbox" name="license_info" value="PFRDA registered Retirement Advisor" class="mr-2 h-4 w-4 rounded text-amber-600"> PFRDA RA</label>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3 class="font-semibold text-gray-700 mb-3">Specialization</h3>
+                        <div id="filter-categories" class="space-y-2 text-sm max-h-40 overflow-y-auto pr-2">
+                            <p class="text-xs text-gray-400">Loading...</p>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h3 class="font-semibold text-gray-700 mb-3">Experience</h3>
+                        <select id="experience-select" class="w-full p-2 border border-gray-300 rounded-lg">
+                            <option value="">Any</option>
+                            <option value="1">1+ years</option>
+                            <option value="3">3+ years</option>
+                            <option value="5">5+ years</option>
+                            <option value="10">10+ years</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-section">
+                         <h3 class="font-semibold text-gray-700 mb-3">Other Options</h3>
+                         <div class="space-y-2 text-sm">
+                            <label class="flex items-center"><input type="checkbox" id="fee-filter" value="No Fees" class="mr-2 h-4 w-4 rounded text-amber-600"> No Fees</label>
+                            <label class="flex items-center"><input type="checkbox" id="video-filter" class="mr-2 h-4 w-4 rounded text-amber-600"> Video Consultation</label>
+                            <label class="flex items-center"><input type="checkbox" id="response-filter" value="Instant" class="mr-2 h-4 w-4 rounded text-amber-600"> Instant Response</label>
+                         </div>
                     </div>
                 </div>
                 <div class="mt-8">
-                    <button id="apply-filters-btn" class="btn-primary w-full py-3 rounded-lg font-bold">Apply Filters</button>
+                    <button id="apply-filters-btn" class="btn-primary w-full py-3 rounded-lg font-bold shadow-lg">Apply Filters</button>
                 </div>
             </aside>
 
@@ -65,9 +120,9 @@
                     <h1 id="results-count" class="text-3xl font-bold text-blue-900">Loading Results...</h1>
                 </div>
 
-                <div id="listings-container" class="grid grid-cols-1 gap-6">
+                <div id="listings-container" class="space-y-6">
                     </div>
-                </section>
+            </section>
         </div>
     </main>
 
@@ -81,79 +136,143 @@
         const resultsCountEl = document.getElementById('results-count');
         const searchInput = document.getElementById('search-input');
         const applyFiltersBtn = document.getElementById('apply-filters-btn');
+        const locationBtn = document.getElementById('location-btn');
+        const locationStatusEl = document.getElementById('location-status');
+        const searchBtn = document.getElementById('search-btn');
+        const resetFiltersBtn = document.getElementById('reset-filters-btn');
+        
+        let userCoords = null;
 
         // --- FETCH AND DISPLAY LISTINGS ---
         async function displayListings() {
-            listingsContainer.innerHTML = '<p>Loading...</p>';
+            resultsCountEl.scrollIntoView({ behavior: 'smooth' }); // Scroll to top of results
+            listingsContainer.innerHTML = '<p class="text-center py-10">Searching...</p>';
+            resultsCountEl.textContent = 'Loading...';
             
-            let query = supabase
-                .from('professional_profiles')
-                .select(`
-                    id,
-                    business_name,
-                    city,
-                    state,
-                    tagline,
-                    professional_categories(categories(name))
-                `, { count: 'exact' })
-                .eq('status', 'approved');
-
-            // --- Apply Search Filter ---
-            const searchTerm = searchInput.value.trim();
-            if (searchTerm) {
-                query = query.ilike('business_name', `%${searchTerm}%`);
+            const radius = document.getElementById('radius-select').value;
+            
+            let query;
+            if (userCoords) {
+                query = supabase.rpc('profiles_in_radius', {
+                    lat: userCoords.latitude,
+                    long: userCoords.longitude,
+                    radius_meters: parseInt(radius, 10)
+                });
+            } else {
+                query = supabase.from('searchable_profiles').select('*');
             }
             
-            const { data, error, count } = await query;
+            query = query.eq('status', 'approved');
 
+            const searchTerm = searchInput.value.trim();
+            if (searchTerm) {
+                query = query.ilike('search_text', `%${searchTerm}%`);
+            }
+            
+            const selectedLicenses = Array.from(document.querySelectorAll('input[name="license_info"]:checked')).map(cb => cb.value);
+            if (selectedLicenses.length > 0) {
+                const licenseFilters = selectedLicenses.map(lic => `license_info.ilike.%${lic}%`).join(',');
+                query = query.or(licenseFilters);
+            }
+
+            const minExperience = document.getElementById('experience-select').value;
+            if (minExperience) {
+                query = query.gte('experience_years', parseInt(minExperience, 10));
+            }
+            
+            if (document.getElementById('fee-filter').checked) query = query.eq('fee_structure', 'No Fees');
+            if (document.getElementById('video-filter').checked) query = query.eq('video_consultation', true);
+            if (document.getElementById('response-filter').checked) query = query.eq('response_time', 'Instant');
+            
+            let { data, error } = await query;
+            
             if (error) {
                 console.error('Error fetching listings:', error);
-                listingsContainer.innerHTML = '<p class="text-red-500">Could not load listings.</p>';
+                listingsContainer.innerHTML = `<p class="text-red-500">Could not load listings. Error: ${error.message}</p>`;
                 return;
             }
 
-            resultsCountEl.textContent = `Showing ${count} Results`;
+            const selectedCategories = Array.from(document.querySelectorAll('#filter-categories input:checked')).map(cb => parseInt(cb.dataset.catId, 10));
+            if (selectedCategories.length > 0) {
+                 const { data: profileCategories, error: catError } = await supabase
+                    .from('professional_categories')
+                    .select('profile_id')
+                    .in('category_id', selectedCategories);
+
+                if (catError) console.error(catError);
+
+                const matchingProfileIds = profileCategories ? profileCategories.map(pc => pc.profile_id) : [];
+                data = data.filter(profile => matchingProfileIds.includes(profile.id));
+            }
+            
+            resultsCountEl.textContent = `Showing ${data.length} Results`;
             listingsContainer.innerHTML = '';
 
             if (data.length === 0) {
-                listingsContainer.innerHTML = '<p>No advisors found matching your criteria.</p>';
+                listingsContainer.innerHTML = '<p class="text-center py-10">No advisors found matching your criteria.</p>';
             }
 
             data.forEach(listing => {
-                const categories = listing.professional_categories.map(pc => pc.categories.name).join(', ');
-
                 const card = `
                     <div class="card bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row">
                         <div class="p-6 flex-grow">
-                            <div class="flex justify-between items-start">
-                                <div>
-                                    <h3 class="text-xl font-bold text-blue-900">${listing.business_name}</h3>
-                                    <p class="text-gray-600 mb-2"><i class="fas fa-map-marker-alt mr-2"></i>${listing.city}, ${listing.state}</p>
-                                </div>
-                            </div>
+                            <h3 class="text-xl font-bold text-blue-900">${listing.business_name}</h3>
+                            <p class="text-gray-500 text-sm">${listing.full_name || ''}</p>
+                            <p class="text-gray-600 my-2 text-sm"><i class="fas fa-map-marker-alt mr-2 text-gray-400"></i>${listing.city}, ${listing.state}</p>
                             <p class="text-gray-700 my-3">${listing.tagline || 'Expert financial and insurance advice.'}</p>
-                            <div class="flex flex-wrap gap-2 mb-4">
-                                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${categories}</span>
+                            <div class="flex flex-wrap gap-2 mb-4 border-t pt-4">
+                                ${listing.experience_years ? `<span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${listing.experience_years}+ years exp.</span>` : ''}
+                                ${listing.fee_structure ? `<span class="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">${listing.fee_structure === 'No Fees' ? 'No Fees' : 'Fees Apply'}</span>` : ''}
+                                ${listing.video_consultation ? `<span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded-full"><i class="fas fa-video mr-1"></i> Video Call</span>` : ''}
                             </div>
-                            <a href="listingdetail.html?id=${listing.id}" class="font-semibold text-blue-800 hover:underline">View Profile <i class="fas fa-arrow-right ml-1"></i></a>
+                            <a href="listingdetail.html?id=${listing.id}" class="font-semibold text-blue-800 hover:text-amber-600">View Profile <i class="fas fa-arrow-right ml-1"></i></a>
                         </div>
                     </div>`;
                 listingsContainer.innerHTML += card;
             });
         }
 
-        // --- POPULATE FILTER CATEGORIES ---
         async function populateCategories() {
-            const { data, error } = await supabase.from('categories').select('id, name');
+            const { data, error } = await supabase.from('categories').select('id, name').order('name');
             if (error) return;
 
             const container = document.getElementById('filter-categories');
             container.innerHTML = '';
             data.forEach(cat => {
-                const item = `<label class="flex items-center"><input type="checkbox" data-cat-id="${cat.id}" class="h-4 w-4 rounded border-gray-300 text-blue-600 mr-2"> ${cat.name}</label>`;
+                const item = `<label class="flex items-center"><input type="checkbox" data-cat-id="${cat.id}" class="h-4 w-4 rounded border-gray-300 text-amber-600 mr-2"> ${cat.name}</label>`;
                 container.innerHTML += item;
             });
         }
+
+        function resetFiltersAndSearch() {
+            searchInput.value = '';
+            document.getElementById('experience-select').value = ''; 
+            document.getElementById('radius-select').value = '25000'; 
+            document.querySelectorAll('#filters-form input[type="checkbox"]').forEach(cb => cb.checked = false);
+            userCoords = null;
+            locationStatusEl.textContent = '';
+            locationStatusEl.style.color = '';
+            displayListings();
+        }
+
+        locationBtn.addEventListener('click', () => {
+            if (!navigator.geolocation) {
+                locationStatusEl.textContent = 'Geolocation is not supported.';
+                return;
+            }
+            locationStatusEl.textContent = 'Getting location...';
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    userCoords = position.coords;
+                    locationStatusEl.textContent = `Location captured!`;
+                    locationStatusEl.style.color = 'green';
+                },
+                () => {
+                    locationStatusEl.textContent = 'Unable to retrieve your location.';
+                    locationStatusEl.style.color = 'red';
+                }
+            );
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
@@ -166,6 +285,15 @@
             populateCategories();
             
             applyFiltersBtn.addEventListener('click', displayListings);
+            searchBtn.addEventListener('click', displayListings);
+            resetFiltersBtn.addEventListener('click', resetFiltersAndSearch);
+
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault(); 
+                    displayListings();
+                }
+            });
         });
 
     </script>

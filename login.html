@@ -61,11 +61,11 @@
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-2">
-                <div class="p-2 bg-blue-900 rounded-lg">
-                    <i class="fas fa-shield-alt text-white text-xl"></i>
-                </div>
-                <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
+            <a href="index.html" class="flex items-center space-x-3">
+                <img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-14 w-auto">
+                <span class="text-2xl font-bold">
+                    <span class="text-blue-900">Invest</span><span class="text-amber-500">Sherpa</span>
+                </span>
             </a>
             
             <nav class="hidden md:flex items-center space-x-8">
@@ -142,16 +142,7 @@
                     <div x-show="userRole === 'professional'" x-collapse class="space-y-4 pt-2">
                         <hr>
                         <p class="text-sm font-semibold text-gray-700 text-center">Professional Information</p>
-                        <input type="text" name="company_name" placeholder="Company Name" x-bind:required="userRole === 'professional'" class="w-full p-3 border border-gray-300 rounded-lg">
-                        <select name="professional_type" x-bind:required="userRole === 'professional'" class="w-full p-3 border border-gray-300 rounded-lg text-gray-500">
-                            <option value="" disabled selected>Select Professional Type</option>
-                            <option value="financial_advisor">Financial Advisor</option>
-                            <option value="insurance_broker">Insurance Broker</option>
-                            <option value="investment_firm">Investment Firm</option>
-                            <option value="tax_consultant">Tax Consultant</option>
-                            <option value="other">Other</option>
-                        </select>
-                        <hr>
+                        <input type="text" name="business_name" placeholder="Business Name (Optional)" class="w-full p-3 border border-gray-300 rounded-lg">
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
@@ -179,133 +170,121 @@
     </main>
 
 <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const states = [ "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry" ];
-            const stateSelect = document.getElementById('state-select');
-            if (stateSelect) {
-                states.forEach(state => {
-                    const option = document.createElement('option');
-                    option.value = state;
-                    option.textContent = state;
-                    stateSelect.appendChild(option);
-                });
-            }
+    document.addEventListener('DOMContentLoaded', function() {
+        const states = [ "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry" ];
+        const stateSelect = document.getElementById('state-select');
+        if (stateSelect) {
+            states.forEach(state => {
+                const option = document.createElement('option');
+                option.value = state;
+                option.textContent = state;
+                stateSelect.appendChild(option);
+            });
+        }
 
-            const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
-            const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
-            const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const loginMessageBox = document.getElementById('form-message-box-login');
+        const signupMessageBox = document.getElementById('form-message-box-signup');
+        
+        const showMessage = (box, message, type = 'error') => {
+            box.textContent = message;
+            box.className = `form-message ${type}`;
+        };
+        
+        // --- LOGIN FORM LOGIC ---
+        document.getElementById('login-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const form = event.target;
+            const email = form.email.value;
+            const password = form.password.value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                showMessage(loginMessageBox, error.message);
+            } else if (data.user) {
+                showMessage(loginMessageBox, 'Login successful! Redirecting...', 'success');
+                
+                setTimeout(async () => {
+                    // Check the user's role from their metadata
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const userRole = user.user_metadata.role;
+
+                    if (userRole === 'professional') {
+                        // For professionals, redirect to the add/edit listing page
+                        window.location.href = 'addlisting.html';
+                    } else {
+                        // For end users, redirect to the browsing page
+                        window.location.href = 'browselisting.html';
+                    }
+                }, 1500);
+            }
+        });
+
+        // --- SIGNUP FORM LOGIC (CORRECTED) ---
+        const signupForm = document.getElementById('signup-form');
+        const signupButton = document.getElementById('signup-button');
+
+        signupForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
             
-            const loginMessageBox = document.getElementById('form-message-box-login');
-            const signupMessageBox = document.getElementById('form-message-box-signup');
-            
-            const showMessage = (box, message, type = 'error') => {
-                box.textContent = message;
-                box.className = `form-message ${type}`;
+            signupButton.disabled = true;
+            signupButton.querySelector('.button-text').classList.add('hidden');
+            signupButton.querySelector('.button-loader').classList.remove('hidden');
+            showMessage(signupMessageBox, '', 'success'); // Clear previous messages
+
+            const formData = new FormData(signupForm);
+            const email = formData.get('email');
+            const password = formData.get('password');
+            const role = formData.get('role');
+
+            const userMetadata = {
+                role: role,
+                full_name: formData.get('full_name'),
+                phone: formData.get('phone'),
+                city: formData.get('city'),
+                state: formData.get('state'),
+                pincode: formData.get('pincode'),
             };
             
-            // --- UPDATED LOGIN FORM WITH CONDITIONAL REDIRECT ---
-            document.getElementById('login-form').addEventListener('submit', async (event) => {
-                event.preventDefault();
-                const form = event.target;
-                const email = form.email.value;
-                const password = form.password.value;
+            // Only add professional-specific metadata if the role is professional
+            if (role === 'professional') {
+                userMetadata.business_name = formData.get('business_name');
+            }
 
-                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-                if (error) {
-                    showMessage(loginMessageBox, error.message);
-                } else {
-                    showMessage(loginMessageBox, 'Login successful! Redirecting...', 'success');
-                    
-                    const { user } = data;
-                    
-                    // Add a small delay so the user can see the success message
-                    setTimeout(async () => {
-                        const userRole = user.user_metadata.role;
-
-                        if (userRole === 'professional') {
-                            // Professional user: find their profile ID and redirect to their detail page
-                            const { data: profile, error: profileError } = await supabase
-                                .from('professional_profiles')
-                                .select('id')
-                                .eq('user_id', user.id)
-                                .single();
-                            
-                            if (profileError) {
-                                console.error('Error fetching professional profile:', profileError);
-                                // If there's an error fetching, they likely haven't created a profile yet.
-                                // Redirect them to the creation page as a safe fallback.
-                                window.location.href = 'addlisting.html';
-                                return;
-                            }
-
-                            if (profile) {
-                                // Profile found, redirect to their specific listing detail page
-                                window.location.href = `listingdetail.html?id=${profile.id}`;
-                            } else {
-                                // No profile found, they need to create one
-                                window.location.href = 'addlisting.html';
-                            }
-
-                        } else {
-                            // End user or any other role: redirect to the browsing page
-                            window.location.href = 'browselisting.html';
-                        }
-                    }, 1500); // 1.5-second delay
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: userMetadata
                 }
             });
 
-            // --- SIGNUP FORM LOGIC (No changes here) ---
-            const signupForm = document.getElementById('signup-form');
-            const signupButton = document.getElementById('signup-button');
-
-            signupForm.addEventListener('submit', async (event) => {
-                event.preventDefault();
+            if (error) {
+                showMessage(signupMessageBox, error.message);
+            } else if (data.user) {
+                // This block runs on success. Now we check if the user was new or existing.
+                const isNewUser = data.user.identities && data.user.identities.length === 0;
                 
-                signupButton.disabled = true;
-                signupButton.querySelector('.button-text').classList.add('hidden');
-                signupButton.querySelector('.button-loader').classList.remove('hidden');
-                showMessage(signupMessageBox, '', 'success');
-
-                const formData = new FormData(signupForm);
-                const email = formData.get('email');
-                const password = formData.get('password');
-                const role = formData.get('role');
-
-                const userMetadata = {
-                    role: role,
-                    full_name: formData.get('full_name'),
-                    phone: formData.get('phone'),
-                    city: formData.get('city'),
-                    state: formData.get('state'),
-                    pincode: formData.get('pincode'),
-                };
-                
-                if (role === 'professional') {
-                    userMetadata.company_name = formData.get('company_name');
-                    userMetadata.professional_type = formData.get('professional_type');
-                }
-
-                const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: {
-                        data: userMetadata
-                    }
-                });
-
-                if (error) {
-                    showMessage(signupMessageBox, error.message);
+                if (isNewUser) {
+                    // This case means the user already exists but was unconfirmed.
+                    // Supabase has re-sent the confirmation email.
+                    showMessage(signupMessageBox, 'This email is already registered. We have re-sent a verification link. Please check your inbox.', 'success');
                 } else {
+                    // This is a brand new user.
                     showMessage(signupMessageBox, 'Sign up successful! Please check your email to verify your account.', 'success');
-                    signupForm.reset();
                 }
-                
-                signupButton.disabled = false;
-                signupButton.querySelector('.button-text').classList.remove('hidden');
-                signupButton.querySelector('.button-loader').classList.add('hidden');
-            });
+                signupForm.reset();
+            }
+            
+            signupButton.disabled = false;
+            signupButton.querySelector('.button-text').classList.remove('hidden');
+            signupButton.querySelector('.button-loader').classList.add('hidden');
         });
-    </script>
-    </body>
+    });
+</script>
+</body>
 </html>

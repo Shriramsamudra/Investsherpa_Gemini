@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>List Your Business - InvestSherpa.in</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -11,10 +12,11 @@
         body { font-family: 'Inter', sans-serif; }
         .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
         .btn-primary:hover { background-color: #1c347d; }
-        .btn-secondary { background-color: #6b7280; color: white; transition: background-color 0.3s ease; }
-        .btn-secondary:hover { background-color: #4b5563; }
-        .btn-danger { background-color: #dc2626; color: white; transition: background-color 0.3s ease; }
-        .btn-danger:hover { background-color: #b91c1c; }
+        .btn-primary:disabled { background-color: #94a3b8; cursor: not-allowed; }
+        .btn-secondary { background-color: #f59e0b; color: white; transition: background-color 0.3s ease; }
+        .btn-secondary:hover { background-color: #d97706; }
+        .btn-danger-sm { background-color: #fee2e2; color: #991b1b; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; transition: background-color 0.2s; }
+        .btn-danger-sm:hover { background-color: #fecaca; }
         .btn { display: inline-flex; align-items: center; justify-content: center; }
         .loader {
             border: 4px solid #f3f3f3;
@@ -26,207 +28,223 @@
             display: inline-block;
             margin-right: 10px;
         }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .pincode-loader { width: 16px; height: 16px; border-width: 2px; margin-left: 8px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #map { height: 350px; width: 100%; border-radius: 0.375rem; border: 1px solid #d1d5db; z-index: 1; }
+        .checkbox-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+        @media (min-width: 768px) { .checkbox-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        .suggestion-tag {
+            cursor: pointer;
+            background-color: #e5e7eb;
+            color: #374151;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
         }
+        .suggestion-tag:hover { background-color: #d1d5db; }
+        .form-message { display: none; padding: 1rem; border-radius: 0.5rem; font-weight: 500; text-align: center; }
+        .form-message.success { display: block; background-color: #d1fae5; color: #065f46; }
+        .form-message.error { display: block; background-color: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="index.html" class="flex items-center space-x-2">
-                <div class="p-2 bg-blue-900 rounded-lg"><i class="fas fa-shield-alt text-white text-xl"></i></div>
-                <span class="text-2xl font-bold text-blue-900">InvestSherpa.in</span>
+            <a href="index.html" class="flex items-center space-x-3">
+                <img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-14 w-auto">
+                <span class="text-2xl font-bold">
+                    <span class="text-blue-900">Invest</span><span class="text-amber-500">Sherpa</span>
+                </span>
             </a>
             <div id="user-actions" class="hidden md:flex items-center space-x-4">
-                 <button id="logout-button" class="btn btn-danger font-semibold py-2 px-4 rounded-lg shadow-md">Logout</button>
+                 <button id="logout-button" class="btn-danger font-semibold py-2 px-4 rounded-lg shadow-md">Logout</button>
             </div>
             <button class="md:hidden text-blue-900 text-2xl"><i class="fas fa-bars"></i></button>
         </div>
     </header>
 
     <main class="container mx-auto px-6 py-12">
-        <section id="submission-form" class="py-16">
+        <section id="submission-section" class="py-16">
             <div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl">
-                <h2 id="form-title" class="text-3xl font-bold text-blue-900 mb-2">Create Your Business Profile</h2>
-                <p class="text-gray-600 mb-8">Please provide the following details to create or update your listing.</p>
-                
-                <form id="listing-form" class="space-y-8">
-                    <fieldset class="border-t-2 border-blue-200 pt-6">
-                        <legend class="text-xl font-bold text-blue-900 px-4">Step 1: Basic Information</legend>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                            <div>
-                                <label for="business-name" class="block text-sm font-medium text-gray-700 mb-1">Business Name *</label>
-                                <input type="text" id="business-name" name="business_name" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label for="tagline" class="block text-sm font-medium text-gray-700 mb-1">Tagline / Slogan</label>
-                                <input type="text" id="tagline" name="tagline" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                             <div class="md:col-span-2">
-                                <label for="logo_url" class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label>
-                                <input type="url" id="logo_url" name="logo_url" placeholder="https://your-business.com/logo.png" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="professional_type" class="block text-sm font-medium text-gray-700 mb-1">Type of Professional *</label>
-                                <select id="professional_type" name="professional_type" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="" disabled selected>Select your profession</option>
-                                    <option value="financial_advisor">Financial Advisor</option>
-                                    <option value="insurance_agent">Insurance Agent</option>
-                                    <option value="chartered_accountant">Chartered Accountant</option>
-                                    <option value="tax_consultant">Tax Consultant</option>
-                                    <option value="stock_broker">Stock Broker</option>
-                                    <option value="other">Other</option>
-                                </select>
-                            </div>
-                        </div>
-                    </fieldset>
-
-                    <fieldset class="border-t-2 border-blue-200 pt-6">
-                        <legend class="text-xl font-bold text-blue-900 px-4">Step 2: About & Services</legend>
-                        <div class="mt-4 space-y-6">
-                            <div>
-                                <label for="about" class="block text-sm font-medium text-gray-700 mb-1">About Your Business</label>
-                                <textarea id="about" name="about" rows="5" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></textarea>
-                            </div>
-                             <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Services Offered * (Select at least one)</label>
-                                <div id="services-checkboxes" class="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                    <p class="text-gray-500">Loading services...</p>
-                                </div>
-                            </div>
-                        </div>
-                    </fieldset>
-
-                     <fieldset class="border-t-2 border-blue-200 pt-6">
-                        <legend class="text-xl font-bold text-blue-900 px-4">Step 3: Professional Details</legend>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                            <div>
-                                <label for="license_info" class="block text-sm font-medium text-gray-700 mb-1">License Information</label>
-                                <input type="text" id="license_info" name="license_info" placeholder="e.g., SEBI Registered RIA" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            <div>
-                                <label for="client_focus" class="block text-sm font-medium text-gray-700 mb-1">Client Focus</label>
-                                <input type="text" id="client_focus" name="client_focus" placeholder="e.g., Salaried Individuals, HNIs" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="service_area" class="block text-sm font-medium text-gray-700 mb-1">Service Area</label>
-                                <input type="text" id="service_area" name="service_area" placeholder="e.g., Pan India, Mumbai, Delhi" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                        </div>
-                    </fieldset>
-                    
-                    <fieldset class="border-t-2 border-blue-200 pt-6">
-                         <legend class="text-xl font-bold text-blue-900 px-4">Step 4: Contact & Location</legend>
-                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
-                            <div>
-                                <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Business Email Address *</label>
-                                <input type="email" id="email" name="email" placeholder="you@example.com" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                             <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Business Phone Number *</label>
-                                <input type="tel" id="phone" name="phone" placeholder="91-9876543210" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="website_url" class="block text-sm font-medium text-gray-700 mb-1">Website URL</label>
-                                <input type="url" id="website_url" name="website_url" placeholder="https://your-business.com" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                             <div class="md:col-span-2">
-                                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Street Address *</label>
-                                <input id="address" name="address" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500" />
-                            </div>
-                            <div>
-                                <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City *</label>
-                                <input type="text" id="city" name="city" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                             <div>
-                                <label for="state" class="block text-sm font-medium text-gray-700 mb-1">State *</label>
-                                <input type="text" id="state" name="state" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                             <div>
-                                <label for="pincode" class="block text-sm font-medium text-gray-700 mb-1">Pincode *</label>
-                                <input type="text" id="pincode" name="pincode" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500">
-                            </div>
-                         </div>
-                    </fieldset>
-                    
-                    <div class="border-t-2 border-blue-200 pt-6 flex flex-col items-center space-y-4 md:space-y-0 md:flex-row md:justify-center md:space-x-4">
-                        <button type="submit" id="submit-button" class="btn btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
-                            <span id="submit-button-text">Submit for Approval</span>
-                            <span id="submit-spinner" class="hidden loader"></span>
-                        </button>
-                        <a href="index.html" id="home-button" class="hidden btn btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
-                            Go to Homepage
-                        </a>
-                        <a id="cancel-edit-button" class="hidden btn btn-secondary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">
-                            Cancel Edit
-                        </a>
-                        <div id="form-message" class="hidden mt-6 p-4 rounded-md w-full"></div>
-                    </div>
-                </form>
+                <p class="text-center text-gray-500">Loading user information...</p>
             </div>
         </section>
     </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-        
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
         const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Form Elements
-        const form = document.getElementById('listing-form');
-        const messageEl = document.getElementById('form-message');
-        const servicesContainer = document.getElementById('services-checkboxes');
         
-        // Buttons & Spinners
-        const submitButton = document.getElementById('submit-button');
-        const homeButton = document.getElementById('home-button');
-        const cancelEditButton = document.getElementById('cancel-edit-button');
-        const logoutButton = document.getElementById('logout-button');
+        const submissionSection = document.getElementById('submission-section');
         const userActions = document.getElementById('user-actions');
-        const submitButtonText = document.getElementById('submit-button-text');
-        const submitSpinner = document.getElementById('submit-spinner');
+        const logoutButton = document.getElementById('logout-button');
         
-        // State Variables
         let currentUser = null;
-        let editingProfile = null; // To hold existing profile data if in edit mode
+        let editingProfile = null;
+        let isPageInitialized = false;
 
-        // Load categories and pre-select them if editing
-        async function loadCategories(checkedCategoryIds = []) {
+        const upgradeHTML = `<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl text-center"><h2 class="text-3xl font-bold text-blue-900 mb-4">Upgrade to a Professional Account</h2><p class="text-gray-600 mb-8">To list your business and access professional features, you need to upgrade your account. This is a one-time change.</p><button id="upgrade-btn" class="btn-primary font-bold py-3 px-10 rounded-lg shadow-md">Upgrade My Account</button><div id="upgrade-message-box" class="form-message mt-4"></div></div>`;
+        const formHTML = `<div class="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-xl"><h2 id="form-title" class="text-3xl font-bold text-blue-900 mb-2">Create Your Business Profile</h2><p class="text-gray-600 mb-8">Please provide the following details to create or update your listing.</p><form id="listing-form" class="space-y-8"><fieldset class="border-t-2 border-blue-200 pt-6"><legend class="text-xl font-bold text-blue-900 px-4">Step 1: Basic Information</legend><div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4"><div><label for="business-name" class="block text-sm font-medium text-gray-700 mb-1">Business Name *</label><input type="text" id="business-name" name="business_name" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></div><div><label for="tagline" class="block text-sm font-medium text-gray-700 mb-1">Tagline / Slogan</label><input type="text" id="tagline" name="tagline" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></div><div class="md:col-span-2"><label for="logo_url" class="block text-sm font-medium text-gray-700 mb-1">Logo URL</label><input type="url" id="logo_url" name="logo_url" placeholder="https://your-business.com/logo.png" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></div><div class="md:col-span-2"><label for="professional_type" class="block text-sm font-medium text-gray-700 mb-1">Type of Professional *</label><select id="professional_type" name="professional_type" required class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"><option value="" disabled selected>Select your profession</option><option value="financial_advisor">Financial Advisor</option><option value="insurance_agent">Insurance Agent</option><option value="chartered_accountant">Chartered Accountant</option><option value="tax_consultant">Tax Consultant</option><option value="stock_broker">Stock Broker</option><option value="mutual_fund_distributor">Mutual Fund Distributor</option><option value="investment_consultant">Investment Consultant</option><option value="retirement_advisor">Retirement Advisor</option></select></div></div></fieldset><fieldset class="border-t-2 border-blue-200 pt-6"><legend class="text-xl font-bold text-blue-900 px-4">Step 2: About & Services</legend><div class="mt-4 space-y-6"><div><label for="about" class="block text-sm font-medium text-gray-700 mb-1">About Your Business</label><textarea id="about" name="about" rows="5" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></textarea></div><div><label class="block text-sm font-medium text-gray-700 mb-2">Services Offered * (Select at least one)</label><div id="services-checkboxes" class="grid grid-cols-2 md:grid-cols-3 gap-4"><p class="text-gray-500">Loading services...</p></div></div></div></fieldset><fieldset class="border-t-2 border-blue-200 pt-6"><legend class="text-xl font-bold text-blue-900 px-4">Step 3: Professional Details</legend><div class="mt-4 space-y-6"><div><label class="block text-sm font-medium text-gray-700 mb-2">License Information * (Select at least one)</label><div id="license-info-checkboxes" class="checkbox-grid"><label class="flex items-center space-x-2"><input type="checkbox" name="license_info" value="AMFI registered MFD" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>AMFI registered MFD</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="license_info" value="SEBI registered RIA" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>SEBI registered RIA</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="license_info" value="SEBI registered Portfolio Manager" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>SEBI registered PM</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="license_info" value="CFP" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>CFP</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="license_info" value="IRDA Registered Insurance Agent" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>IRDA Agent</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="license_info" value="PFRDA registered Retirement Advisor" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>PFRDA RA</span></label></div></div><div><label class="block text-sm font-medium text-gray-700 mb-2">Client Focus</label><div id="client-focus-checkboxes" class="checkbox-grid"><label class="flex items-center space-x-2"><input type="checkbox" name="client_focus" value="Salaried" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>Salaried</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="client_focus" value="Professionals" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>Professionals</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="client_focus" value="Businessman" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>Businessman</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="client_focus" value="Industrialists" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>Industrialists</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="client_focus" value="NGOs" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>NGOs</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="client_focus" value="HNIs" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>HNIs</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="client_focus" value="NRIs" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>NRIs</span></label><label class="flex items-center space-x-2"><input type="checkbox" name="client_focus" value="Corporate" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span>Corporate</span></label></div><div class="flex items-center space-x-2 mt-4"><input type="checkbox" id="client-focus-other-checkbox" class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><label for="client-focus-other-checkbox">Other:</label><input type="text" id="client-focus-other-text" name="client_focus_other" placeholder="Please specify" disabled class="flex-grow p-2 border border-gray-300 rounded-md bg-gray-100 focus:ring-blue-500 focus:border-blue-500"></div></div><div><label class="block text-sm font-medium text-gray-700 mb-2">Service Area</label><div id="service-area-suggestions" class="flex flex-wrap gap-2 mb-2"><span class="suggestion-tag">Mumbai</span><span class="suggestion-tag">Delhi</span><span class="suggestion-tag">Bengaluru</span><span class="suggestion-tag">Chennai</span><span class="suggestion-tag">Kolkata</span><span class="suggestion-tag">Hyderabad</span><span class="suggestion-tag">Pan India</span><span class="suggestion-tag">Worldwide</span></div><input type="text" id="service-area" name="service_area" placeholder="Click suggestions above or type your own" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></div><div class="pt-6 border-t"><h3 class="font-semibold text-gray-700 mb-3">Featured Articles & Blogs</h3><div id="blogs-container" class="space-y-3"></div><button type="button" id="add-blog-btn" class="mt-3 text-sm font-semibold text-blue-600 hover:underline">+ Add Blog Link</button></div><div class="pt-6 border-t"><h3 class="font-semibold text-gray-700 mb-3">Featured Videos</h3><div id="videos-container" class="space-y-3"></div><button type="button" id="add-video-btn" class="mt-3 text-sm font-semibold text-blue-600 hover:underline">+ Add Video Link</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t"><div><label for="experience-years" class="block text-sm font-medium text-gray-700 mb-1">Experience (in years)</label><input type="number" id="experience-years" name="experience_years" min="0" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></div><div><label for="response-time" class="block text-sm font-medium text-gray-700 mb-1">Typical Response Time</label><select id="response-time" name="response_time" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"><option value="">Select a time</option><option value="Instant">Instant</option><option value="2-5 hours">2-5 hours</option><option value="Today">Today</option><option value="In a week">In a week</option></select></div><div class="md:col-span-2"><label for="availability" class="block text-sm font-medium text-gray-700 mb-1">Availability (e.g., Mon-Fri, 10am - 6pm)</label><textarea id="availability" name="availability" rows="2" class="w-full p-3 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></textarea></div><div><label class="block text-sm font-medium text-gray-700 mb-2">Fee Structure</label><div class="flex flex-col space-y-2"><div class="flex items-center"><input type="radio" id="fee-per-consult" name="fee_structure" value="Per Consultation" class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><label for="fee-per-consult">Per Consultation</label></div><div id="fee-amount-wrapper" class="hidden pl-6"><label for="fee-amount" class="sr-only">Fee Amount</label><input type="number" id="fee-amount" name="fee_amount" placeholder="Amount in ₹" min="0" class="w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"></div><div class="flex items-center"><input type="radio" id="fee-none" name="fee_structure" value="No Fees" class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"><label for="fee-none">No Fees</label></div></div></div><div><label class="block text-sm font-medium text-gray-700 mb-2">Video Consultation</label><div class="flex space-x-4"><label class="flex items-center"><input type="radio" name="video_consultation" value="true" class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">Yes</label><label class="flex items-center"><input type="radio" name="video_consultation" value="false" class="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">No</label></div></div></div></div></fieldset><fieldset class="border-t-2 border-blue-200 pt-6"><legend class="text-xl font-bold text-blue-900 px-4">Step 4: Contact & Location</legend><div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4"><div><label for="email" class="block text-sm font-medium text-gray-700 mb-1">Business Email Address *</label><input type="email" id="email" name="email" placeholder="you@example.com" required class="w-full p-3 border border-gray-300 rounded-md"></div><div><label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Business Phone Number *</label><input type="tel" id="phone" name="phone" placeholder="91-9876543210" required class="w-full p-3 border border-gray-300 rounded-md"></div><div class="md:col-span-2"><label for="website_url" class="block text-sm font-medium text-gray-700 mb-1">Website URL</label><input type="url" id="website_url" name="website_url" placeholder="https://your-business.com" class="w-full p-3 border border-gray-300 rounded-md"></div><div class="md:col-span-2"><label for="address" class="block text-sm font-medium text-gray-700 mb-1">Street Address *</label><input id="address" name="address" required class="w-full p-3 border border-gray-300 rounded-md" /></div><div><label for="pincode" class="block text-sm font-medium text-gray-700 mb-1">Pincode *</label><div class="flex items-center"><input type="text" id="pincode" name="pincode" required maxlength="6" class="w-full p-3 border border-gray-300 rounded-md"><span id="pincode-status" class="ml-2"></span></div></div><div><label for="city" class="block text-sm font-medium text-gray-700 mb-1">City *</label><input type="text" id="city" name="city" required readonly class="w-full p-3 border border-gray-300 rounded-md bg-gray-100"></div><div><label for="state" class="block text-sm font-medium text-gray-700 mb-1">State *</label><input type="text" id="state" name="state" required readonly class="w-full p-3 border border-gray-300 rounded-md bg-gray-100"></div><div class="md:col-span-2"><label class="block text-sm font-medium text-gray-700 mb-2">Set Your Location on the Map</label><p class="text-sm text-gray-500 mb-2">Click on the map to place a pin at your exact business location.</p><div id="map"></div><input type="hidden" id="latitude" name="latitude"><input type="hidden" id="longitude" name="longitude"></div></div></fieldset><div class="border-t-2 border-blue-200 pt-6 flex flex-col items-center space-y-4 md:space-y-0 md:flex-row md:justify-center md:space-x-4"><button type="submit" id="submit-button" class="btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md"><span id="submit-button-text">Submit for Approval</span><span id="submit-spinner" class="hidden loader"></span></button><a href="index.html" id="home-button" class="hidden btn-primary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">Go to Homepage</a><a id="cancel-edit-button" class="hidden btn-secondary w-full md:w-auto font-bold py-3 px-10 rounded-lg shadow-md">Cancel Edit</a></div><div id="form-message" class="hidden mt-6 p-4 rounded-md w-full"></div></form></div>`;
+        
+        let map, marker, latInput, lonInput;
+
+        function getCheckboxValues(name) { return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map(cb => cb.value); }
+        function setCheckboxValues(name, valuesString) {
+            if (!valuesString) return;
+            const values = valuesString.split(',').map(v => v.trim());
+            document.querySelectorAll(`input[name="${name}"]`).forEach(cb => { cb.checked = values.includes(cb.value); });
+        }
+        function showMessage(box, text, type = 'error') {
+            box.textContent = text;
+            box.className = `form-message ${type}`;
+        }
+
+        async function handleUpgrade() {
+            const upgradeButton = document.getElementById('upgrade-btn');
+            const messageBox = document.getElementById('upgrade-message-box');
+            upgradeButton.disabled = true;
+            upgradeButton.innerHTML = `<span class="loader"></span> Upgrading...`;
+
+            function showUpgradeMessage(message, type = 'error') {
+                messageBox.textContent = message;
+                messageBox.className = `form-message ${type}`;
+            }
+
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) { showUpgradeMessage('Authentication error. Please log in again.'); upgradeButton.disabled = false; upgradeButton.textContent = 'Upgrade My Account'; return; }
             try {
-                const { data, error } = await supabase.from('categories').select('id, name');
-                if (error) throw error;
-                servicesContainer.innerHTML = ''; 
-                data.forEach(cat => {
-                    const isChecked = checkedCategoryIds.includes(cat.id) ? 'checked' : '';
-                    const checkboxHTML = `
-                        <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="checkbox" name="categories" value="${cat.id}" ${isChecked} class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300">
-                            <span class="text-gray-700">${cat.name}</span>
-                        </label>`;
-                    servicesContainer.insertAdjacentHTML('beforeend', checkboxHTML);
-                });
-            } catch (error) {
-                 servicesContainer.innerHTML = '<p class="text-red-500">Could not load service categories.</p>';
-                 console.error("Error loading categories:", error);
+                const { error: invokeError } = await supabase.functions.invoke('update-user-role', { headers: { Authorization: `Bearer ${session.access_token}` } });
+                if (invokeError) throw invokeError;
+                
+                showUpgradeMessage('Account upgraded successfully! Refreshing session...', 'success');
+                await supabase.auth.refreshSession();
+                setTimeout(() => window.location.reload(), 1500);
+            } catch (err) {
+                showUpgradeMessage(`Upgrade failed: ${err.message}`);
+                upgradeButton.disabled = false;
+                upgradeButton.textContent = 'Upgrade My Account';
             }
         }
         
-        // Populate form with existing data
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitButton = form.querySelector('#submit-button');
+            const submitButtonText = form.querySelector('#submit-button-text');
+            const submitSpinner = form.querySelector('#submit-spinner');
+            const messageEl = form.querySelector('#form-message');
+
+            function setLoading(isLoading) {
+                submitButton.disabled = isLoading;
+                submitButtonText.classList.toggle('hidden', isLoading);
+                submitSpinner.classList.toggle('hidden', !isLoading);
+                if (isLoading) messageEl.className = 'hidden';
+            }
+            if (!currentUser) { showMessage(messageEl, "Authentication error."); return; }
+            if (getCheckboxValues('license_info').length === 0) { showMessage(messageEl, "Please select at least one License Information option."); return; }
+            
+            setLoading(true);
+
+            const formData = new FormData(form);
+            const selectedCategoryIds = getCheckboxValues('categories');
+            if (selectedCategoryIds.length === 0) { showMessage(messageEl, "Please select at least one service category."); setLoading(false); return; }
+            let clientFocusValues = getCheckboxValues('client_focus');
+            if (document.getElementById('client-focus-other-checkbox').checked && document.getElementById('client-focus-other-text').value) {
+                clientFocusValues.push(document.getElementById('client-focus-other-text').value.trim());
+            }
+
+            const blogsData = Array.from(document.querySelectorAll('#blogs-container .link-row')).map(row => ({ title: row.querySelector('.blog-title').value, url: row.querySelector('.blog-url').value })).filter(item => item.title && item.url);
+            const videosData = Array.from(document.querySelectorAll('#videos-container .link-row')).map(row => ({ title: row.querySelector('.video-title').value, url: row.querySelector('.video-url').value })).filter(item => item.title && item.url);
+
+            const profileData = {
+                user_id: currentUser.id, status: 'pending',
+                business_name: formData.get('business_name'), tagline: formData.get('tagline'), logo_url: formData.get('logo_url'),
+                professional_type: formData.get('professional_type'), about: formData.get('about'), email: formData.get('email'),
+                phone: formData.get('phone'), website_url: formData.get('website_url'), address: formData.get('address'),
+                pincode: formData.get('pincode'), city: formData.get('city'), state: formData.get('state'),
+                latitude: formData.get('latitude') || null, longitude: formData.get('longitude') || null,
+                license_info: getCheckboxValues('license_info').join(', '), client_focus: clientFocusValues.join(', '),
+                service_area: formData.get('service_area'), experience_years: formData.get('experience_years') || null,
+                fee_structure: formData.get('fee_structure'), fee_amount: formData.get('fee_structure') === 'Per Consultation' ? formData.get('fee_amount') : null,
+                availability: formData.get('availability'), response_time: formData.get('response_time'),
+                video_consultation: formData.get('video_consultation') === 'true',
+                blogs: blogsData, videos: videosData
+            };
+            try {
+                let savedProfile;
+                if (editingProfile) {
+                    const { data, error } = await supabase.from('professional_profiles').update(profileData).eq('user_id', currentUser.id).select().single();
+                    if (error) throw error; savedProfile = data;
+                    await supabase.from('professional_categories').delete().eq('profile_id', savedProfile.id);
+                } else {
+                    const { data, error } = await supabase.from('professional_profiles').insert(profileData).select().single();
+                    if (error) throw error; savedProfile = data;
+                }
+                const categoriesToInsert = getCheckboxValues('categories').map(catId => ({ profile_id: savedProfile.id, category_id: parseInt(catId) }));
+                const { error: categoriesError } = await supabase.from('professional_categories').insert(categoriesToInsert);
+                if (categoriesError) throw categoriesError;
+                
+                showMessage(messageEl, "Success! Your profile is submitted for approval.", 'success');
+                submitButton.classList.add('hidden');
+                document.getElementById('cancel-edit-button').classList.add('hidden');
+                document.getElementById('home-button').classList.remove('hidden');
+            } catch (error) {
+                showMessage(messageEl, `An error occurred: ${error.message}`); setLoading(false);
+            }
+        }
+        
+        function initializeMap(initialCoords = { lat: 20.5937, lng: 78.9629, zoom: 5 }) {
+            latInput = document.getElementById('latitude'); lonInput = document.getElementById('longitude');
+            if (map) { map.setView([initialCoords.lat, initialCoords.lng], initialCoords.zoom); if (marker) marker.setLatLng([initialCoords.lat, initialCoords.lng]); return; }
+            map = L.map('map').setView([initialCoords.lat, initialCoords.lng], initialCoords.zoom);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+            marker = L.marker([initialCoords.lat, initialCoords.lng], { draggable: true }).addTo(map);
+            map.on('click', (e) => { const { lat, lng } = e.latlng; marker.setLatLng([lat, lng]); latInput.value = lat; lonInput.value = lng; });
+            marker.on('dragend', () => { const { lat, lng } = marker.getLatLng(); latInput.value = lat; lonInput.value = lng; });
+        }
+        async function fetchLocationFromPincode(pincode) {
+            const pincodeStatus = document.getElementById('pincode-status');
+            pincodeStatus.innerHTML = '<div class="loader pincode-loader"></div>';
+            document.getElementById('city').value = ''; document.getElementById('state').value = '';
+            try {
+                const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+                const data = await response.json();
+                if (data && data[0]?.Status === 'Success') {
+                    const postOffice = data[0].PostOffice[0];
+                    document.getElementById('city').value = postOffice.District;
+                    document.getElementById('state').value = postOffice.State;
+                    pincodeStatus.innerHTML = '✅';
+                } else { pincodeStatus.innerHTML = '❌'; }
+            } catch (error) { pincodeStatus.innerHTML = '❌'; }
+        }
+        async function loadCategories(checkedCategoryIds = []) {
+            const servicesContainer = document.getElementById('services-checkboxes');
+            try {
+                const { data, error } = await supabase.from('categories').select('id, name');
+                if (error) throw error;
+                servicesContainer.innerHTML = '';
+                data.forEach(cat => {
+                    const isChecked = checkedCategoryIds.includes(cat.id);
+                    servicesContainer.insertAdjacentHTML('beforeend', `<label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" name="categories" value="${cat.id}" ${isChecked ? 'checked' : ''} class="h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300"><span class="text-gray-700">${cat.name}</span></label>`);
+                });
+            } catch (error) {
+                console.error("Error loading categories:", error);
+                servicesContainer.innerHTML = '<p class="text-red-500">Could not load service categories.</p>';
+            }
+        }
         function populateForm(profile) {
             if (!profile) return;
             document.getElementById('business-name').value = profile.business_name || '';
             document.getElementById('tagline').value = profile.tagline || '';
             document.getElementById('logo_url').value = profile.logo_url || '';
-            document.getElementById('professional_type').value = profile.professional_type || '';
             document.getElementById('about').value = profile.about || '';
-            document.getElementById('license_info').value = profile.license_info || '';
-            document.getElementById('client_focus').value = profile.client_focus || '';
-            document.getElementById('service_area').value = profile.service_area || '';
             document.getElementById('email').value = profile.email || '';
             document.getElementById('phone').value = profile.phone || '';
             document.getElementById('website_url').value = profile.website_url || '';
@@ -234,155 +252,141 @@
             document.getElementById('city').value = profile.city || '';
             document.getElementById('state').value = profile.state || '';
             document.getElementById('pincode').value = profile.pincode || '';
-            
-            // Update UI for editing mode
-            document.getElementById('form-title').textContent = 'Edit Your Business Profile';
-            submitButtonText.textContent = 'Update Profile';
-            cancelEditButton.href = `listingdetail.html?id=${profile.id}`;
-            cancelEditButton.classList.remove('hidden');
-        }
-
-        // Handle Form Submission (Create or Update)
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!currentUser) {
-                showMessage("Authentication error. Please refresh and log in.", 'error');
-                return;
-            }
-
-            setLoading(true);
-
-            const formData = new FormData(form);
-            const selectedCategoryIds = formData.getAll('categories').map(id => parseInt(id));
-            if (selectedCategoryIds.length === 0) {
-                showMessage("Please select at least one service category.", 'error');
-                setLoading(false);
-                return;
-            }
-            
-            // Collect all form data
-            const profileData = {
-                user_id: currentUser.id,
-                business_name: formData.get('business_name'),
-                tagline: formData.get('tagline'),
-                logo_url: formData.get('logo_url'),
-                professional_type: formData.get('professional_type'),
-                about: formData.get('about'),
-                license_info: formData.get('license_info'),
-                client_focus: formData.get('client_focus'),
-                service_area: formData.get('service_area'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                website_url: formData.get('website_url'),
-                address: formData.get('address'),
-                city: formData.get('city'),
-                state: formData.get('state'),
-                pincode: formData.get('pincode'),
-                status: 'pending' // Always reset to pending for re-approval
-            };
-            
-            try {
-                let savedProfile;
-
-                if (editingProfile) { // UPDATE existing profile
-                    const { data: updatedProfile, error: updateError } = await supabase.from('professional_profiles').update(profileData).eq('user_id', currentUser.id).select().single();
-                    if (updateError) throw updateError;
-                    savedProfile = updatedProfile;
-                    // Delete old categories before inserting new ones
-                    await supabase.from('professional_categories').delete().eq('profile_id', savedProfile.id);
-                } else { // INSERT new profile
-                    const { data: newProfile, error: profileError } = await supabase.from('professional_profiles').insert(profileData).select().single();
-                    if (profileError) throw profileError;
-                    savedProfile = newProfile;
+            document.getElementById('experience-years').value = profile.experience_years || '';
+            document.getElementById('availability').value = profile.availability || '';
+            document.getElementById('service-area').value = profile.service_area || '';
+            document.getElementById('professional_type').value = profile.professional_type || '';
+            document.getElementById('response-time').value = profile.response_time || '';
+            setCheckboxValues('license_info', profile.license_info);
+            const standardClientFocus = ['Salaried', 'Professionals', 'Businessman', 'Industrialists', 'NGOs', 'HNIs', 'NRIs', 'Corporate'];
+            if (profile.client_focus) {
+                const allFocuses = profile.client_focus.split(',').map(v => v.trim());
+                const standardSelections = allFocuses.filter(f => standardClientFocus.includes(f));
+                const otherSelection = allFocuses.find(f => !standardClientFocus.includes(f));
+                setCheckboxValues('client_focus', standardSelections.join(', '));
+                if (otherSelection) {
+                    const clientFocusOtherCheckbox = document.getElementById('client-focus-other-checkbox');
+                    const clientFocusOtherText = document.getElementById('client-focus-other-text');
+                    clientFocusOtherCheckbox.checked = true;
+                    clientFocusOtherText.disabled = false;
+                    clientFocusOtherText.classList.remove('bg-gray-100');
+                    clientFocusOtherText.value = otherSelection;
                 }
-
-                // Insert the new set of categories
-                const categoriesToInsert = selectedCategoryIds.map(catId => ({ profile_id: savedProfile.id, category_id: catId }));
-                const { error: categoriesError } = await supabase.from('professional_categories').insert(categoriesToInsert);
-                if (categoriesError) throw categoriesError;
-                
-                // --- SUCCESS LOGIC ---
-                const successMessage = "Success! Your profile is submitted for approval. It should be live within 24 hours after review.";
-                showMessage(successMessage, 'success');
-                
-                // Hide form buttons and show home button
-                submitButton.classList.add('hidden');
-                cancelEditButton.classList.add('hidden');
-                homeButton.classList.remove('hidden');
-
-            } catch (error) {
-                console.error('Submission Error:', error);
-                showMessage(`An error occurred: ${error.message}`, 'error');
-                setLoading(false); // Only reset loading state on error
             }
-        });
-
-        function showMessage(text, type) {
-            messageEl.textContent = text;
-            messageEl.className = `mt-6 p-4 rounded-md text-center w-full ${type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`;
+            if (profile.fee_structure) {
+                const radioFee = document.querySelector(`input[name="fee_structure"][value="${profile.fee_structure}"]`);
+                if(radioFee) {
+                    radioFee.checked = true;
+                    if(profile.fee_structure === 'Per Consultation') {
+                        document.getElementById('fee-amount-wrapper').classList.remove('hidden');
+                        document.getElementById('fee-amount').required = true;
+                        document.getElementById('fee-amount').value = profile.fee_amount || '';
+                    }
+                }
+            }
+            if (profile.video_consultation !== null) {
+                const radioVideo = document.querySelector(`input[name="video_consultation"][value="${profile.video_consultation}"]`);
+                if(radioVideo) radioVideo.checked = true;
+            }
+            if (profile.blogs) { profile.blogs.forEach(blog => addLinkInput('blogs-container', 'blog', blog.title, blog.url)); }
+            if (profile.videos) { profile.videos.forEach(video => addLinkInput('videos-container', 'video', video.title, video.url)); }
+            document.getElementById('form-title').textContent = 'Edit Your Business Profile';
+            document.getElementById('submit-button-text').textContent = 'Update Profile';
+            document.getElementById('cancel-edit-button').href = `listingdetail.html?id=${profile.id}`;
+            document.getElementById('cancel-edit-button').classList.remove('hidden');
+            if (profile.latitude && profile.longitude) {
+                initializeMap({ lat: profile.latitude, lng: profile.longitude, zoom: 15 });
+            } else { initializeMap(); }
         }
 
-        function setLoading(isLoading) {
-            if (isLoading) {
-                submitButton.disabled = true;
-                submitButtonText.classList.add('hidden');
-                submitSpinner.classList.remove('hidden');
-                messageEl.className = 'hidden'; // Hide previous messages
-            } else {
-                submitButton.disabled = false;
-                submitButtonText.classList.remove('hidden');
-                submitSpinner.classList.add('hidden');
-            }
+        function addLinkInput(containerId, type, title = '', url = '') {
+            const container = document.getElementById(containerId);
+            const row = document.createElement('div');
+            row.className = 'link-row flex items-center space-x-2';
+            row.innerHTML = `
+                <input type="text" placeholder="Title" class="${type}-title w-1/3 p-2 border rounded-md" value="${title}">
+                <input type="url" placeholder="URL" class="${type}-url flex-grow p-2 border rounded-md" value="${url}">
+                <button type="button" class="remove-link-btn btn-danger-sm">Remove</button>
+            `;
+            container.appendChild(row);
+            row.querySelector('.remove-link-btn').addEventListener('click', () => row.remove());
         }
-        
-        // Handle Logout
-        logoutButton.addEventListener('click', async () => {
-            setLoading(true);
-            await supabase.auth.signOut();
-        });
 
-        // Main function to run on page load
+        function initializeFormEventListeners() {
+            document.getElementById('listing-form').addEventListener('submit', handleFormSubmit);
+            document.getElementById('add-blog-btn').addEventListener('click', () => addLinkInput('blogs-container', 'blog'));
+            document.getElementById('add-video-btn').addEventListener('click', () => addLinkInput('videos-container', 'video'));
+            document.querySelectorAll('input[name="fee_structure"]').forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                    const feeAmountWrapper = document.getElementById('fee-amount-wrapper');
+                    const feeAmountInput = document.getElementById('fee-amount');
+                    if (e.target.value === 'Per Consultation') {
+                        feeAmountWrapper.classList.remove('hidden');
+                        feeAmountInput.required = true;
+                    } else {
+                        feeAmountWrapper.classList.add('hidden');
+                        feeAmountInput.required = false;
+                        feeAmountInput.value = '';
+                    }
+                });
+            });
+            document.querySelectorAll('#service-area-suggestions .suggestion-tag').forEach(tag => {
+                tag.addEventListener('click', () => {
+                    const serviceAreaInput = document.getElementById('service-area');
+                    const existingValues = serviceAreaInput.value.split(',').map(v => v.trim()).filter(Boolean);
+                    const tagValue = tag.textContent;
+                    if (!existingValues.includes(tagValue)) {
+                        existingValues.push(tagValue);
+                        serviceAreaInput.value = existingValues.join(', ');
+                    }
+                });
+            });
+            const clientFocusOtherCheckbox = document.getElementById('client-focus-other-checkbox');
+            clientFocusOtherCheckbox.addEventListener('change', () => {
+                const clientFocusOtherText = document.getElementById('client-focus-other-text');
+                const isChecked = clientFocusOtherCheckbox.checked;
+                clientFocusOtherText.disabled = !isChecked;
+                clientFocusOtherText.classList.toggle('bg-gray-100', !isChecked);
+                if (!isChecked) clientFocusOtherText.value = '';
+            });
+            document.getElementById('pincode').addEventListener('input', (e) => {
+                const pincode = e.target.value;
+                if (pincode.length < 6) { document.getElementById('city').value = ''; document.getElementById('state').value = ''; document.getElementById('pincode-status').innerHTML = ''; }
+                if (pincode.length === 6) fetchLocationFromPincode(pincode);
+            });
+        }
+
         async function initializePage(user) {
             currentUser = user;
             userActions.classList.remove('hidden');
+            logoutButton.addEventListener('click', async () => await supabase.auth.signOut());
 
-            // Check if user has an existing profile
-            const { data: profile, error } = await supabase
-                .from('professional_profiles')
-                .select('*, professional_categories(category_id)')
-                .eq('user_id', user.id)
-                .single();
-            
-            if (error && error.code !== 'PGRST116') { // PGRST116 means no rows found, which is fine.
-                 console.error("Error fetching profile:", error);
-                 showMessage("Could not fetch your profile data. Please refresh.", "error");
-                 return;
-            }
-
-            if (profile) {
+            if (user.user_metadata.role === 'end_user') {
+                submissionSection.innerHTML = upgradeHTML;
+                document.getElementById('upgrade-btn').addEventListener('click', handleUpgrade);
+            } else { 
+                submissionSection.innerHTML = formHTML;
+                
+                const { data: profile, error } = await supabase.from('professional_profiles').select('*').eq('user_id', user.id).single();
                 editingProfile = profile;
-                const existingCategoryIds = profile.professional_categories.map(pc => pc.category_id);
-                await loadCategories(existingCategoryIds);
-                populateForm(profile);
-            } else {
-                await loadCategories([]);
-            }
-        }
+                
+                const { data: categories } = await supabase.from('professional_categories').select('category_id').eq('profile_id', profile?.id);
+                const categoryIds = categories ? categories.map(c => c.category_id) : [];
 
-        // --- AUTHENTICATION ---
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                initializePage(session.user);
-            } else {
-                // If no session, redirect to login page
-                try {
-                    const loginUrl = new URL('login.html', window.location.href);
-                    window.location.href = loginUrl.href;
-                } catch (e) {
-                    console.error("Failed to construct login URL:", e);
-                    window.location.href = window.location.origin + '/login.html';
+                await loadCategories(categoryIds);
+                initializeFormEventListeners();
+                
+                if (profile) {
+                    populateForm(profile);
+                } else {
+                    initializeMap();
                 }
             }
+        }
+        
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (session) { if (!isPageInitialized) { isPageInitialized = true; initializePage(session.user); } }
+            else { window.location.href = 'login.html'; }
         });
     </script>
 </body>
