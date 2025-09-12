@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - InvestSherpa.in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #1c357a; }
+        .btn-danger { background-color: #dc2626; color: white; transition: background-color 0.3s ease; }
+        .btn-danger:hover { background-color: #b91c1c; }
+        [x-cloak] { display: none !important; }
+        .toggle-bg:after { content: ''; position: absolute; top: 2px; left: 2px; background: white; border-radius: 9999px; height: 1.25rem; width: 1.25rem; transition: transform 0.2s ease-in-out; }
+        input:checked + .toggle-bg:after { transform: translateX(100%); }
+        input:checked + .toggle-bg { background-color: #1e3a8a; }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800" x-data="adminPanel">
+
+    <div x-show="!session" x-cloak class="fixed inset-0 bg-gray-200 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-8">
+            <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Admin Login</h2>
+            <form @submit.prevent="login()">
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input type="email" id="email" x-model="email" required class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="admin@example.com">
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" x-model="password" required class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="••••••••">
+                </div>
+                <div x-show="authError" class="mb-4 p-3 rounded-lg bg-red-100 text-red-800 text-sm" x-text="authError"></div>
+                <button type="submit" :disabled="authLoading" class="w-full btn-primary font-bold py-2 px-4 rounded-lg disabled:opacity-50 flex items-center justify-center">
+                    <i x-show="authLoading" class="fas fa-spinner fa-spin mr-2"></i>
+                    <span x-text="authLoading ? 'Signing In...' : 'Sign In'"></span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <template x-if="session">
+        <div>
+            <header class="bg-white shadow-sm sticky top-0 z-40">
+                <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+                    <a href="index.html" class="flex items-center space-x-3">
+                        <img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-14 w-auto">
+                        <span class="text-2xl font-bold">
+                            <span class="text-blue-900">Invest</span><span class="text-amber-500">Sherpa</span>
+                        </span>
+                    </a>
+                    <div class="flex items-center space-x-4">
+                         <span class="text-sm text-gray-600" x-text="session.user.email"></span>
+                         <button @click="logout()" class="font-semibold text-red-600 hover:text-red-800 text-sm">Logout</button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="flex">
+                <aside class="w-64 bg-white shadow-md h-screen sticky top-16">
+                    <nav class="mt-5">
+                        <a href="#" @click.prevent="currentView = 'pending'" class="flex items-center mt-4 py-2 px-6" :class="currentView === 'pending' ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-gray-100'">
+                            <i class="fas fa-user-clock mr-3"></i><span>Pending Approvals</span>
+                        </a>
+                        <a href="#" @click.prevent="currentView = 'featured'" class="flex items-center mt-4 py-2 px-6" :class="currentView === 'featured' ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-gray-100'">
+                            <i class="fas fa-star mr-3"></i><span>Featured Advisors</span>
+                        </a>
+                        <a href="#" @click.prevent="currentView = 'reviews'" class="flex items-center mt-4 py-2 px-6" :class="currentView === 'reviews' ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-gray-100'">
+                            <i class="fas fa-comment-dots mr-3"></i><span>Pending Reviews</span>
+                        </a>
+                    </nav>
+                </aside>
+
+                <main class="flex-1 p-8">
+                    <div x-show="status.message" class="mb-4 p-4 rounded-lg text-sm"
+                         :class="{ 'bg-blue-100 text-blue-800': status.type === 'info', 'bg-green-100 text-green-800': status.type === 'success', 'bg-red-100 text-red-800': status.type === 'error' }" x-text="status.message">
+                    </div>
+
+                    <div x-show="currentView === 'pending'" x-cloak>
+                        <h1 class="text-3xl font-bold text-blue-900 mb-6">Pending Professional Sign-ups</h1>
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead class="bg-gray-50 border-b"><tr><th class="p-4 font-semibold">Company / Professional</th><th class="p-4 font-semibold">Contact Email</th><th class="p-4 font-semibold">Location</th><th class="p-4 font-semibold">Submitted On</th><th class="p-4 font-semibold text-center">Actions</th></tr></thead>
+                                    <tbody>
+                                        <template x-if="loading"><tr class="h-48"><td colspan="5" class="text-center p-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr></template>
+                                        <template x-if="!loading && profiles.length === 0"><tr><td colspan="5" class="text-center p-8 text-gray-500">No pending profiles found.</td></tr></template>
+                                        <template x-for="(profile, index) in profiles" :key="profile.id">
+                                            <tr class="border-b hover:bg-gray-50"><td class="p-4 font-bold" x-text="profile.business_name"></td><td class="p-4" x-text="profile.email"></td><td class="p-4" x-text="profile.city || 'N/A'"></td><td class="p-4" x-text="new Date(profile.created_at).toLocaleDateString()"></td><td class="p-4 text-center"><button @click="openReviewModal(index)" class="bg-blue-600 text-white py-1 px-4 rounded-lg font-semibold hover:bg-blue-700"><i class="fas fa-search-plus mr-1"></i> Review</button></td></tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div x-show="currentView === 'featured'" x-cloak>
+                        <h1 class="text-3xl font-bold text-blue-900 mb-6">Manage Featured Advisors</h1>
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                             <table class="w-full text-left">
+                                <thead class="bg-gray-50 border-b"><tr><th class="p-4 font-semibold">Professional Name</th><th class="p-4 font-semibold">Location</th><th class="p-4 font-semibold text-center">Is Featured?</th></tr></thead>
+                                <tbody>
+                                    <template x-if="loading"><tr class="h-48"><td colspan="3" class="text-center p-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr></template>
+                                    <template x-if="!loading && approvedProfiles.length === 0"><tr><td colspan="3" class="text-center p-8 text-gray-500">No approved profiles found.</td></tr></template>
+                                    <template x-for="profile in approvedProfiles" :key="profile.id">
+                                        <tr class="border-b hover:bg-gray-50">
+                                            <td class="p-4 font-bold" x-text="profile.business_name"></td>
+                                            <td class="p-4" x-text="profile.city"></td>
+                                            <td class="p-4 text-center">
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" :checked="profile.is_featured" @change="toggleFeatured(profile)" class="sr-only peer">
+                                                    <div class="w-11 h-6 bg-gray-200 rounded-full toggle-bg"></div>
+                                                </label>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div x-show="currentView === 'reviews'" x-cloak>
+                        <h1 class="text-3xl font-bold text-blue-900 mb-6">Moderate Pending Reviews</h1>
+                        <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 border-b"><tr><th class="p-4 font-semibold">Reviewer</th><th class="p-4 font-semibold">Professional</th><th class="p-4 font-semibold">Rating</th><th class="p-4 font-semibold">Comment</th><th class="p-4 font-semibold text-center">Actions</th></tr></thead>
+                                <tbody>
+                                    <template x-if="loading"><tr class="h-48"><td colspan="5" class="text-center p-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr></template>
+                                    <template x-if="!loading && pendingReviews.length === 0"><tr><td colspan="5" class="text-center p-8 text-gray-500">No pending reviews found.</td></tr></template>
+                                    <template x-for="review in pendingReviews" :key="review.id">
+                                         <tr class="border-b hover:bg-gray-50">
+                                            <td class="p-4" x-text="review.user_profiles.full_name"></td>
+                                            <td class="p-4" x-text="review.professional_profiles.business_name"></td>
+                                            <td class="p-4 text-amber-500" x-html="'<i class=\'fas fa-star\'></i>'.repeat(review.rating)"></td>
+                                            <td class="p-4 text-sm italic" x-text="`&quot;${review.comment}&quot;`"></td>
+                                            <td class="p-4 text-center space-x-2">
+                                                <button @click="approveReview(review.id)" class="bg-green-600 text-white py-1 px-3 text-sm rounded-lg font-semibold hover:bg-green-700">Approve</button>
+                                                <button @click="rejectReview(review.id)" class="bg-red-600 text-white py-1 px-3 text-sm rounded-lg font-semibold hover:bg-red-700">Reject</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </template>
+    
+    <div x-show="isModalOpen" @keydown.escape.window="closeModal()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-cloak>
+        <div @click.outside="closeModal()" class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            <div class="p-6 border-b flex justify-between items-center"><h2 class="text-2xl font-bold text-blue-900">Review Professional Profile</h2><button @click="closeModal()" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
+            <div class="p-8 overflow-y-auto" x-html="modalContent"></div>
+            <div class="p-6 bg-gray-50 border-t mt-auto"><div><div x-show="showRejectionInput" class="mb-4"><label for="rejection" class="block text-sm font-medium text-gray-700 mb-1">Reason for Rejection (required)</label><input type="text" id="rejection" x-model="rejectionReason" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter reason here..."></div><div class="flex justify-end items-center space-x-4"><button @click="showRejectionInput = !showRejectionInput" x-text="showRejectionInput ? 'Cancel' : 'Reject'" class="font-semibold text-red-600 hover:text-red-800"></button><button x-show="showRejectionInput" @click="rejectProfile()" :disabled="!rejectionReason.trim() || actionLoading" class="btn-danger font-bold py-2 px-6 rounded-lg disabled:opacity-50 flex items-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Rejecting...' : 'Confirm Rejection'"></span></button><button @click="approveProfile()" :disabled="actionLoading || showRejectionInput" class="btn-primary font-bold py-2 px-8 rounded-lg disabled:opacity-50 flex items-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Approving...' : 'Approve'"></span></button></div></div></div>
+        </div>
+    </div>
+    
+    <script>
+        const { createClient } = supabase;
+        const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('adminPanel', () => ({
+                session: null, email: '', password: '', authError: '', authLoading: false,
+                profiles: [], loading: true, status: { message: '', type: 'info' },
+                isModalOpen: false, showRejectionInput: false, rejectionReason: '',
+                currentProfileId: null, actionLoading: false, modalContent: '',
+                currentView: 'pending', approvedProfiles: [], pendingReviews: [],
+
+                init() {
+                    supabaseClient.auth.getSession().then(({ data: { session } }) => { this.handleSession(session); });
+                    supabaseClient.auth.onAuthStateChange((_event, session) => { this.handleSession(session); });
+                    this.$watch('currentView', (view) => {
+                        if (view === 'featured') this.fetchApprovedProfiles();
+                        if (view === 'reviews') this.fetchPendingReviews();
+                        if (view === 'pending') this.fetchPendingProfiles();
+                    });
+                },
+
+                async handleSession(session) {
+                    if (!session) { this.session = null; return; }
+                    try {
+                        const { data: userProfile, error } = await supabaseClient.from('user_profiles').select('role').eq('id', session.user.id).single();
+                        if (error) throw error;
+                        if (userProfile && userProfile.role === 'admin') {
+                            this.session = session; this.authError = ''; this.fetchPendingProfiles();
+                        } else {
+                            this.authError = 'Invalid Permissions. This account does not have administrator access.';
+                            await supabaseClient.auth.signOut(); this.session = null; 
+                        }
+                    } catch (error) {
+                        this.authError = `Error verifying permissions: ${error.message}`;
+                        await supabaseClient.auth.signOut(); this.session = null;
+                    }
+                },
+                
+                async login() {
+                    this.authLoading = true;
+                    this.authError = '';
+                    try {
+                        const { error } = await supabaseClient.auth.signInWithPassword({
+                            email: this.email,
+                            password: this.password,
+                        });
+                        if (error) throw error;
+                    } catch (error) {
+                        this.authError = error.message;
+                    } finally {
+                        this.authLoading = false;
+                    }
+                },
+                
+                async logout() { await supabaseClient.auth.signOut(); this.session = null; },
+
+                async fetchPendingProfiles() {
+                    this.loading = true; this.status = { message: 'Fetching pending profiles...', type: 'info' };
+                    try {
+                        const { data, error, count } = await supabaseClient
+                            .from('professional_profiles')
+                            .select(`*, user_profiles ( full_name )`, { count: 'exact' })
+                            .eq('status', 'pending')
+                            .eq('user_profiles.role', 'professional') // Corrected Line
+                            .order('created_at', { ascending: true });
+
+                        if (error) throw error;
+                        this.profiles = data;
+                        this.status.message = data.length > 0 ? `Successfully loaded ${count} pending profile(s).` : 'No profiles awaiting approval.';
+                        this.status.type = 'success';
+                    } catch (error) { this.profiles = []; this.status = { message: `Failed to fetch data: ${error.message}`, type: 'error' }; } 
+                    finally { this.loading = false; }
+                },
+
+                async fetchApprovedProfiles() {
+                    this.loading = true; this.status = { message: 'Fetching approved profiles...', type: 'info' };
+                    try {
+                        const { data, error } = await supabaseClient.from('professional_profiles').select('id, business_name, city, is_featured').eq('status', 'approved').order('business_name');
+                        if (error) throw error;
+                        this.approvedProfiles = data;
+                        this.status.message = '';
+                    } catch (error) { this.approvedProfiles = []; this.status = { message: `Failed to fetch data: ${error.message}`, type: 'error' }; } 
+                    finally { this.loading = false; }
+                },
+
+                async fetchPendingReviews() {
+                    this.loading = true; this.status = { message: 'Fetching pending reviews...', type: 'info' };
+                    try {
+                        const { data, error } = await supabaseClient.from('reviews').select('*, professional_profiles(business_name), user_profiles(full_name)').eq('status', 'pending').order('created_at');
+                        if (error) throw error;
+                        this.pendingReviews = data;
+                        this.status.message = '';
+                    } catch (error) { this.pendingReviews = []; this.status = { message: `Failed to fetch data: ${error.message}`, type: 'error' }; } 
+                    finally { this.loading = false; }
+                },
+
+                async toggleFeatured(profile) {
+                    try {
+                        const { error } = await supabaseClient.from('professional_profiles').update({ is_featured: !profile.is_featured }).eq('id', profile.id);
+                        if (error) throw error;
+                        profile.is_featured = !profile.is_featured;
+                    } catch (error) { alert(`Error updating feature status: ${error.message}`); }
+                },
+
+                async approveReview(reviewId) {
+                    try {
+                        const { error } = await supabaseClient.from('reviews').update({ status: 'approved' }).eq('id', reviewId);
+                        if (error) throw error;
+                        this.pendingReviews = this.pendingReviews.filter(r => r.id !== reviewId);
+                    } catch (error) { alert(`Error approving review: ${error.message}`); }
+                },
+
+                async rejectReview(reviewId) {
+                    try {
+                        const { error } = await supabaseClient.from('reviews').update({ status: 'rejected' }).eq('id', reviewId);
+                        if (error) throw error;
+                        this.pendingReviews = this.pendingReviews.filter(r => r.id !== reviewId);
+                    } catch (error) { alert(`Error rejecting review: ${error.message}`); }
+                },
+                
+                openReviewModal(index) {
+                    const profile = this.profiles[index];
+                    this.currentProfileId = profile.id;
+                    const formatLinks = (links, type) => (links && links.length > 0) ? `<ul>${links.map(l => `<li><a href="${l.url}" class="text-blue-600" target="_blank">${l.title}</a></li>`).join('')}</ul>` : 'N/A';
+                    this.modalContent = `<div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 text-gray-700"><h3 class="md:col-span-2 text-xl font-bold text-blue-900 border-b pb-2 mb-2">Basic Info</h3><div><strong class="font-semibold text-gray-900 block">Business Name:</strong> <p>${profile.business_name}</p></div><div><strong class="font-semibold text-gray-900 block">Submitted by:</strong> <p>${profile.user_profiles?.full_name || 'N/A'}</p></div><div><strong class="font-semibold text-gray-900 block">Professional Type:</strong> <p>${profile.professional_type}</p></div><div><strong class="font-semibold text-gray-900 block">Experience:</strong> <p>${profile.experience_years ? `${profile.experience_years} years` : 'N/A'}</p></div><div class="md:col-span-2"><strong class="font-semibold text-gray-900 block">Tagline:</strong> <p class="italic">"${profile.tagline || 'N/A'}"</p></div><div class="md:col-span-2"><strong class="font-semibold text-gray-900 block">About:</strong> <p class="mt-1 whitespace-pre-wrap">${profile.about || 'Not provided.'}</p></div><h3 class="md:col-span-2 text-xl font-bold text-blue-900 border-b pb-2 mt-4 mb-2">Contact & Location</h3><div><strong class="font-semibold text-gray-900 block">Email:</strong> <p>${profile.email}</p></div><div><strong class="font-semibold text-gray-900 block">Phone:</strong> <p>${profile.phone || 'N/A'}</p></div><div><strong class="font-semibold text-gray-900 block">Website:</strong> <p>${profile.website_url ? `<a href="${profile.website_url}" target="_blank" class="text-blue-600 hover:underline">${profile.website_url}</a>` : 'N/A'}</p></div><div class="md:col-span-2"><strong class="font-semibold text-gray-900 block">Address:</strong> <p>${[profile.address, profile.city, profile.state, profile.pincode].filter(Boolean).join(', ')}</p></div><h3 class="md:col-span-2 text-xl font-bold text-blue-900 border-b pb-2 mt-4 mb-2">Service Details</h3><div><strong class="font-semibold text-gray-900 block">License Info:</strong> <p>${profile.license_info || 'N/A'}</p></div><div><strong class="font-semibold text-gray-900 block">Client Focus:</strong> <p>${profile.client_focus || 'N/A'}</p></div><div><strong class="font-semibold text-gray-900 block">Service Area:</strong> <p>${profile.service_area || 'N/A'}</p></div><div><strong class="font-semibold text-gray-900 block">Availability:</strong> <p>${profile.availability || 'N/A'}</p></div><div><strong class="font-semibold text-gray-900 block">Response Time:</strong> <p>${profile.response_time || 'N/A'}</p></div><div><strong class="font-semibold text-gray-900 block">Video Consultation:</strong> <p>${profile.video_consultation ? 'Yes' : 'No'}</p></div><div><strong class="font-semibold text-gray-900 block">Fee Structure:</strong> <p>${profile.fee_structure === 'Per Consultation' ? `Per Consultation (₹${profile.fee_amount})` : (profile.fee_structure || 'N/A')}</p></div><div class="md:col-span-2"><strong class="font-semibold text-gray-900 block">Blogs:</strong> ${formatLinks(profile.blogs)}</div><div class="md:col-span-2"><strong class="font-semibold text-gray-900 block">Videos:</strong> ${formatLinks(profile.videos)}</div></div>`;
+                    this.isModalOpen = true;
+                },
+
+                closeModal() { this.isModalOpen = false; this.rejectionReason = ''; this.currentProfileId = null; this.modalContent = ''; this.showRejectionInput = false; },
+                async approveProfile() {
+                    if (!this.currentProfileId || this.actionLoading) return;
+                    this.actionLoading = true;
+                    try {
+                        const { error } = await supabaseClient.from('professional_profiles').update({ status: 'approved', approved_at: new Date().toISOString() }).eq('id', this.currentProfileId);
+                        if (error) throw error;
+                        this.profiles = this.profiles.filter(p => p.id !== this.currentProfileId);
+                    } catch (error) { alert(`Error approving profile: ${error.message}`); } 
+                    finally { this.actionLoading = false; this.closeModal(); }
+                },
+                async rejectProfile() {
+                    if (!this.currentProfileId || !this.rejectionReason.trim() || this.actionLoading) return;
+                    this.actionLoading = true;
+                    try {
+                        const { error } = await supabaseClient.from('professional_profiles').update({ status: 'rejected', rejection_reason: this.rejectionReason.trim() }).eq('id', this.currentProfileId);
+                        if (error) throw error;
+                        this.profiles = this.profiles.filter(p => p.id !== this.currentProfileId);
+                    } catch (error) { alert(`Error rejecting profile: ${error.message}`); } 
+                    finally { this.actionLoading = false; this.closeModal(); }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

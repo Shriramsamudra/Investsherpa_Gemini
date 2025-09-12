@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Inter', sans-serif; }
-        html { scroll-behavior: smooth; } /* Optional: enhances smooth scrolling */
+        html { scroll-behavior: smooth; }
         .btn-primary { background-color: #f59e0b; color: white; transition: background-color 0.3s ease; }
         .btn-primary:hover { background-color: #d97706; }
         .btn-secondary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
@@ -20,7 +20,7 @@
         .filter-section:last-child { border-bottom: 0; padding-bottom: 0; margin-bottom: 0; }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -35,7 +35,7 @@
                 <a href="browselisting.html" class="text-blue-900 font-bold">Browse</a>
                 <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Blog</a>
             </nav>
-            <div class="hidden md:flex items-center space-x-4">
+            <div id="user-actions" class="hidden md:flex items-center space-x-4">
                 <a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
                 <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
             </div>
@@ -43,7 +43,7 @@
         </div>
     </header>
 
-    <main class="container mx-auto px-6 py-8">
+    <main class="container mx-auto px-6 py-8 flex-grow">
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             
             <aside class="lg:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit sticky top-28">
@@ -51,11 +51,11 @@
                     <h2 class="text-2xl font-bold text-blue-900">Filters</h2>
                     <button id="reset-filters-btn" class="text-sm font-semibold text-blue-800 hover:underline">Reset</button>
                 </div>
-                <div id="filters-form">
+                <form id="filters-form">
                     <div class="filter-section">
                         <div class="relative">
                             <input type="text" id="search-input" placeholder="Search by name, email..." class="w-full p-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none">
-                            <button id="search-btn" class="absolute top-0 right-0 h-full px-3 text-gray-400 hover:text-blue-900" aria-label="Search">
+                            <button id="search-btn" type="button" class="absolute top-0 right-0 h-full px-3 text-gray-400 hover:text-blue-900" aria-label="Search">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
@@ -63,7 +63,7 @@
 
                     <div class="filter-section">
                         <h3 class="font-semibold text-gray-700 mb-3">Location</h3>
-                        <button id="location-btn" class="w-full text-sm text-center p-2 border border-gray-300 rounded-lg hover:bg-gray-100 mb-3">Use My Location</button>
+                        <button id="location-btn" type="button" class="w-full text-sm text-center p-2 border border-gray-300 rounded-lg hover:bg-gray-100 mb-3">Use My Location</button>
                         <select id="radius-select" class="w-full p-2 border border-gray-300 rounded-lg">
                             <option value="5000">Within 5 km</option>
                             <option value="10000">Within 10 km</option>
@@ -109,7 +109,7 @@
                             <label class="flex items-center"><input type="checkbox" id="response-filter" value="Instant" class="mr-2 h-4 w-4 rounded text-amber-600"> Instant Response</label>
                          </div>
                     </div>
-                </div>
+                </form>
                 <div class="mt-8">
                     <button id="apply-filters-btn" class="btn-primary w-full py-3 rounded-lg font-bold shadow-lg">Apply Filters</button>
                 </div>
@@ -121,10 +121,13 @@
                 </div>
 
                 <div id="listings-container" class="space-y-6">
-                    </div>
+                </div>
             </section>
         </div>
     </main>
+
+    <footer class="bg-blue-900 text-white">
+    </footer>
 
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
@@ -140,72 +143,133 @@
         const locationStatusEl = document.getElementById('location-status');
         const searchBtn = document.getElementById('search-btn');
         const resetFiltersBtn = document.getElementById('reset-filters-btn');
+        const filtersForm = document.getElementById('filters-form');
         
         let userCoords = null;
 
-        // --- FETCH AND DISPLAY LISTINGS ---
+        // --- User Authentication UI Logic ---
+        const userActionsContainer = document.getElementById('user-actions');
+
+        async function handleLogout() {
+            await supabase.auth.signOut();
+            // onAuthStateChange will automatically refresh the UI
+        }
+
+        function updateUserUI(user) {
+            if (user) {
+                // If user is logged in, show their email and a logout button
+                userActionsContainer.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        <a href="userprofile.html" class="text-gray-600 font-medium hover:text-blue-900 hover:underline text-sm">${user.email}</a>
+                        <button id="logout-btn" class="font-semibold text-red-600 hover:underline">Logout</button>
+                    </div>
+                `;
+                document.getElementById('logout-btn').addEventListener('click', handleLogout);
+            } else {
+                // If user is logged out, show the login and add listing buttons
+                userActionsContainer.innerHTML = `
+                    <a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
+                    <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
+                `;
+            }
+        }
+
+        // This listener checks the user's status on page load and whenever it changes
+        supabase.auth.onAuthStateChange((_event, session) => {
+            updateUserUI(session ? session.user : null);
+        });
+        // --- End of Auth UI Logic ---
+
+
         async function displayListings() {
-            resultsCountEl.scrollIntoView({ behavior: 'smooth' }); // Scroll to top of results
+            // DEBUG: Log function entry and the current state of userCoords
+            console.log('--- displayListings called ---');
+            console.log('Value of userCoords at start of function:', userCoords);
+
+            resultsCountEl.scrollIntoView({ behavior: 'smooth' });
             listingsContainer.innerHTML = '<p class="text-center py-10">Searching...</p>';
             resultsCountEl.textContent = 'Loading...';
             
             const radius = document.getElementById('radius-select').value;
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            const selectedLicenses = Array.from(document.querySelectorAll('input[name="license_info"]:checked')).map(cb => cb.value);
+            const minExperience = document.getElementById('experience-select').value;
+            const feeFilter = document.getElementById('fee-filter').checked;
+            const videoFilter = document.getElementById('video-filter').checked;
+            const responseFilter = document.getElementById('response-filter').checked;
             
-            let query;
+            let data, error;
+
             if (userCoords) {
-                query = supabase.rpc('profiles_in_radius', {
+                // DEBUG: Indicate which search path is being taken
+                console.log('Entering LOCATION-BASED search path because userCoords is not null.');
+                
+                resultsCountEl.textContent = 'Searching near you...';
+                const { data: rpcData, error: rpcError } = await supabase.rpc('profiles_in_radius', {
                     lat: userCoords.latitude,
                     long: userCoords.longitude,
                     radius_meters: parseInt(radius, 10)
                 });
+                
+                data = rpcData;
+                error = rpcError;
+
+                if (!error && data) {
+                    data = data.filter(profile => {
+                        if (searchTerm && !profile.search_text.toLowerCase().includes(searchTerm)) return false;
+                        if (minExperience && profile.experience_years < parseInt(minExperience)) return false;
+                        if (feeFilter && profile.fee_structure !== 'No Fees') return false;
+                        if (videoFilter && !profile.video_consultation) return false;
+                        if (responseFilter && profile.response_time !== 'Instant') return false;
+                        if (selectedLicenses.length > 0 && !selectedLicenses.some(lic => profile.license_info.includes(lic))) return false;
+                        return true;
+                    });
+                }
+
             } else {
-                query = supabase.from('searchable_profiles').select('*');
-            }
-            
-            query = query.eq('status', 'approved');
+                // DEBUG: Indicate which search path is being taken
+                console.log('Entering STANDARD search path because userCoords is null.');
 
-            const searchTerm = searchInput.value.trim();
-            if (searchTerm) {
-                query = query.ilike('search_text', `%${searchTerm}%`);
+                let query = supabase.from('searchable_profiles').select('*');
+                
+                if (searchTerm) query = query.ilike('search_text', `%${searchTerm}%`);
+                if (selectedLicenses.length > 0) {
+                    const licenseFilters = selectedLicenses.map(lic => `license_info.ilike.%${lic}%`).join(',');
+                    query = query.or(licenseFilters);
+                }
+                if (minExperience) query = query.gte('experience_years', parseInt(minExperience, 10));
+                if (feeFilter) query = query.eq('fee_structure', 'No Fees');
+                if (videoFilter) query = query.eq('video_consultation', true);
+                if (responseFilter) query = query.eq('response_time', 'Instant');
+                
+                const { data: queryData, error: queryError } = await query;
+                data = queryData;
+                error = queryError;
             }
-            
-            const selectedLicenses = Array.from(document.querySelectorAll('input[name="license_info"]:checked')).map(cb => cb.value);
-            if (selectedLicenses.length > 0) {
-                const licenseFilters = selectedLicenses.map(lic => `license_info.ilike.%${lic}%`).join(',');
-                query = query.or(licenseFilters);
-            }
-
-            const minExperience = document.getElementById('experience-select').value;
-            if (minExperience) {
-                query = query.gte('experience_years', parseInt(minExperience, 10));
-            }
-            
-            if (document.getElementById('fee-filter').checked) query = query.eq('fee_structure', 'No Fees');
-            if (document.getElementById('video-filter').checked) query = query.eq('video_consultation', true);
-            if (document.getElementById('response-filter').checked) query = query.eq('response_time', 'Instant');
-            
-            let { data, error } = await query;
             
             if (error) {
                 console.error('Error fetching listings:', error);
                 listingsContainer.innerHTML = `<p class="text-red-500">Could not load listings. Error: ${error.message}</p>`;
+                resultsCountEl.textContent = 'Error!';
                 return;
             }
 
             const selectedCategories = Array.from(document.querySelectorAll('#filter-categories input:checked')).map(cb => parseInt(cb.dataset.catId, 10));
             if (selectedCategories.length > 0) {
                  const { data: profileCategories, error: catError } = await supabase
-                    .from('professional_categories')
-                    .select('profile_id')
-                    .in('category_id', selectedCategories);
-
-                if (catError) console.error(catError);
-
-                const matchingProfileIds = profileCategories ? profileCategories.map(pc => pc.profile_id) : [];
-                data = data.filter(profile => matchingProfileIds.includes(profile.id));
+                    .from('professional_categories').select('profile_id').in('category_id', selectedCategories);
+                
+                if (catError) {
+                    console.error('Specialization filter error:', catError);
+                    alert('Could not apply specialization filter. There might be a database configuration issue (e.g., incorrect table name). Please check the console for details.');
+                } else {
+                    const matchingProfileIds = profileCategories ? profileCategories.map(pc => pc.profile_id) : [];
+                    data = data.filter(profile => matchingProfileIds.includes(profile.id));
+                }
             }
             
-            resultsCountEl.textContent = `Showing ${data.length} Results`;
+            const resultText = userCoords ? `Showing ${data.length} Results Near You` : `Showing ${data.length} Results`;
+            resultsCountEl.textContent = resultText;
             listingsContainer.innerHTML = '';
 
             if (data.length === 0) {
@@ -232,26 +296,35 @@
             });
         }
 
-        async function populateCategories() {
-            const { data, error } = await supabase.from('categories').select('id, name').order('name');
-            if (error) return;
-
-            const container = document.getElementById('filter-categories');
-            container.innerHTML = '';
-            data.forEach(cat => {
-                const item = `<label class="flex items-center"><input type="checkbox" data-cat-id="${cat.id}" class="h-4 w-4 rounded border-gray-300 text-amber-600 mr-2"> ${cat.name}</label>`;
-                container.innerHTML += item;
-            });
+        async function populateCategories() { 
+            const filterCategoriesContainer = document.getElementById('filter-categories');
+            try {
+                const { data, error } = await supabase.from('categories').select('id, name').order('name');
+                if (error) throw error;
+                let content = '';
+                data.forEach(cat => {
+                    content += `<label class="flex items-center"><input type="checkbox" data-cat-id="${cat.id}" class="mr-2 h-4 w-4 rounded text-amber-600"> ${cat.name}</label>`;
+                });
+                filterCategoriesContainer.innerHTML = content;
+            } catch(error) {
+                console.error("Error populating categories", error);
+                filterCategoriesContainer.innerHTML = `<p class="text-xs text-red-500">Could not load categories.</p>`
+            }
         }
 
         function resetFiltersAndSearch() {
-            searchInput.value = '';
-            document.getElementById('experience-select').value = ''; 
-            document.getElementById('radius-select').value = '25000'; 
-            document.querySelectorAll('#filters-form input[type="checkbox"]').forEach(cb => cb.checked = false);
+            // DEBUG: Log that the reset function was called
+            console.log('--- Reset button clicked ---');
+            
+            filtersForm.reset();
             userCoords = null;
+
+            // DEBUG: Log the value of userCoords after it has been reset
+            console.log('userCoords has been reset to:', userCoords);
+            
             locationStatusEl.textContent = '';
             locationStatusEl.style.color = '';
+            
             displayListings();
         }
 
@@ -264,8 +337,9 @@
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     userCoords = position.coords;
-                    locationStatusEl.textContent = `Location captured!`;
+                    locationStatusEl.textContent = `Location captured! Searching...`;
                     locationStatusEl.style.color = 'green';
+                    displayListings();
                 },
                 () => {
                     locationStatusEl.textContent = 'Unable to retrieve your location.';
@@ -277,9 +351,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             const query = urlParams.get('q');
-            if (query) {
-                searchInput.value = query;
-            }
+            if (query) { searchInput.value = query; }
             
             displayListings();
             populateCategories();
@@ -289,13 +361,9 @@
             resetFiltersBtn.addEventListener('click', resetFiltersAndSearch);
 
             searchInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault(); 
-                    displayListings();
-                }
+                if (e.key === 'Enter') { e.preventDefault(); displayListings(); }
             });
         });
-
     </script>
 </body>
 </html>

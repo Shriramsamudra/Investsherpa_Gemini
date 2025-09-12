@@ -10,347 +10,350 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
     <style>
         body { font-family: 'Inter', sans-serif; }
-        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
+        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color: 0.3s ease; }
         .btn-primary:hover { background-color: #1c347d; }
-        .btn-secondary { background-color: #f59e0b; color: white; transition: background-color 0.3s ease; }
+        .btn-secondary { background-color: #f59e0b; color: white; transition: background-color: 0.3s ease; }
         .btn-secondary:hover { background-color: #d97706; }
-        .info-card i { color: #1e3a8a; }
         #map { height: 250px; width: 100%; border-radius: 0.375rem; z-index: 1; }
-        .review-stars { color: #f59e0b; }
+        [x-cloak] { display: none !important; }
     </style>
 </head>
-<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen">
+<body class="bg-gray-100 text-gray-800 flex flex-col min-h-screen" x-data="pageData()">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="index.html" class="flex items-center space-x-3">
                 <img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-14 w-auto">
-                <span class="text-2xl font-bold">
-                    <span class="text-blue-900">Invest</span><span class="text-amber-500">Sherpa</span>
-                </span>
+                <span class="text-2xl font-bold"><span class="text-blue-900">Invest</span><span class="text-amber-500">Sherpa</span></span>
             </a>
             <nav class="hidden md:flex items-center space-x-8">
                 <a href="index.html" class="text-gray-600 hover:text-blue-900 font-medium">Home</a>
                 <a href="browselisting.html" class="text-gray-600 hover:text-blue-900 font-medium">Browse</a>
                 <a href="#" class="text-gray-600 hover:text-blue-900 font-medium">Blog</a>
             </nav>
-            <div id="user-actions" class="hidden md:flex items-center space-x-4">
-                 </div>
+<div id="user-actions" class="hidden md:flex items-center space-x-4">
+    <template x-if="currentUser">
+        <div class="flex items-center space-x-4">
+            <a href="userprofile.html" x-text="currentUser.email" class="text-gray-600 font-medium hover:text-blue-900 hover:underline text-sm"></a>
+            
+            <button @click="logout()" class="font-semibold text-red-600 hover:underline">Logout</button>
+        </div>
+    </template>
+    <template x-if="!currentUser">
+        <div class="space-x-4">
+            <a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
+            <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
+        </div>
+    </template>
+</div>
             <button class="md:hidden text-blue-900 text-2xl"><i class="fas fa-bars"></i></button>
         </div>
     </header>
 
     <main class="container mx-auto px-6 py-12 flex-grow">
-        <div id="loading-state" class="text-center py-20"><p class="text-xl">Loading profile...</p></div>
-        <div id="profile-content" class="grid grid-cols-1 lg:grid-cols-3 gap-8 hidden">
+        <div x-show="isLoading" class="text-center py-20">
+            <p class="text-xl" x-text="loadingMessage"></p>
+        </div>
+        
+        <div x-show="!isLoading && currentProfile.id" class="grid grid-cols-1 lg:grid-cols-3 gap-8" x-cloak>
             
             <div class="lg:col-span-2 space-y-8">
                 <div class="bg-white p-8 rounded-lg shadow-lg">
-                    <div class="flex flex-col sm:flex-row items-start">
-                        <img id="profile-logo" src="" alt="Business Logo" class="w-28 h-28 rounded-full mr-6 mb-4 sm:mb-0 border-4 border-amber-200">
-                        <div class="flex-grow">
-                            <h1 id="business-name" class="text-4xl font-bold text-blue-900"></h1>
-                            <p id="full-name" class="text-gray-500 text-lg"></p>
-                            <p id="tagline" class="text-gray-600 text-xl mt-2 italic"></p>
+                    <div class="flex justify-between items-start">
+                        <div class="flex flex-col sm:flex-row items-start">
+                            <div class="w-28 h-28 rounded-full mr-6 mb-4 sm:mb-0 border-4 border-amber-200 overflow-hidden flex-shrink-0 bg-white">
+    <img :src="currentProfile.logo_url || 'https://placehold.co/112x112/1e3a8a/ffffff?text=Logo'" alt="Business Logo" class="w-full h-full object-contain">
+</div>
+                            <div class="flex-grow">
+                                <h1 x-text="currentProfile.business_name" class="text-4xl font-bold text-blue-900"></h1>
+                                <p x-text="currentProfile.full_name" class="text-gray-500 text-lg"></p>
+                                <p x-text="currentProfile.tagline" class="text-gray-600 text-xl mt-2 italic"></p>
+                            </div>
                         </div>
+                        <a :href="'addlisting.html?id=' + currentProfile.id" class="btn-secondary whitespace-nowrap py-2 px-4 rounded-lg text-sm font-semibold" x-show="isOwner"><i class="fas fa-pencil-alt mr-2"></i> Edit</a>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t">
-                        <div class="text-center"><i class="fas fa-briefcase text-2xl text-amber-500"></i><p class="font-semibold mt-1">Experience</p><p id="info-experience" class="text-gray-600"></p></div>
-                        <div class="text-center"><i class="fas fa-wallet text-2xl text-amber-500"></i><p class="font-semibold mt-1">Fee Structure</p><p id="info-fees" class="text-gray-600"></p></div>
-                        <div class="text-center"><i class="fas fa-bolt text-2xl text-amber-500"></i><p class="font-semibold mt-1">Response Time</p><p id="info-response" class="text-gray-600"></p></div>
-                        <div class="text-center"><i class="fas fa-video text-2xl text-amber-500"></i><p class="font-semibold mt-1">Video Call</p><p id="info-video" class="text-gray-600"></p></div>
+                        <div class="text-center"><i class="fas fa-briefcase text-2xl text-amber-500"></i><p class="font-semibold mt-1">Experience</p><p x-text="currentProfile.experience_years ? `${currentProfile.experience_years} years` : 'N/A'" class="text-gray-600"></p></div>
+                        <div class="text-center"><i class="fas fa-wallet text-2xl text-amber-500"></i><p class="font-semibold mt-1">Fee Structure</p><p x-text="formatFee(currentProfile.fee_structure, currentProfile.fee_amount)" class="text-gray-600"></p></div>
+                        <div class="text-center"><i class="fas fa-bolt text-2xl text-amber-500"></i><p class="font-semibold mt-1">Response Time</p><p x-text="currentProfile.response_time || 'N/A'" class="text-gray-600"></p></div>
+                        <div class="text-center"><i class="fas fa-video text-2xl text-amber-500"></i><p class="font-semibold mt-1">Video Call</p><p x-text="currentProfile.video_consultation ? 'Available' : 'No'" class="text-gray-600"></p></div>
                     </div>
                 </div>
 
-                <div class="bg-white p-8 rounded-lg shadow-lg">
+                <div x-show="currentProfile.about" class="bg-white p-8 rounded-lg shadow-lg">
                     <h2 class="text-2xl font-bold text-blue-900 mb-4 border-b pb-2">About</h2>
-                    <p id="about-us" class="text-gray-700 leading-relaxed whitespace-pre-wrap"></p>
+                    <p x-text="currentProfile.about" class="text-gray-700 leading-relaxed whitespace-pre-wrap"></p>
                 </div>
 
-                <div class="bg-white p-8 rounded-lg shadow-lg">
+                <div x-show="currentProfile.professional_categories && currentProfile.professional_categories.length > 0" class="bg-white p-8 rounded-lg shadow-lg">
                     <h2 class="text-2xl font-bold text-blue-900 mb-6 border-b pb-2">Services Offered</h2>
-                    <div id="services-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8"></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-8">
+                        <template x-for="pc in currentProfile.professional_categories" :key="pc.categories.id">
+                             <div class="flex items-start space-x-4">
+                                <i :class="pc.categories.icon_class || 'fas fa-check-circle'" class="text-3xl text-blue-800 w-8 text-center pt-1"></i>
+                                <div><h3 class="font-semibold text-lg" x-text="pc.categories.name"></h3></div>
+                            </div>
+                        </template>
+                    </div>
                 </div>
-
+                
                 <div class="bg-white p-8 rounded-lg shadow-lg">
                      <h2 class="text-2xl font-bold text-blue-900 mb-6 border-b pb-2">Professional Details</h2>
                      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                         <div>
+                         <div x-show="currentProfile.license_info">
                             <h3 class="font-bold text-lg mb-3 text-gray-800">License Information</h3>
-                            <ul id="license-list" class="space-y-3"></ul>
+                            <ul x-html="formatList(currentProfile.license_info, 'fas fa-certificate', 'text-green-600')" class="space-y-3"></ul>
                          </div>
-                         <div>
+                         <div x-show="currentProfile.client_focus">
                             <h3 class="font-bold text-lg mb-3 text-gray-800">Client Focus</h3>
-                            <ul id="client-focus-list" class="space-y-3"></ul>
+                            <ul x-html="formatClientFocusList(currentProfile.client_focus)" class="space-y-3"></ul>
                          </div>
-                         <div class="md:col-span-2">
+                         <div class="md:col-span-2" x-show="currentProfile.availability">
                              <h3 class="font-bold text-lg mb-3 text-gray-800">Availability</h3>
-                             <p id="availability-text" class="text-gray-700"></p>
+                             <p x-text="currentProfile.availability" class="text-gray-700"></p>
                          </div>
                      </div>
                 </div>
+                
+                <div x-html="formatLinks(currentProfile.blogs, 'Featured Articles & Blogs', 'fas fa-newspaper')"></div>
+                <div x-html="formatLinks(currentProfile.videos, 'Featured Videos', 'fab fa-youtube')"></div>
 
-                <div id="blogs-section" class="bg-white p-8 rounded-lg shadow-lg"></div>
-                <div id="videos-section" class="bg-white p-8 rounded-lg shadow-lg"></div>
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <h2 class="text-2xl font-bold text-blue-900 mb-6">Reviews (<span x-text="currentProfile.reviews ? currentProfile.reviews.length : 0"></span>)</h2>
+                    <div class="space-y-6">
+                        <template x-if="!currentProfile.reviews || currentProfile.reviews.length === 0">
+                            <p class="text-gray-500">No reviews yet for this professional.</p>
+                        </template>
+                        <template x-for="review in currentProfile.reviews" :key="review.id">
+                            <div class="border-b pb-4">
+                                <div class="flex items-center mb-2">
+                                    <div class="review-stars" x-html="getStars(review.rating)"></div>
+                                    <p class="ml-4 font-bold text-gray-800" x-text="review.user_profiles.full_name"></p>
+                                </div>
+                                <p class="text-gray-600 italic" x-text="`&quot;${review.comment}&quot;`"></p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
 
-                <div id="reviews-section" class="bg-white p-8 rounded-lg shadow-lg"></div>
+                <div x-show="canWriteReview" class="bg-white p-8 rounded-lg shadow-lg" @submit-review.window="submitReview()">
+                    <h2 class="text-2xl font-bold text-blue-900 mb-4">Write a Review</h2>
+                    <form @submit.prevent="$dispatch('submit-review')">
+                         <div class="mb-4">
+                            <label class="block font-semibold mb-2">Your Rating</label>
+                            <div class="review-stars text-3xl" @mouseleave="reviewForm.tempRating = 0">
+                                <template x-for="star in 5" :key="star"><i class="fa-star" :class="((reviewForm.tempRating || reviewForm.rating) >= star) ? 'fa-solid' : 'fa-regular'" @mouseover="reviewForm.tempRating = star" @click="reviewForm.rating = star"></i></template>
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="comment" class="block font-semibold mb-2">Your Comment</label>
+                            <textarea id="comment" x-model="reviewForm.comment" rows="4" class="w-full p-3 border rounded-lg" required></textarea>
+                        </div>
+                        <button type="submit" :disabled="reviewForm.submitting" class="btn-primary py-2 px-6 rounded-lg"><span x-text="reviewForm.submitting ? 'Submitting...' : 'Submit Review'"></span></button>
+                        <p x-show="reviewForm.message" x-text="reviewForm.message" class="mt-4 font-semibold" :class="reviewForm.messageColor"></p>
+                    </form>
+                </div>
+
+                <div x-show="hasAlreadyReviewed" class="bg-white p-8 rounded-lg shadow-lg">
+                    <h2 class="text-2xl font-bold text-blue-900 mb-2">Thank You for Your Feedback</h2>
+                    <p class="text-gray-600">You have already submitted a review for this professional.</p>
+                </div>
             </div>
 
             <div class="lg:col-span-1">
                 <div class="space-y-8 sticky top-28">
                     <div class="bg-white p-6 rounded-lg shadow-lg info-card">
-                        <h3 class="text-xl font-bold text-blue-900 mb-4">Contact & Location</h3>
+                        <button @click="handleConnectClick()" :disabled="isOwner" class="btn-primary w-full py-3 rounded-lg font-bold text-lg mb-6 disabled:opacity-50 disabled:cursor-not-allowed">Connect Now</button>
                         <div class="space-y-4 text-gray-700">
-                            <p class="flex items-start"><i class="fas fa-phone-alt w-6 mt-1"></i> <span id="contact-phone"></span></p>
-                            <p class="flex items-start"><i class="fas fa-envelope w-6 mt-1"></i> <span id="contact-email"></span></p>
-                            <p class="flex items-start"><i class="fas fa-globe w-6 mt-1"></i> <a id="contact-website" href="#" target="_blank" class="hover:underline text-amber-600 break-all"></a></p>
-                            <p class="flex items-start"><i class="fas fa-map-marker-alt w-6 mt-1"></i> <span id="contact-address"></span></p>
+                             <p class="flex items-start" x-show="currentProfile.phone"><i class="fas fa-phone-alt w-6 mt-1 text-amber-500"></i> <a :href="'tel:'+currentProfile.phone" x-text="currentProfile.phone" class="hover:underline"></a></p>
+                             <p class="flex items-start" x-show="currentProfile.email"><i class="fas fa-envelope w-6 mt-1 text-amber-500"></i> <a :href="'mailto:'+currentProfile.email" x-text="currentProfile.email" class="hover:underline"></a></p>
+                             <p class="flex items-start" x-show="currentProfile.website_url"><i class="fas fa-globe w-6 mt-1 text-amber-500"></i> <a :href="currentProfile.website_url" x-text="getHostname(currentProfile.website_url)" target="_blank" class="hover:underline text-blue-600 break-all"></a></p>
+                             <p class="flex items-start" x-show="currentProfile.address"><i class="fas fa-map-marker-alt w-6 mt-1 text-amber-500"></i> <span x-text="`${currentProfile.address}, ${currentProfile.city}`"></span></p>
                         </div>
-                        <div id="map-container" class="mt-4 border-t pt-4">
+                        <div class="mt-4 border-t pt-4" x-show="currentProfile.latitude && currentProfile.longitude">
                             <div id="map"></div>
-                            <a id="google-maps-link" href="#" target="_blank" class="btn-secondary mt-4 w-full py-2 rounded-lg font-semibold text-center hidden items-center justify-center">
-                                <i class="fab fa-google mr-2"></i> View on Google Maps
-                            </a>
                         </div>
                     </div>
-                    <div class="bg-white p-6 rounded-lg shadow-lg info-card">
+                    <div class="bg-white p-6 rounded-lg shadow-lg info-card" x-show="currentProfile.service_area">
                         <h3 class="text-xl font-bold text-blue-900 mb-4">Service Area</h3>
-                        <p id="service-area" class="text-gray-700"></p>
+                        <p x-text="currentProfile.service_area" class="text-gray-700"></p>
                     </div>
                 </div>
+            </div>
+        </div>
+        
+        <div x-show="isConnectModalOpen" @keydown.escape.window="isConnectModalOpen = false" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[100]" x-cloak>
+             <div @click.outside="isConnectModalOpen = false" class="bg-white rounded-lg shadow-2xl w-full max-w-md p-6 max-h-full overflow-y-auto" @submit-lead.window="handleLeadSubmit()">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">Connect with <span x-text="currentProfile.business_name"></span></h2>
+                <form @submit.prevent="$dispatch('submit-lead')">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="font-semibold text-gray-600 text-sm">Your Name</label>
+                            <input x-model="lead.name" type="text" required readonly class="w-full p-3 border rounded-lg bg-gray-100 cursor-not-allowed mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold text-gray-600 text-sm">Your Email</label>
+                            <input x-model="lead.email" type="email" required readonly class="w-full p-3 border rounded-lg bg-gray-100 cursor-not-allowed mt-1">
+                        </div>
+                        <div>
+                             <label class="font-semibold text-gray-600 text-sm">Your Phone</label>
+                            <input x-model="lead.phone" type="tel" placeholder="Enter your phone number" required class="w-full p-3 border rounded-lg mt-1">
+                        </div>
+                        <div>
+                            <label class="font-semibold text-gray-600 text-sm">Message</label>
+                            <textarea x-model="lead.message" rows="3" placeholder="Your message..." required class="w-full p-3 border rounded-lg mt-1"></textarea>
+                        </div>
+                    </div>
+                    <div class="flex justify-end items-center mt-6 space-x-4">
+                        <button type="button" @click="isConnectModalOpen = false" class="font-semibold text-gray-600">Cancel</button>
+                        <button type="submit" :disabled="sending" class="btn-primary py-2 px-6 rounded-lg"><span x-text="sending ? 'Sending...' : 'Send Request'"></span></button>
+                    </div>
+                    <p x-text="responseMsg" class="mt-4 text-center text-green-600 font-semibold"></p>
+                </form>
             </div>
         </div>
     </main>
     
     <footer class="bg-blue-900 text-white">
-        <div class="container mx-auto px-6 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-                <div class="col-span-1 md:col-span-2">
-                    <a href="index.html" class="flex items-center space-x-2 mb-4">
-                        <img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-12 bg-white rounded-md p-1">
-                    </a>
-                    <p class="text-blue-200 text-sm mb-4 max-w-sm">India's most trusted platform connecting investors with verified financial advisors. Make informed decisions with expert guidance tailored to your financial goals.</p>
-                    <div class="space-y-2 text-sm">
-                        <p><i class="fas fa-phone-alt w-5 text-blue-300"></i> <a href="tel:+919152049967" class="text-blue-200 hover:underline">+91 9152049967</a></p>
-                        <p><i class="fas fa-envelope w-5 text-blue-300"></i> <a href="mailto:support@investsherpa.com" class="text-blue-200 hover:underline">support@investsherpa.com</a></p>
-                        <p><i class="fas fa-map-marker-alt w-5 text-blue-300"></i> <span class="text-blue-200">Mumbai, Delhi, Bangalore & 25+ Cities</span></p>
-                    </div>
-                    <div class="flex space-x-4 mt-6">
-                        <a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-linkedin-in text-xl"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-twitter text-xl"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-facebook-f text-xl"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-instagram text-xl"></i></a>
-                        <a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-youtube text-xl"></i></a>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 class="font-bold mb-4">For Investors</h4>
-                    <ul class="space-y-2 text-sm text-blue-200">
-                        <li><a href="browselisting.html" class="hover:underline">Find Professionals</a></li>
-                        <li><a href="#" class="hover:underline">Investment Planning</a></li>
-                        <li><a href="#" class="hover:underline">Insurance Solutions</a></li>
-                        <li><a href="#" class="hover:underline">Tax Planning</a></li>
-                        <li><a href="#" class="hover:underline">Retirement Planning</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="font-bold mb-4">For Professionals</h4>
-                    <ul class="space-y-2 text-sm text-blue-200">
-                        <li><a href="addlisting.html" class="hover:underline">Join Network</a></li>
-                        <li><a href="#" class="hover:underline">Business Dashboard</a></li>
-                        <li><a href="#" class="hover:underline">Lead Generation</a></li>
-                        <li><a href="#" class="hover:underline">Profile Management</a></li>
-                        <li><a href="#" class="hover:underline">Success Stories</a></li>
-                    </ul>
-                </div>
-
-                <div>
-                    <h4 class="font-bold mb-4">Resources</h4>
-                    <ul class="space-y-2 text-sm text-blue-200">
-                        <li><a href="#" class="hover:underline">Knowledge Hub</a></li>
-                        <li><a href="#" class="hover:underline">Financial Calculators</a></li>
-                        <li><a href="#" class="hover:underline">Market Insights</a></li>
-                        <li><a href="#" class="hover:underline">Investment Guides</a></li>
-                        <li><a href="#" class="hover:underline">Regulatory Updates</a></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="mt-10 border-t border-blue-800 pt-6">
-                 <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-                     <div class="flex items-center space-x-6 text-sm text-blue-200">
-                        <span>Regulated & Verified by:</span>
-                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> SEBI Registered</span>
-                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> IRDAI Verified</span>
-                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> ISO 27001</span>
-                        <span class="font-semibold"><i class="fas fa-lock mr-1"></i> SSL Secured</span>
-                    </div>
-                     <div class="w-full md:w-auto">
-                        <h4 class="font-bold mb-2 text-center md:text-left">Stay Updated</h4>
-                        <p class="text-blue-200 text-sm mb-2 text-center md:text-left">Get weekly market insights and investment tips.</p>
-                        <form class="flex">
-                            <input type="email" placeholder="Enter your email" class="w-full p-2 rounded-l-md border-0 text-gray-800 focus:ring-2 focus:ring-yellow-500">
-                            <button type="submit" class="btn-secondary font-bold px-4 rounded-r-md">Subscribe</button>
-                        </form>
-                    </div>
-                 </div>
-            </div>
-
-            <div class="mt-8 border-t border-blue-800 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-blue-300">
-                <p>&copy; 2025 InvestSherpa. All Rights Reserved.</p>
-                <div class="flex space-x-4 mt-4 md:mt-0">
-                    <a href="#" class="hover:underline">Privacy Policy</a>
-                    <a href="#" class="hover:underline">Terms of Service</a>
-                    <a href="#" class="hover:underline">Cookie Policy</a>
-                </div>
-                 <p class="mt-4 md:mt-0">Made with <i class="fas fa-heart"></i> in India</p>
-            </div>
-        </div>
+        <div class="container mx-auto px-6 py-8 text-center"><p>&copy; 2025 InvestSherpa. All rights reserved.</p></div>
     </footer>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module">
-        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
         const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        const loadingEl = document.getElementById('loading-state');
-        const contentEl = document.getElementById('profile-content');
-        const userActions = document.getElementById('user-actions');
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('pageData', () => ({
+                isLoading: true, loadingMessage: 'Loading profile...',
+                currentUser: null, currentUserProfile: null, currentProfile: {}, map: null,
+                hasAlreadyReviewed: false,
+                isConnectModalOpen: false, sending: false, responseMsg: '',
+                lead: { name: '', email: '', phone: '', message: '' },
+                reviewForm: { rating: 0, tempRating: 0, comment: '', message: '', messageColor: 'text-green-600', submitting: false },
+                clientFocusIcons: {'Salaried': 'fas fa-user-tie', 'Professionals': 'fas fa-user-doctor', 'Businessman': 'fas fa-briefcase', 'HNIs': 'fas fa-gem', 'NRIs': 'fas fa-plane-departure', 'Corporate': 'fas fa-building', 'Default': 'fas fa-check-circle'},
+                
+                get isOwner() { return this.currentUser && this.currentProfile && this.currentUser.id === this.currentProfile.user_id; },
+                get canWriteReview() { return this.currentUser && !this.isOwner && !this.hasAlreadyReviewed; },
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const profileId = urlParams.get('id');
-        let map;
+                async init() {
+                    try {
+                        supabase.auth.onAuthStateChange((_event, session) => {
+                            this.currentUser = session ? session.user : null;
+                            this.fetchCurrentUserProfile();
+                        });
+                        const { data: { session } } = await supabase.auth.getSession();
+                        this.currentUser = session ? session.user : null;
+                        this.fetchCurrentUserProfile();
+                        await this.loadProfile();
+                    } catch (err) {
+                        console.error("A critical error during page initialization:", err);
+                        this.loadingMessage = "Sorry, the page could not be loaded.";
+                        this.isLoading = false;
+                    }
+                },
 
-        const clientFocusIcons = {
-            'Salaried': 'fas fa-user-tie', 'Professionals': 'fas fa-user-doctor', 'Businessman': 'fas fa-briefcase',
-            'Industrialists': 'fas fa-industry', 'NGOs': 'fas fa-hands-helping', 'HNIs': 'fas fa-gem',
-            'NRIs': 'fas fa-plane-departure', 'Corporate': 'fas fa-building', 'Default': 'fas fa-check-circle'
-        };
+                fetchCurrentUserProfile() {
+                    if (!this.currentUser) { this.currentUserProfile = null; return; }
+                    this.currentUserProfile = { full_name: this.currentUser.user_metadata.full_name || 'A user' };
+                },
 
-        function populateListWithIcons(elementId, dataString, iconMap) {
-            const list = document.getElementById(elementId);
-            list.innerHTML = '';
-            if (!dataString) { list.innerHTML = '<li>N/A</li>'; return; }
-            dataString.split(',').forEach(itemText => {
-                const text = itemText.trim();
-                const iconClass = iconMap[text] || iconMap['Default'];
-                const li = document.createElement('li');
-                li.className = 'flex items-start';
-                li.innerHTML = `<i class="${iconClass} w-6 text-green-600 mt-1"></i><span>${text}</span>`;
-                list.appendChild(li);
-            });
-        }
+                async logout() { await supabase.auth.signOut(); window.location.reload(); },
+                
+                async loadProfile() {
+                    const profileId = new URLSearchParams(window.location.search).get('id');
+                    if (!profileId) { this.loadingMessage = 'Error: No profile ID provided.'; this.isLoading = false; return; }
+                    try {
+                        const { data, error } = await supabase.from('searchable_profiles').select(`*, professional_categories(categories(*)), reviews(*, user_profiles(full_name))`).eq('id', profileId).eq('status', 'approved').single();
+                        if (error || !data) throw new Error("Profile not found or is not approved.");
+                        
+                        if (data.reviews) {
+                            data.reviews = data.reviews.filter(review => review.status === 'approved');
+                        }
 
-        function populateLinks(containerId, links, title, iconClass) {
-            const container = document.getElementById(containerId);
-            if (!links || links.length === 0) { container.classList.add('hidden'); return; }
-            let content = `<h2 class="text-2xl font-bold text-blue-900 mb-6 border-b pb-2">${title}</h2><div class="space-y-4">`;
-            links.forEach(link => {
-                content += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-3 text-gray-700 hover:text-amber-600 group"><i class="${iconClass} text-2xl text-blue-800 group-hover:text-amber-500"></i><span class="font-medium group-hover:underline">${link.title}</span></a>`;
-            });
-            content += '</div>';
-            container.innerHTML = content;
-        }
+                        document.title = `${data.business_name} - Details`;
+                        this.currentProfile = data;
+                        if (this.currentUser && data.reviews) {
+                            this.hasAlreadyReviewed = data.reviews.some(review => review.user_id === this.currentUser.id);
+                        }
+                        if (data.latitude && data.longitude) { this.$nextTick(() => this.initializeMap(data.latitude, data.longitude)); }
+                    } catch (e) { this.loadingMessage = e.message; } finally { this.isLoading = false; }
+                },
 
-        function populateReviews(reviews) {
-            const container = document.getElementById('reviews-section');
-            if (!reviews || reviews.length === 0) {
-                container.innerHTML = `<h2 class="text-2xl font-bold text-blue-900 mb-6 border-b pb-2">Client Reviews</h2><p>No reviews yet for this professional.</p>`;
-                return;
-            }
-            let content = `<h2 class="text-2xl font-bold text-blue-900 mb-6 border-b pb-2">Client Reviews</h2><div class="space-y-8">`;
-            reviews.forEach(review => {
-                const stars = '<i class="fas fa-star"></i>'.repeat(review.rating) + '<i class="far fa-star"></i>'.repeat(5 - review.rating);
-                content += `<div class="border-l-4 border-amber-400 pl-4"><div class="review-stars mb-1">${stars}</div><p class="text-gray-700 italic">"${review.comment}"</p><p class="font-semibold text-gray-800 mt-2">- ${review.user_profiles.full_name || 'A User'}</p></div>`;
-            });
-            content += '</div>';
-            container.innerHTML = content;
-        }
-
-        async function loadProfile() {
-            if (!profileId) { loadingEl.innerHTML = '<p class="text-red-500">No profile ID provided.</p>'; return; }
-
-            const { data: profile, error } = await supabase
-                .from('searchable_profiles')
-                .select(`*, professional_categories(categories(*)), reviews(*, user_profiles(full_name))`)
-                .eq('id', profileId)
-                .eq('status', 'approved')
-                .single();
-
-            if (error || !profile) {
-                console.error('Error fetching profile:', error);
-                loadingEl.innerHTML = '<p class="text-red-500 text-xl">Sorry, this profile could not be loaded or is not yet approved.</p>';
-                return;
-            }
-            
-            document.title = `${profile.business_name} - Details`;
-            document.getElementById('profile-logo').src = profile.logo_url || 'https://placehold.co/150x150/1e3a8a/ffffff?text=??';
-            document.getElementById('business-name').textContent = profile.business_name;
-            document.getElementById('full-name').textContent = profile.full_name;
-            document.getElementById('tagline').textContent = profile.tagline;
-            document.getElementById('about-us').textContent = profile.about;
-            document.getElementById('contact-phone').textContent = profile.phone;
-            document.getElementById('contact-email').textContent = profile.email;
-            document.getElementById('contact-website').href = profile.website_url;
-            document.getElementById('contact-website').textContent = profile.website_url ? new URL(profile.website_url).hostname : 'Not available';
-            document.getElementById('contact-address').textContent = `${profile.address}, ${profile.city}, ${profile.state} ${profile.pincode}`;
-            document.getElementById('info-experience').textContent = profile.experience_years ? `${profile.experience_years} years` : 'N/A';
-            document.getElementById('info-fees').textContent = profile.fee_structure === 'Per Consultation' ? `₹${profile.fee_amount}` : (profile.fee_structure || 'N/A');
-            document.getElementById('info-response').textContent = profile.response_time || 'N/A';
-            document.getElementById('info-video').textContent = profile.video_consultation ? 'Available' : 'No';
-            document.getElementById('service-area').textContent = profile.service_area || 'N/A';
-            document.getElementById('availability-text').textContent = profile.availability || 'N/A';
-            populateListWithIcons('license-list', profile.license_info, {'Default': 'fas fa-certificate'});
-            populateListWithIcons('client-focus-list', profile.client_focus, clientFocusIcons);
-
-            const servicesGrid = document.getElementById('services-grid');
-            servicesGrid.innerHTML = '';
-            if (profile.professional_categories.length > 0) {
-                profile.professional_categories.forEach(pc => {
-                    const category = pc.categories;
-                    const service = `<div class="flex items-start space-x-4"><i class="${category.icon_class || 'fas fa-check-circle'} text-3xl text-blue-800 w-8 text-center"></i><div><h3 class="font-semibold text-lg">${category.name}</h3></div></div>`;
-                    servicesGrid.innerHTML += service;
-                });
-            } else { servicesGrid.innerHTML = '<p>No specific services listed.</p>'; }
-
-            populateLinks('blogs-section', profile.blogs, 'Featured Articles & Blogs', 'fas fa-newspaper');
-            populateLinks('videos-section', profile.videos, 'Featured Videos', 'fab fa-youtube');
-            populateReviews(profile.reviews);
-
-            loadingEl.classList.add('hidden');
-            contentEl.classList.remove('hidden');
-
-            if (profile.latitude && profile.longitude) {
-                const googleMapsLink = document.getElementById('google-maps-link');
-                googleMapsLink.href = `http://googleusercontent.com/maps.google.com/3{profile.latitude},${profile.longitude}`;
-                googleMapsLink.classList.remove('hidden');
-                googleMapsLink.style.display = 'flex';
-
-                if (map) map.remove();
-                map = L.map('map').setView([profile.latitude, profile.longitude], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                L.marker([profile.latitude, profile.longitude]).addTo(map).bindPopup(profile.business_name).openPopup();
-                setTimeout(() => map.invalidateSize(), 1); 
-            } else {
-                document.getElementById('map-container').classList.add('hidden');
-            }
-        }
-
-        supabase.auth.onAuthStateChange((event, session) => {
-            if (session) {
-                userActions.innerHTML = `<button id="logout-button" class="font-semibold text-red-600 hover:underline">Logout</button>`;
-                document.getElementById('logout-button').addEventListener('click', () => {
-                    supabase.auth.signOut();
-                });
-            } else {
-                userActions.innerHTML = `<a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a><a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>`;
-            }
+                initializeMap(lat, lng) {
+                    if (this.map) this.map.remove();
+                    this.map = L.map('map').setView([lat, lng], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(this.map);
+                    L.marker([lat, lng]).addTo(this.map).bindPopup(this.currentProfile.business_name).openPopup();
+                },
+                
+                handleConnectClick() {
+                    if (!this.currentUser) { alert('Please log in to connect.'); } 
+                    else if (this.isOwner) { alert("You cannot connect with your own profile."); } 
+                    else {
+                        this.lead.name = this.currentUserProfile?.full_name || '';
+                        this.lead.email = this.currentUser?.email || '';
+                        this.lead.phone = ''; this.lead.message = '';
+                        this.isConnectModalOpen = true;
+                    }
+                },
+                
+                formatFee(structure, amount) {
+                    if (!structure) return 'N/A';
+                    if (structure === 'Per Consultation' && amount) return `₹${amount}`;
+                    return structure;
+                },
+                getHostname(url) {
+                    if (!url) return '';
+                    try { let fullUrl = url.startsWith('http') ? url : `https://${url}`; return new URL(fullUrl).hostname; } 
+                    catch (e) { return url; }
+                },
+                getStars(rating) { return '<i class="fas fa-star text-amber-500"></i>'.repeat(rating) + '<i class="far fa-star text-gray-300"></i>'.repeat(5 - rating); },
+                formatList(csv, icon, iconColor = 'text-green-600') {
+                    if (!csv) return '';
+                    return csv.split(',').map(item => `<li class="flex items-start"><i class="${icon} w-6 ${iconColor} mt-1"></i><span>${item.trim()}</span></li>`).join('');
+                },
+                formatClientFocusList(csv) {
+                    if (!csv) return '';
+                    return csv.split(',').map(itemText => {
+                        const text = itemText.trim();
+                        const icon = this.clientFocusIcons[text] || this.clientFocusIcons['Default'];
+                        return `<li class="flex items-start"><i class="${icon} w-6 text-green-600 mt-1"></i><span>${text}</span></li>`;
+                    }).join('');
+                },
+                formatLinks(links, title, icon) {
+                    if (!links || links.length === 0) return '';
+                    let content = `<div class="bg-white p-8 rounded-lg shadow-lg"><h2 class="text-2xl font-bold text-blue-900 mb-6 border-b pb-2">${title}</h2><div class="space-y-4">`;
+                    links.forEach(link => { content += `<a href="${link.url}" target="_blank" rel="noopener noreferrer" class="flex items-center space-x-3 group"><i class="${icon} text-2xl text-blue-800"></i><span class="font-medium group-hover:underline">${link.title}</span></a>`; });
+                    return content + '</div></div>';
+                },
+                
+                async handleLeadSubmit() {
+                    this.sending = true; this.responseMsg = '';
+                    const { error: insertError } = await supabase.from('leads').insert({ profile_id: this.currentProfile.id, name: this.lead.name, email: this.lead.email, phone: this.lead.phone, message: this.lead.message });
+                    if (insertError) { console.error('Error submitting lead:', insertError); this.responseMsg = 'There was an error sending your request.'; this.sending = false; return; }
+                    const { error: functionError } = await supabase.functions.invoke('send-lead-email', { body: { professionalEmail: this.currentProfile.email, professionalName: this.currentProfile.full_name, lead: this.lead } });
+                    if (functionError) console.error('Error calling email function:', functionError);
+                    this.responseMsg = 'Your request has been sent successfully!';
+                    setTimeout(() => { this.isConnectModalOpen = false; this.responseMsg = ''; this.lead = { name: '', email: '', phone: '', message: '' }; this.sending = false; }, 2000);
+                },
+                async submitReview() {
+                    if (!this.reviewForm.rating || !this.reviewForm.comment) { this.reviewForm.message = 'Please provide a rating and a comment.'; this.reviewForm.messageColor = 'text-red-600'; return; }
+                    this.reviewForm.submitting = true; this.reviewForm.message = '';
+                    const { error: insertError } = await supabase.from('reviews').insert({ profile_id: this.currentProfile.id, user_id: this.currentUser.id, rating: this.reviewForm.rating, comment: this.reviewForm.comment, status: 'pending' });
+                    if (insertError) { console.error('Error submitting review:', insertError); this.reviewForm.message = 'Sorry, there was an error submitting your review.'; this.reviewForm.messageColor = 'text-red-600'; this.reviewForm.submitting = false; return; }
+                    const { error: functionError } = await supabase.functions.invoke('notify-new-review', { body: { professionalEmail: this.currentProfile.email, professionalName: this.currentProfile.full_name, reviewerName: this.currentUserProfile?.full_name || 'A user' } });
+                    if (functionError) console.error('Error calling review notification function:', functionError);
+                    this.reviewForm.message = 'Thank you! Your review has been submitted for approval.';
+                    this.reviewForm.messageColor = 'text-green-600';
+                    this.hasAlreadyReviewed = true;
+                    setTimeout(() => { Object.assign(this.reviewForm, { rating: 0, tempRating: 0, comment: '', message: '', submitting: false }); }, 3000);
+                }
+            }));
         });
-
-        document.addEventListener('DOMContentLoaded', loadProfile);
     </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </body>
 </html>
