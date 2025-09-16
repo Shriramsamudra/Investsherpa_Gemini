@@ -19,6 +19,37 @@
         .toggle-bg:after { content: ''; position: absolute; top: 2px; left: 2px; background: white; border-radius: 9999px; height: 1.25rem; width: 1.25rem; transition: transform 0.2s ease-in-out; }
         input:checked + .toggle-bg:after { transform: translateX(100%); }
         input:checked + .toggle-bg { background-color: #1e3a8a; }
+
+        /* **NEW**: Styles for responsive cards from tables */
+        @media (max-width: 767px) {
+            .responsive-table thead { display: none; }
+            .responsive-table tr {
+                display: block;
+                border-bottom: 2px solid #e5e7eb;
+                padding: 1rem 0;
+            }
+             .responsive-table tr:last-child { border-bottom: 0; }
+            .responsive-table td {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.5rem 1rem;
+                text-align: right;
+                border-bottom: 1px solid #f3f4f6;
+            }
+             .responsive-table td:last-child { border-bottom: 0; }
+            .responsive-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                text-align: left;
+                margin-right: 1rem;
+            }
+            .responsive-table .actions-cell {
+                justify-content: center;
+                padding-top: 1rem;
+            }
+             .responsive-table .actions-cell::before { display: none; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800" x-data="adminPanel">
@@ -48,6 +79,9 @@
         <div>
             <header class="bg-white shadow-sm sticky top-0 z-40">
                 <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+                    <button @click="isSidebarOpen = !isSidebarOpen" class="md:hidden text-blue-900 text-xl">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <a href="index.html" class="flex items-center space-x-3">
                         <img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-14 w-auto">
                         <span class="text-2xl font-bold">
@@ -55,63 +89,68 @@
                         </span>
                     </a>
                     <div class="flex items-center space-x-4">
-                         <span class="text-sm text-gray-600" x-text="session.user.email"></span>
+                         <span class="text-sm text-gray-600 hidden sm:inline" x-text="session.user.email"></span>
                          <button @click="logout()" class="font-semibold text-red-600 hover:text-red-800 text-sm">Logout</button>
                     </div>
                 </div>
             </header>
 
             <div class="flex">
-                <aside class="w-64 bg-white shadow-md h-screen sticky top-16">
+                <div x-show="isSidebarOpen" @click.outside="isSidebarOpen = false" class="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" x-cloak></div>
+                <aside :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="w-64 bg-white shadow-md h-screen fixed top-0 md:sticky md:top-20 md:transform-none transform transition-transform duration-300 ease-in-out z-30">
                     <nav class="mt-5">
-                        <a href="#" @click.prevent="currentView = 'pending'" class="flex items-center mt-4 py-2 px-6" :class="currentView === 'pending' ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-gray-100'">
+                        <a href="#" @click.prevent="currentView = 'pending'; isSidebarOpen = false" class="flex items-center mt-4 py-2 px-6" :class="currentView === 'pending' ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-gray-100'">
                             <i class="fas fa-user-clock mr-3"></i><span>Pending Approvals</span>
                         </a>
-                        <a href="#" @click.prevent="currentView = 'featured'" class="flex items-center mt-4 py-2 px-6" :class="currentView === 'featured' ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-gray-100'">
+                        <a href="#" @click.prevent="currentView = 'featured'; isSidebarOpen = false" class="flex items-center mt-4 py-2 px-6" :class="currentView === 'featured' ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-gray-100'">
                             <i class="fas fa-star mr-3"></i><span>Featured Advisors</span>
                         </a>
-                        <a href="#" @click.prevent="currentView = 'reviews'" class="flex items-center mt-4 py-2 px-6" :class="currentView === 'reviews' ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-gray-100'">
+                        <a href="#" @click.prevent="currentView = 'reviews'; isSidebarOpen = false" class="flex items-center mt-4 py-2 px-6" :class="currentView === 'reviews' ? 'bg-amber-100 text-amber-700' : 'text-gray-600 hover:bg-gray-100'">
                             <i class="fas fa-comment-dots mr-3"></i><span>Pending Reviews</span>
                         </a>
                     </nav>
                 </aside>
 
-                <main class="flex-1 p-8">
+                <main class="flex-1 p-4 md:p-8">
                     <div x-show="status.message" class="mb-4 p-4 rounded-lg text-sm"
                          :class="{ 'bg-blue-100 text-blue-800': status.type === 'info', 'bg-green-100 text-green-800': status.type === 'success', 'bg-red-100 text-red-800': status.type === 'error' }" x-text="status.message">
                     </div>
 
                     <div x-show="currentView === 'pending'" x-cloak>
-                        <h1 class="text-3xl font-bold text-blue-900 mb-6">Pending Professional Sign-ups</h1>
+                        <h1 class="text-3xl font-bold text-blue-900 mb-6">Pending Sign-ups</h1>
                         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left">
-                                    <thead class="bg-gray-50 border-b"><tr><th class="p-4 font-semibold">Company / Professional</th><th class="p-4 font-semibold">Contact Email</th><th class="p-4 font-semibold">Location</th><th class="p-4 font-semibold">Submitted On</th><th class="p-4 font-semibold text-center">Actions</th></tr></thead>
-                                    <tbody>
-                                        <template x-if="loading"><tr class="h-48"><td colspan="5" class="text-center p-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr></template>
-                                        <template x-if="!loading && profiles.length === 0"><tr><td colspan="5" class="text-center p-8 text-gray-500">No pending profiles found.</td></tr></template>
-                                        <template x-for="(profile, index) in profiles" :key="profile.id">
-                                            <tr class="border-b hover:bg-gray-50"><td class="p-4 font-bold" x-text="profile.business_name"></td><td class="p-4" x-text="profile.email"></td><td class="p-4" x-text="profile.city || 'N/A'"></td><td class="p-4" x-text="new Date(profile.created_at).toLocaleDateString()"></td><td class="p-4 text-center"><button @click="openReviewModal(index)" class="bg-blue-600 text-white py-1 px-4 rounded-lg font-semibold hover:bg-blue-700"><i class="fas fa-search-plus mr-1"></i> Review</button></td></tr>
-                                        </template>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <table class="w-full text-left responsive-table">
+                                <thead class="bg-gray-50 border-b"><tr><th class="p-4 font-semibold">Company / Professional</th><th class="p-4 font-semibold">Contact Email</th><th class="p-4 font-semibold">Location</th><th class="p-4 font-semibold">Submitted On</th><th class="p-4 font-semibold text-center">Actions</th></tr></thead>
+                                <tbody>
+                                    <template x-if="loading"><tr class="h-48"><td colspan="5" class="text-center p-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr></template>
+                                    <template x-if="!loading && profiles.length === 0"><tr><td colspan="5" class="text-center p-8 text-gray-500">No pending profiles found.</td></tr></template>
+                                    <template x-for="(profile, index) in profiles" :key="profile.id">
+                                        <tr>
+                                            <td data-label="Professional" class="font-bold" x-text="profile.business_name"></td>
+                                            <td data-label="Email" x-text="profile.email"></td>
+                                            <td data-label="Location" x-text="profile.city || 'N/A'"></td>
+                                            <td data-label="Submitted" x-text="new Date(profile.created_at).toLocaleDateString()"></td>
+                                            <td class="actions-cell"><button @click="openReviewModal(index)" class="bg-blue-600 text-white py-1 px-4 rounded-lg font-semibold hover:bg-blue-700 w-full md:w-auto"><i class="fas fa-search-plus mr-1"></i> Review</button></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
                     <div x-show="currentView === 'featured'" x-cloak>
                         <h1 class="text-3xl font-bold text-blue-900 mb-6">Manage Featured Advisors</h1>
                         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                             <table class="w-full text-left">
+                             <table class="w-full text-left responsive-table">
                                 <thead class="bg-gray-50 border-b"><tr><th class="p-4 font-semibold">Professional Name</th><th class="p-4 font-semibold">Location</th><th class="p-4 font-semibold text-center">Is Featured?</th></tr></thead>
                                 <tbody>
                                     <template x-if="loading"><tr class="h-48"><td colspan="3" class="text-center p-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr></template>
                                     <template x-if="!loading && approvedProfiles.length === 0"><tr><td colspan="3" class="text-center p-8 text-gray-500">No approved profiles found.</td></tr></template>
                                     <template x-for="profile in approvedProfiles" :key="profile.id">
-                                        <tr class="border-b hover:bg-gray-50">
-                                            <td class="p-4 font-bold" x-text="profile.business_name"></td>
-                                            <td class="p-4" x-text="profile.city"></td>
-                                            <td class="p-4 text-center">
+                                        <tr>
+                                            <td data-label="Name" class="font-bold" x-text="profile.business_name"></td>
+                                            <td data-label="Location" x-text="profile.city"></td>
+                                            <td data-label="Featured" class="actions-cell">
                                                 <label class="relative inline-flex items-center cursor-pointer">
                                                     <input type="checkbox" :checked="profile.is_featured" @change="toggleFeatured(profile)" class="sr-only peer">
                                                     <div class="w-11 h-6 bg-gray-200 rounded-full toggle-bg"></div>
@@ -127,20 +166,22 @@
                     <div x-show="currentView === 'reviews'" x-cloak>
                         <h1 class="text-3xl font-bold text-blue-900 mb-6">Moderate Pending Reviews</h1>
                         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                            <table class="w-full text-left">
+                            <table class="w-full text-left responsive-table">
                                 <thead class="bg-gray-50 border-b"><tr><th class="p-4 font-semibold">Reviewer</th><th class="p-4 font-semibold">Professional</th><th class="p-4 font-semibold">Rating</th><th class="p-4 font-semibold">Comment</th><th class="p-4 font-semibold text-center">Actions</th></tr></thead>
                                 <tbody>
                                     <template x-if="loading"><tr class="h-48"><td colspan="5" class="text-center p-8"><i class="fas fa-spinner fa-spin text-4xl text-blue-900"></i></td></tr></template>
                                     <template x-if="!loading && pendingReviews.length === 0"><tr><td colspan="5" class="text-center p-8 text-gray-500">No pending reviews found.</td></tr></template>
                                     <template x-for="review in pendingReviews" :key="review.id">
-                                         <tr class="border-b hover:bg-gray-50">
-                                            <td class="p-4" x-text="review.user_profiles.full_name"></td>
-                                            <td class="p-4" x-text="review.professional_profiles.business_name"></td>
-                                            <td class="p-4 text-amber-500" x-html="'<i class=\'fas fa-star\'></i>'.repeat(review.rating)"></td>
-                                            <td class="p-4 text-sm italic" x-text="`&quot;${review.comment}&quot;`"></td>
-                                            <td class="p-4 text-center space-x-2">
-                                                <button @click="approveReview(review.id)" class="bg-green-600 text-white py-1 px-3 text-sm rounded-lg font-semibold hover:bg-green-700">Approve</button>
-                                                <button @click="rejectReview(review.id)" class="bg-red-600 text-white py-1 px-3 text-sm rounded-lg font-semibold hover:bg-red-700">Reject</button>
+                                         <tr>
+                                            <td data-label="Reviewer" x-text="review.user_profiles.full_name"></td>
+                                            <td data-label="Professional" x-text="review.professional_profiles.business_name"></td>
+                                            <td data-label="Rating" class="text-amber-500" x-html="'<i class=\'fas fa-star\'></i>'.repeat(review.rating)"></td>
+                                            <td data-label="Comment" class="text-sm italic" x-text="`&quot;${review.comment}&quot;`"></td>
+                                            <td class="actions-cell">
+                                                <div class="flex justify-center items-center space-x-2">
+                                                    <button @click="approveReview(review.id)" class="bg-green-600 text-white py-1 px-3 text-sm rounded-lg font-semibold hover:bg-green-700">Approve</button>
+                                                    <button @click="rejectReview(review.id)" class="bg-red-600 text-white py-1 px-3 text-sm rounded-lg font-semibold hover:bg-red-700">Reject</button>
+                                                </div>
                                             </td>
                                         </tr>
                                     </template>
@@ -155,9 +196,9 @@
     
     <div x-show="isModalOpen" @keydown.escape.window="closeModal()" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" x-cloak>
         <div @click.outside="closeModal()" class="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-            <div class="p-6 border-b flex justify-between items-center"><h2 class="text-2xl font-bold text-blue-900">Review Professional Profile</h2><button @click="closeModal()" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
-            <div class="p-8 overflow-y-auto" x-html="modalContent"></div>
-            <div class="p-6 bg-gray-50 border-t mt-auto"><div><div x-show="showRejectionInput" class="mb-4"><label for="rejection" class="block text-sm font-medium text-gray-700 mb-1">Reason for Rejection (required)</label><input type="text" id="rejection" x-model="rejectionReason" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter reason here..."></div><div class="flex justify-end items-center space-x-4"><button @click="showRejectionInput = !showRejectionInput" x-text="showRejectionInput ? 'Cancel' : 'Reject'" class="font-semibold text-red-600 hover:text-red-800"></button><button x-show="showRejectionInput" @click="rejectProfile()" :disabled="!rejectionReason.trim() || actionLoading" class="btn-danger font-bold py-2 px-6 rounded-lg disabled:opacity-50 flex items-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Rejecting...' : 'Confirm Rejection'"></span></button><button @click="approveProfile()" :disabled="actionLoading || showRejectionInput" class="btn-primary font-bold py-2 px-8 rounded-lg disabled:opacity-50 flex items-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Approving...' : 'Approve'"></span></button></div></div></div>
+            <div class="p-4 sm:p-6 border-b flex justify-between items-center"><h2 class="text-xl sm:text-2xl font-bold text-blue-900">Review Professional Profile</h2><button @click="closeModal()" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button></div>
+            <div class="p-4 sm:p-8 overflow-y-auto" x-html="modalContent"></div>
+            <div class="p-4 sm:p-6 bg-gray-50 border-t mt-auto"><div><div x-show="showRejectionInput" class="mb-4"><label for="rejection" class="block text-sm font-medium text-gray-700 mb-1">Reason for Rejection (required)</label><input type="text" id="rejection" x-model="rejectionReason" class="w-full p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Enter reason here..."></div><div class="flex flex-col sm:flex-row justify-end items-center space-y-2 sm:space-y-0 sm:space-x-4"><button @click="showRejectionInput = !showRejectionInput" x-text="showRejectionInput ? 'Cancel' : 'Reject'" class="font-semibold text-red-600 hover:text-red-800 w-full sm:w-auto"></button><button x-show="showRejectionInput" @click="rejectProfile()" :disabled="!rejectionReason.trim() || actionLoading" class="w-full sm:w-auto btn-danger font-bold py-2 px-6 rounded-lg disabled:opacity-50 flex items-center justify-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Rejecting...' : 'Confirm Rejection'"></span></button><button @click="approveProfile()" :disabled="actionLoading || showRejectionInput" class="w-full sm:w-auto btn-primary font-bold py-2 px-8 rounded-lg disabled:opacity-50 flex items-center justify-center"><i x-show="actionLoading" class="fas fa-spinner fa-spin mr-2"></i><span x-text="actionLoading ? 'Approving...' : 'Approve'"></span></button></div></div></div>
         </div>
     </div>
     
@@ -174,11 +215,14 @@
                 isModalOpen: false, showRejectionInput: false, rejectionReason: '',
                 currentProfileId: null, actionLoading: false, modalContent: '',
                 currentView: 'pending', approvedProfiles: [], pendingReviews: [],
+                // **NEW**: State for mobile sidebar
+                isSidebarOpen: false,
 
                 init() {
                     supabaseClient.auth.getSession().then(({ data: { session } }) => { this.handleSession(session); });
                     supabaseClient.auth.onAuthStateChange((_event, session) => { this.handleSession(session); });
                     this.$watch('currentView', (view) => {
+                        this.status.message = ''; // Clear status on view change
                         if (view === 'featured') this.fetchApprovedProfiles();
                         if (view === 'reviews') this.fetchPendingReviews();
                         if (view === 'pending') this.fetchPendingProfiles();
@@ -227,7 +271,8 @@
                             .from('professional_profiles')
                             .select(`*, user_profiles ( full_name )`, { count: 'exact' })
                             .eq('status', 'pending')
-                            .eq('user_profiles.role', 'professional') // Corrected Line
+                            // Note: Filtering on joined tables requires a different syntax if it's a view or RPC. 
+                            // This query assumes RLS is handling permissions or the tables are simple.
                             .order('created_at', { ascending: true });
 
                         if (error) throw error;

@@ -57,7 +57,7 @@
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800">
+<body class="bg-gray-50 text-gray-800" x-data="{ isMobileMenuOpen: false }">
 
     <header class="bg-white shadow-sm sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4 flex justify-between items-center">
@@ -78,13 +78,35 @@
                 <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
             </div>
             
-            <button class="md:hidden text-blue-900 text-2xl">
+            <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden text-blue-900 text-2xl focus:outline-none">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
     </header>
 
-    <main class="flex items-center justify-center min-h-screen py-12 form-bg">
+    <div x-show="isMobileMenuOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center space-y-8"
+         @click.away="isMobileMenuOpen = false" x-cloak>
+        
+        <button @click="isMobileMenuOpen = false" class="absolute top-6 right-6 text-gray-800 focus:outline-none">
+            <i class="fas fa-times text-3xl"></i>
+        </button>
+
+        <a href="index.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-blue-900 font-bold">Home</a>
+        <a href="browselisting.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-blue-900 font-bold">Browse</a>
+        <div class="border-t w-1/2 my-4"></div>
+        <a href="login.html" @click="isMobileMenuOpen = false" class="text-xl text-blue-900 font-semibold hover:underline">Login</a>
+        <a href="addlisting.html" @click="isMobileMenuOpen = false" class="btn-secondary text-lg py-3 px-8 rounded-lg shadow-md">List Your Business</a>
+    </div>
+
+
+    <main class="flex items-center justify-center min-h-[calc(100vh-80px)] py-12 px-4 form-bg">
         <div class="w-full max-w-md" x-data="{ isLogin: true, userRole: 'end_user' }">
             
             <div x-show="isLogin" x-cloak class="bg-white p-8 rounded-xl shadow-lg">
@@ -115,7 +137,7 @@
             <div x-show="!isLogin" x-cloak class="bg-white p-8 rounded-xl shadow-lg">
                 <h2 class="text-3xl font-bold text-center text-blue-900 mb-6">Create Your Account</h2>
                 <form id="signup-form" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                          <label class="flex items-center p-3 border rounded-lg cursor-pointer" :class="{ 'bg-blue-50 border-blue-500': userRole === 'end_user' }">
                             <input type="radio" name="role" value="end_user" x-model="userRole" class="hidden">
                             <i class="fas fa-user text-xl text-blue-800 mr-3"></i>
@@ -200,31 +222,29 @@
             const form = event.target;
             const email = form.email.value;
             const password = form.password.value;
+            form.querySelector('button').disabled = true;
 
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
             if (error) {
                 showMessage(loginMessageBox, error.message);
+                form.querySelector('button').disabled = false;
             } else if (data.user) {
                 showMessage(loginMessageBox, 'Login successful! Redirecting...', 'success');
                 
                 setTimeout(async () => {
-                    // Check the user's role from their metadata
-                    const { data: { user } } = await supabase.auth.getUser();
-                    const userRole = user.user_metadata.role;
+                    const userRole = data.user.user_metadata.role;
 
                     if (userRole === 'professional') {
-                        // For professionals, redirect to the add/edit listing page
                         window.location.href = 'addlisting.html';
                     } else {
-                        // For end users, redirect to the browsing page
                         window.location.href = 'browselisting.html';
                     }
                 }, 1500);
             }
         });
 
-        // --- SIGNUP FORM LOGIC (CORRECTED) ---
+        // --- SIGNUP FORM LOGIC ---
         const signupForm = document.getElementById('signup-form');
         const signupButton = document.getElementById('signup-button');
 
@@ -234,7 +254,7 @@
             signupButton.disabled = true;
             signupButton.querySelector('.button-text').classList.add('hidden');
             signupButton.querySelector('.button-loader').classList.remove('hidden');
-            showMessage(signupMessageBox, '', 'success'); // Clear previous messages
+            showMessage(signupMessageBox, '', 'success');
 
             const formData = new FormData(signupForm);
             const email = formData.get('email');
@@ -250,7 +270,6 @@
                 pincode: formData.get('pincode'),
             };
             
-            // Only add professional-specific metadata if the role is professional
             if (role === 'professional') {
                 userMetadata.business_name = formData.get('business_name');
             }
@@ -266,16 +285,12 @@
             if (error) {
                 showMessage(signupMessageBox, error.message);
             } else if (data.user) {
-                // This block runs on success. Now we check if the user was new or existing.
-                const isNewUser = data.user.identities && data.user.identities.length === 0;
+                const isNewUser = (new Date() - new Date(data.user.created_at)) < 2000;
                 
                 if (isNewUser) {
-                    // This case means the user already exists but was unconfirmed.
-                    // Supabase has re-sent the confirmation email.
-                    showMessage(signupMessageBox, 'This email is already registered. We have re-sent a verification link. Please check your inbox.', 'success');
-                } else {
-                    // This is a brand new user.
                     showMessage(signupMessageBox, 'Sign up successful! Please check your email to verify your account.', 'success');
+                } else {
+                    showMessage(signupMessageBox, 'This email is already pending confirmation. We have re-sent a verification link to your inbox.', 'success');
                 }
                 signupForm.reset();
             }

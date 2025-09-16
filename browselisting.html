@@ -22,7 +22,7 @@
 </head>
 <body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
 
-    <header class="bg-white shadow-sm sticky top-0 z-50">
+    <header class="bg-white shadow-sm sticky top-0 z-40">
        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
             <a href="index.html" class="flex items-center space-x-3">
                 <img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-14 w-auto">
@@ -39,17 +39,37 @@
                 <a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
                 <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
             </div>
-            <button class="md:hidden text-blue-900 text-2xl"><i class="fas fa-bars"></i></button>
+            <button id="mobile-menu-button" class="md:hidden text-blue-900 text-2xl z-50">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg absolute top-full left-0 w-full">
+            <nav class="flex flex-col p-4 space-y-2">
+                <a href="index.html" class="text-gray-600 hover:text-blue-900 font-medium p-2 rounded-md">Home</a>
+                <a href="browselisting.html" class="text-blue-900 bg-blue-50 font-bold p-2 rounded-md">Browse</a>
+                <a href="#" class="text-gray-600 hover:text-blue-900 font-medium p-2 rounded-md">Blog</a>
+                <hr class="my-2">
+                <div id="mobile-user-actions" class="flex flex-col space-y-2">
+                    </div>
+            </nav>
         </div>
     </header>
 
     <main class="container mx-auto px-6 py-8 flex-grow">
+        <div class="lg:hidden mb-6">
+            <button id="show-filters-btn" class="btn-primary w-full py-3 rounded-lg font-bold shadow-lg flex items-center justify-center space-x-2">
+                <i class="fas fa-filter"></i>
+                <span>Filter Results</span>
+            </button>
+        </div>
+
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
             
-            <aside class="lg:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit sticky top-28">
+            <aside id="filters-sidebar" class="hidden lg:block lg:col-span-1 bg-white p-6 rounded-lg shadow-md h-fit lg:sticky top-28">
                 <div class="flex justify-between items-center mb-6 border-b pb-4">
                     <h2 class="text-2xl font-bold text-blue-900">Filters</h2>
                     <button id="reset-filters-btn" class="text-sm font-semibold text-blue-800 hover:underline">Reset</button>
+                    <button id="close-filters-btn" class="lg:hidden text-2xl text-gray-600">&times;</button>
                 </div>
                 <form id="filters-form">
                     <div class="filter-section">
@@ -149,6 +169,8 @@
 
         // --- User Authentication UI Logic ---
         const userActionsContainer = document.getElementById('user-actions');
+        // **NEW**: Mobile user actions container
+        const mobileUserActionsContainer = document.getElementById('mobile-user-actions');
 
         async function handleLogout() {
             await supabase.auth.signOut();
@@ -156,25 +178,36 @@
         }
 
         function updateUserUI(user) {
+            // Desktop UI
             if (user) {
-                // If user is logged in, show their email and a logout button
                 userActionsContainer.innerHTML = `
                     <div class="flex items-center space-x-4">
                         <a href="userprofile.html" class="text-gray-600 font-medium hover:text-blue-900 hover:underline text-sm">${user.email}</a>
-                        <button id="logout-btn" class="font-semibold text-red-600 hover:underline">Logout</button>
+                        <button id="logout-btn-desktop" class="font-semibold text-red-600 hover:underline">Logout</button>
                     </div>
                 `;
-                document.getElementById('logout-btn').addEventListener('click', handleLogout);
+                 document.getElementById('logout-btn-desktop').addEventListener('click', handleLogout);
             } else {
-                // If user is logged out, show the login and add listing buttons
                 userActionsContainer.innerHTML = `
                     <a href="login.html" class="text-blue-900 font-semibold hover:underline">Login</a>
                     <a href="addlisting.html" class="btn-secondary font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
                 `;
             }
+            // **NEW**: Mobile UI
+             if (user) {
+                mobileUserActionsContainer.innerHTML = `
+                    <a href="userprofile.html" class="text-gray-600 font-medium p-2 rounded-md">${user.email}</a>
+                    <button id="logout-btn-mobile" class="text-left font-semibold text-red-600 p-2 rounded-md">Logout</button>
+                `;
+                document.getElementById('logout-btn-mobile').addEventListener('click', handleLogout);
+            } else {
+                mobileUserActionsContainer.innerHTML = `
+                    <a href="login.html" class="text-blue-900 font-semibold p-2 rounded-md">Login</a>
+                    <a href="addlisting.html" class="btn-secondary text-center font-semibold py-2 px-4 rounded-lg shadow-md">List Your Business</a>
+                `;
+            }
         }
-
-        // This listener checks the user's status on page load and whenever it changes
+        
         supabase.auth.onAuthStateChange((_event, session) => {
             updateUserUI(session ? session.user : null);
         });
@@ -182,16 +215,12 @@
 
 
         async function displayListings() {
-            // DEBUG: Log function entry and the current state of userCoords
-            console.log('--- displayListings called ---');
-            console.log('Value of userCoords at start of function:', userCoords);
-
             resultsCountEl.scrollIntoView({ behavior: 'smooth' });
             listingsContainer.innerHTML = '<p class="text-center py-10">Searching...</p>';
             resultsCountEl.textContent = 'Loading...';
             
             const radius = document.getElementById('radius-select').value;
-            const searchTerm = searchInput.value.trim().toLowerCase();
+            const searchTerm = searchInput.value.trim();
             const selectedLicenses = Array.from(document.querySelectorAll('input[name="license_info"]:checked')).map(cb => cb.value);
             const minExperience = document.getElementById('experience-select').value;
             const feeFilter = document.getElementById('fee-filter').checked;
@@ -201,9 +230,6 @@
             let data, error;
 
             if (userCoords) {
-                // DEBUG: Indicate which search path is being taken
-                console.log('Entering LOCATION-BASED search path because userCoords is not null.');
-                
                 resultsCountEl.textContent = 'Searching near you...';
                 const { data: rpcData, error: rpcError } = await supabase.rpc('profiles_in_radius', {
                     lat: userCoords.latitude,
@@ -216,23 +242,34 @@
 
                 if (!error && data) {
                     data = data.filter(profile => {
-                        if (searchTerm && !profile.search_text.toLowerCase().includes(searchTerm)) return false;
+                        if (searchTerm) {
+                            const searchableProfileText = (
+                                (profile.business_name || '') + ' ' +
+                                (profile.full_name || '') + ' ' +
+                                (profile.tagline || '') + ' ' +
+                                (profile.city || '')
+                            ).toLowerCase();
+                            if (!searchTerm.toLowerCase().split(/\s+/).every(word => searchableProfileText.includes(word))) {
+                                return false;
+                            }
+                        }
                         if (minExperience && profile.experience_years < parseInt(minExperience)) return false;
                         if (feeFilter && profile.fee_structure !== 'No Fees') return false;
                         if (videoFilter && !profile.video_consultation) return false;
                         if (responseFilter && profile.response_time !== 'Instant') return false;
-                        if (selectedLicenses.length > 0 && !selectedLicenses.some(lic => profile.license_info.includes(lic))) return false;
+                        if (selectedLicenses.length > 0 && !selectedLicenses.some(lic => (profile.license_info || []).includes(lic))) return false;
                         return true;
                     });
                 }
 
             } else {
-                // DEBUG: Indicate which search path is being taken
-                console.log('Entering STANDARD search path because userCoords is null.');
-
                 let query = supabase.from('searchable_profiles').select('*');
                 
-                if (searchTerm) query = query.ilike('search_text', `%${searchTerm}%`);
+                if (searchTerm) {
+                    const formattedSearchTerm = searchTerm.trim().split(/\s+/).join(' | ');
+                    query = query.textSearch('search_content_tsv', formattedSearchTerm);
+                }
+
                 if (selectedLicenses.length > 0) {
                     const licenseFilters = selectedLicenses.map(lic => `license_info.ilike.%${lic}%`).join(',');
                     query = query.or(licenseFilters);
@@ -261,7 +298,7 @@
                 
                 if (catError) {
                     console.error('Specialization filter error:', catError);
-                    alert('Could not apply specialization filter. There might be a database configuration issue (e.g., incorrect table name). Please check the console for details.');
+                    alert('Could not apply specialization filter. There might be a database configuration issue. Please check the console for details.');
                 } else {
                     const matchingProfileIds = profileCategories ? profileCategories.map(pc => pc.profile_id) : [];
                     data = data.filter(profile => matchingProfileIds.includes(profile.id));
@@ -277,6 +314,7 @@
             }
 
             data.forEach(listing => {
+                // On mobile, cards are stacked (flex-col), on medium screens and up, they are side-by-side (md:flex-row)
                 const card = `
                     <div class="card bg-white rounded-lg shadow-md overflow-hidden flex flex-col md:flex-row">
                         <div class="p-6 flex-grow">
@@ -313,18 +351,10 @@
         }
 
         function resetFiltersAndSearch() {
-            // DEBUG: Log that the reset function was called
-            console.log('--- Reset button clicked ---');
-            
             filtersForm.reset();
             userCoords = null;
-
-            // DEBUG: Log the value of userCoords after it has been reset
-            console.log('userCoords has been reset to:', userCoords);
-            
             locationStatusEl.textContent = '';
             locationStatusEl.style.color = '';
-            
             displayListings();
         }
 
@@ -362,6 +392,40 @@
 
             searchInput.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') { e.preventDefault(); displayListings(); }
+            });
+
+            // --- **NEW** Mobile Interactivity Logic ---
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const showFiltersBtn = document.getElementById('show-filters-btn');
+            const closeFiltersBtn = document.getElementById('close-filters-btn');
+            const filtersSidebar = document.getElementById('filters-sidebar');
+
+            // Toggle mobile navigation menu
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                // Optional: Change icon from bars to X
+                mobileMenuButton.innerHTML = mobileMenu.classList.contains('hidden') ? '<i class="fas fa-bars"></i>' : '<i class="fas fa-times"></i>';
+            });
+
+            // Show mobile filter overlay
+            showFiltersBtn.addEventListener('click', () => {
+                filtersSidebar.classList.remove('hidden');
+                filtersSidebar.classList.add('fixed', 'inset-0', 'z-50', 'overflow-y-auto');
+            });
+
+            // Hide mobile filter overlay
+            const hideFilters = () => {
+                 filtersSidebar.classList.add('hidden');
+                 filtersSidebar.classList.remove('fixed', 'inset-0', 'z-50', 'overflow-y-auto');
+            };
+            
+            closeFiltersBtn.addEventListener('click', hideFilters);
+            // Also hide filters after applying them on mobile
+            applyFiltersBtn.addEventListener('click', () => {
+                if (window.innerWidth < 1024) { // 1024px is lg breakpoint
+                    hideFilters();
+                }
             });
         });
     </script>
