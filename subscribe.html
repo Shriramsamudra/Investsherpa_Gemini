@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Subscribe to Our Newsletter - InvestSherpa.in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .form-bg { background-color: #f0f7ff; }
+        .btn-primary { background-color: #1e3a8a; color: white; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #1c347d; }
+        .btn-primary:disabled { background-color: #94a3b8; cursor: not-allowed; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <header class="bg-white shadow-sm">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3">
+                <img src="InvestSherpa logo.png" alt="InvestSherpa.in Logo" class="h-14 w-auto">
+                <span class="text-2xl font-bold"><span class="text-blue-900">Invest</span><span class="text-amber-500">Sherpa</span></span>
+            </a>
+            <a href="index.html" class="text-gray-600 hover:text-blue-900 font-medium">← Back to Home</a>
+        </div>
+    </header>
+
+    <main class="flex items-center justify-center min-h-[calc(100vh-150px)] py-12 form-bg px-4">
+        <div class="w-full max-w-lg" x-data="subscribeForm">
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <div class="text-center">
+                    <h2 class="text-3xl font-bold text-blue-900 mb-4">Subscribe to Our Newsletter</h2>
+                    <p class="text-gray-600 mb-6">By subscribing, you agree to receive weekly market insights, promotional emails, and other communications from InvestSherpa. You can unsubscribe at any time.</p>
+                </div>
+                
+                <div x-show="!submitted">
+                    <form @submit.prevent="handleSubmit" class="space-y-4">
+                        <div>
+                            <label for="email" class="sr-only">Email Address</label>
+                            <input x-model="email" type="email" id="email" name="email" placeholder="Enter your email address" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <button type="submit" :disabled="submitting" class="w-full btn-primary font-bold py-3 px-6 rounded-lg shadow-md flex items-center justify-center">
+                                <span x-show="!submitting">Accept & Subscribe</span>
+                                <i x-show="submitting" class="fas fa-spinner fa-spin"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div x-show="message.text" x-cloak class="mt-4 text-center p-4 rounded-md" 
+                     :class="{ 'bg-green-100 text-green-800': message.type === 'success', 'bg-red-100 text-red-800': message.type === 'error', 'bg-yellow-100 text-yellow-800': message.type === 'warning' }"
+                     x-text="message.text">
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-white">
+        <div class="container mx-auto py-6 text-center text-gray-600 text-sm">
+            <p>&copy; 2025 InvestSherpa. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('subscribeForm', () => ({
+                email: '',
+                submitting: false,
+                submitted: false,
+                message: { text: '', type: 'success' },
+                supabase: null,
+
+                init() {
+                    const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co';
+                    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
+                    this.supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                },
+
+                async handleSubmit() {
+                    this.submitting = true;
+                    this.message.text = '';
+
+                    const { error } = await this.supabase
+                        .from('subscribers')
+                        .insert({ email: this.email });
+                    
+                    if (error) {
+                        // Check for the specific "unique constraint violation" error
+                        if (error.code === '23505') {
+                            this.message = { text: 'This email address has already been subscribed.', type: 'warning' };
+                        } else {
+                            this.message = { text: 'An unexpected error occurred. Please try again.', type: 'error' };
+                        }
+                    } else {
+                        this.message = { text: 'Thank you for subscribing! You can now close this page.', type: 'success' };
+                        this.submitted = true;
+                    }
+                    this.submitting = false;
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
