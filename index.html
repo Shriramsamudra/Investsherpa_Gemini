@@ -36,10 +36,10 @@
                 </span>
             </a>
             <nav class="hidden md:flex items-center space-x-8">
-                <a href="index.html" class="text-gray-600 hover:text-brand-green font-medium">Home</a>
+                <a href="index.html" class="text-brand-green font-semibold">Home</a>
                 <a href="browselisting.html" class="text-gray-600 hover:text-brand-green font-medium">Browse</a>
                 <a href="forprofessionals.html" class="text-gray-600 hover:text-brand-green font-medium">For Professionals</a>
-                <a href="#" class="text-gray-600 hover:text-brand-green font-medium">Blog</a>
+                <a href="learnplan.html" class="text-gray-600 hover:text-brand-green font-medium">Learn & Plan</a>
             </nav>
             <div class="hidden md:flex items-center space-x-4">
                 <div id="guest-view">
@@ -73,10 +73,10 @@
             <i class="fas fa-times text-3xl"></i>
         </button>
 
-        <a href="index.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">Home</a>
+        <a href="index.html" @click="isMobileMenuOpen = false" class="text-2xl text-brand-green font-bold">Home</a>
         <a href="browselisting.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">Browse</a>
         <a href="forprofessionals.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">For Professionals</a>
-        <a href="#" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">Blog</a>
+        <a href="learnplan.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">Learn & Plan</a>
         <div class="border-t w-1/2 my-4"></div>
         <a href="login.html" @click="isMobileMenuOpen = false" class="text-xl text-brand-dark font-semibold hover:underline">Login</a>
         <a href="addlisting.html" @click="isMobileMenuOpen = false" class="btn-green text-lg py-3 px-8 rounded-lg shadow-md">List Your Business</a>
@@ -133,7 +133,7 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="card border rounded-lg p-6 flex flex-col bg-blue-50/50 border-blue-100"><div class="flex items-center mb-4 text-brand-dark"><i class="fas fa-search text-2xl mr-3 text-blue-500"></i><h3 class="text-2xl font-bold">Find a Professional</h3></div><p class="text-gray-700 mb-6 flex-grow">Connect with verified financial professionals for personalized guidance.</p><ul class="space-y-3 mb-6 flex-grow text-gray-700"><li class="flex items-center"><i class="fas fa-chart-line text-blue-500 mr-3"></i> Investment Planning</li><li class="flex items-center"><i class="fas fa-shield-alt text-blue-500 mr-3"></i> Insurance Solutions</li><li class="flex items-center"><i class="fas fa-file-invoice-dollar text-blue-500 mr-3"></i> Tax Planning</li><li class="flex items-center"><i class="fas fa-coins text-blue-500 mr-3"></i> Wealth Management</li></ul><a href="browselisting.html" class="mt-auto font-semibold text-blue-500 hover:underline inline-flex items-center">Search Professionals <i class="fas fa-arrow-right ml-2 text-sm"></i></a></div>
-                    <div class="card border rounded-lg p-6 flex flex-col bg-green-50/50 border-green-100"><div class="flex items-center mb-4 text-brand-green"><i class="fas fa-book-open text-2xl mr-3"></i><h3 class="text-2xl font-bold">Learn & Plan</h3></div><p class="text-gray-700 mb-6 flex-grow">Access financial calculators, guides, and educational resources.</p><ul class="space-y-3 mb-6 flex-grow text-gray-700"><li class="flex items-center"><i class="fas fa-calculator text-brand-green mr-3"></i> Financial Calculators</li><li class="flex items-center"><i class="fas fa-book text-brand-green mr-3"></i> Investment Guides</li><li class="flex items-center"><i class="fas fa-chart-area text-brand-green mr-3"></i> Market Insights</li><li class="flex items-center"><i class="fas fa-graduation-cap text-brand-green mr-3"></i> Learning Center</li></ul><a href="#" class="mt-auto font-semibold text-brand-green hover:underline inline-flex items-center">Explore Resources <i class="fas fa-arrow-right ml-2 text-sm"></i></a></div>
+                    <div class="card border rounded-lg p-6 flex flex-col bg-green-50/50 border-green-100"><div class="flex items-center mb-4 text-brand-green"><i class="fas fa-book-open text-2xl mr-3"></i><h3 class="text-2xl font-bold">Learn & Plan</h3></div><p class="text-gray-700 mb-6 flex-grow">Access financial calculators, guides, and educational resources.</p><ul class="space-y-3 mb-6 flex-grow text-gray-700"><li class="flex items-center"><i class="fas fa-calculator text-brand-green mr-3"></i> Financial Calculators</li><li class="flex items-center"><i class="fas fa-book text-brand-green mr-3"></i> Investment Guides</li><li class="flex items-center"><i class="fas fa-chart-area text-brand-green mr-3"></i> Market Insights</li><li class="flex items-center"><i class="fas fa-graduation-cap text-brand-green mr-3"></i> Learning Center</li></ul><a href="learnplan.html" class="mt-auto font-semibold text-brand-green hover:underline inline-flex items-center">Explore Resources <i class="fas fa-arrow-right ml-2 text-sm"></i></a></div>
                     <div class="card border rounded-lg p-6 flex flex-col bg-yellow-50/50 border-yellow-200"><div class="flex items-center mb-4 text-amber-600"><i class="fas fa-briefcase text-2xl mr-3"></i><h3 class="text-2xl font-bold">For Professionals</h3></div><p class="text-gray-700 mb-6 flex-grow">Join our network of trusted financial professionals and grow your practice.</p><ul class="space-y-3 mb-6 flex-grow text-gray-700"><li class="flex items-center"><i class="fas fa-bullhorn text-amber-600 mr-3"></i> Lead Generation</li><li class="flex items-center"><i class="fas fa-star text-amber-600 mr-3"></i> Build Reputation</li><li class="flex items-center"><i class="fas fa-chart-bar text-amber-600 mr-3"></i> Business Analytics</li><li class="flex items-center"><i class="fas fa-certificate text-amber-600 mr-3"></i> Professional Badge</li></ul><a href="forprofessionals.html" class="mt-auto font-semibold text-amber-600 hover:underline inline-flex items-center">Join Network <i class="fas fa-arrow-right ml-2 text-sm"></i></a></div>
                 </div>
             </div>
@@ -162,13 +162,46 @@
         <div class="container mx-auto px-6 py-12">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
                 <div class="col-span-1 md:col-span-2"><a href="index.html" class="flex items-center space-x-2 mb-4"><img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-12 bg-white rounded-md p-1"></a><p class="text-blue-200 text-sm mb-4 max-w-sm">India's most trusted platform connecting investors with verified financial advisors. Make informed decisions with expert guidance tailored to your financial goals.</p><div class="space-y-2 text-sm"><p><i class="fas fa-phone-alt w-5 text-blue-300"></i> <a href="tel:+919152049967" class="text-blue-200 hover:underline">+91 9152049967</a></p><p><i class="fas fa-envelope w-5 text-blue-300"></i> <a href="mailto:support@investsherpa.com" class="text-blue-200 hover:underline">support@investsherpa.com</a></p><p><i class="fas fa-map-marker-alt w-5 text-blue-300"></i> <span class="text-blue-200">Mumbai, Delhi, Bangalore & 25+ Cities</span></p></div><div class="flex space-x-4 mt-6"><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-linkedin-in text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-twitter text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-facebook-f text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-instagram text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-youtube text-xl"></i></a></div></div>
-                <div><h4 class="font-bold mb-4">For Investors</h4><ul class="space-y-2 text-sm text-blue-200"><li><a href="browselisting.html" class="hover:underline">Find Professionals</a></li><li><a href="#" class="hover:underline">Investment Planning</a></li><li><a href="#" class="hover:underline">Insurance Solutions</a></li><li><a href="#" class="hover:underline">Tax Planning</a></li><li><a href="#" class="hover:underline">Retirement Planning</a></li></ul></div>
-                <div><h4 class="font-bold mb-4">For Professionals</h4><ul class="space-y-2 text-sm text-blue-200"><li><a href="forprofessionals.html" class="hover:underline">Join Network</a></li><li><a href="forprofessionals.html" class="hover:underline">Business Dashboard</a></li><li><a href="forprofessionals.html" class="hover:underline">Lead Generation</a></li><li><a href="forprofessionals.html" class="hover:underline">Profile Management</a></li><li><a href="forprofessionals.html" class="hover:underline">Success Stories</a></li></ul></div>
-                <div><h4 class="font-bold mb-4">Resources</h4><ul class="space-y-2 text-sm text-blue-200"><li><a href="#" class="hover:underline">Knowledge Hub</a></li><li><a href="#" class="hover:underline">Financial Calculators</a></li><li><a href="#" class="hover:underline">Market Insights</a></li><li><a href="#" class="hover:underline">Investment Guides</a></li><li><a href="#" class="hover:underline">Regulatory Updates</a></li></ul></div>
+                <div>
+                    <h4 class="font-bold mb-4">For Investors</h4>
+                    <ul class="space-y-2 text-sm text-blue-200">
+                        <li><a href="browselisting.html" class="hover:underline">Find Professionals</a></li>
+                        <li><a href="browselisting.html?service=Investment%20Planning" class="hover:underline">Investment Planning</a></li>
+                        <li><a href="browselisting.html?service=Insurance%20Solutions" class="hover:underline">Insurance Solutions</a></li>
+                        <li><a href="browselisting.html?service=Tax%20Planning" class="hover:underline">Tax Planning</a></li>
+                        <li><a href="browselisting.html?service=Retirement%20Planning" class="hover:underline">Retirement Planning</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">For Professionals</h4>
+                    <ul class="space-y-2 text-sm text-blue-200">
+                        <li><a href="addlisting.html" class="hover:underline">Join Network</a></li>
+                        <li><a href="professionaldb.html" class="hover:underline">Business Dashboard</a></li>
+                        <li><a href="addlisting.html" class="hover:underline">Lead Generation</a></li>
+                        <li><a href="addlisting.html" class="hover:underline">Profile Management</a></li>
+                        <li><a href="professionaldb.html" class="hover:underline">Success Stories</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm text-blue-200">
+                        <li><a href="learnplan.html" class="hover:underline">Knowledge Hub</a></li>
+                        <li><a href="learnplan.html#calculators" class="hover:underline">Financial Calculators</a></li>
+                        <li><a href="learnplan.html#insights" class="hover:underline">Market Insights</a></li>
+                        <li><a href="learnplan.html#guides" class="hover:underline">Investment Guides</a></li>
+                        <li><a href="learnplan.html#tools" class="hover:underline">Powerful Planning Tools</a></li>
+                    </ul>
+                </div>
             </div>
             <div class="mt-10 border-t border-blue-800 pt-6">
                  <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-                     <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-sm text-blue-200"><span>Regulated & Verified by:</span><span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> SEBI Registered</span><span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> IRDAI Verified</span><span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> ISO 27001</span><span class="font-semibold"><i class="fas fa-lock mr-1"></i> SSL Secured</span></div>
+                     <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-sm text-blue-200">
+                        <span>Find Professionals:</span>
+                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> SEBI Registered</span>
+                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> IRDAI Verified</span>
+                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> ISO 27001</span>
+                        <span class="font-semibold"><i class="fas fa-lock mr-1"></i> SSL Secured</span>
+                    </div>
                      <div class="w-full md:w-auto">
                         <h4 class="font-bold mb-2 text-center md:text-left">Stay Updated</h4>
                         <p class="text-blue-200 text-sm mb-2 text-center md:text-left">Get weekly market insights and investment tips.</p>
@@ -178,12 +211,15 @@
             </div>
             <div class="mt-8 border-t border-blue-800 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-blue-300">
                 <p>&copy; 2025 InvestSherpa. All Rights Reserved.</p>
-                <div class="flex space-x-4 mt-4 md:mt-0"><a href="#" class="hover:underline">Privacy Policy</a><a href="#" class="hover:underline">Terms of Service</a><a href="#" class="hover:underline">Cookie Policy</a></div>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="policy.html" class="hover:underline">Privacy Policy</a>
+                    <a href="policy.html" class="hover:underline">Terms of Service</a>
+                    <a href="policy.html" class="hover:underline">Cookie Policy</a>
+                </div>
                  <p class="mt-4 md:mt-0">Made with <i class="fas fa-heart"></i> in India</p>
             </div>
         </div>
     </footer>
-
     <script type="module">
         import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
         const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co'; 
@@ -203,10 +239,12 @@
                 userView.classList.add('flex');
                 const user = session.user;
                 userProfileLink.textContent = user.email;
-                const userRole = user.user_metadata.role;
-                if (userRole === 'professional') {
-                    const { data: profile } = await supabase.from('professional_profiles').select('id').eq('user_id', user.id).single();
-                    userProfileLink.href = profile ? `listingdetail.html?id=${profile.id}` : 'addlisting.html';
+                
+                const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single();
+
+                if (profile && profile.role === 'professional') {
+                    const { data: profProfile } = await supabase.from('professional_profiles').select('id').eq('user_id', user.id).single();
+                    userProfileLink.href = profProfile ? `listingdetail.html?id=${profProfile.id}` : 'addlisting.html';
                 } else {
                     userProfileLink.href = 'userprofile.html';
                 }

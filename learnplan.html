@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn & Plan - InvestSherpa.in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .invest-sherpa-blue { color: #1e3a8a; }
+        .bg-invest-sherpa-blue { background-color: #1e3a8a; }
+        .border-invest-sherpa-blue { border-color: #1e3a8a; }
+        .invest-sherpa-amber { color: #f59e0b; }
+        .bg-invest-sherpa-amber { background-color: #f59e0b; }
+        .text-brand-dark { color: #0D244F; }
+        .text-brand-green { color: #008060; }
+        .btn-green { background-color: #008060; color: white; font-weight: 600; transition: background-color 0.3s ease; }
+        .btn-green:hover { background-color: #00664d; }
+        .btn-primary { background-color: #F59E0B; color: #ffffff; font-weight: 600; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #D97706; }
+        .sidebar-link { display: block; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 500; color: #4b5563; transition: all 0.2s ease-in-out; border-left: 4px solid transparent; }
+        .sidebar-link:hover { background-color: #eef2ff; color: #1e3a8a; }
+        .sidebar-link.active { background-color: #eef2ff; color: #1e3a8a; font-weight: 600; border-left-color: #1e3a8a; }
+        .tab-btn { transition: all 0.2s ease; }
+        .tab-btn.active { border-bottom: 3px solid #1e3a8a; color: #1e3a8a; font-weight: 600; }
+        .tab-btn:not(.active) { color: #6b7280; }
+        .accordion-header { cursor: pointer; }
+        [x-cloak] { display: none !important; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { background-color: #1e3a8a; border-radius: 4px; }
+        ::-webkit-scrollbar-track { background-color: #e5e7eb; }
+        .calculator-card { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); padding: 2rem; }
+        .input-label { display: block; margin-bottom: 0.5rem; font-weight: 500; color: #374151; }
+        .input-field { width: 100%; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 0.5rem; }
+        .input-field:focus { outline: none; border-color: #1e3a8a; box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.2); }
+        .slider { -webkit-appearance: none; width: 100%; height: 8px; background: #d1d5db; outline: none; border-radius: 9999px; }
+        .slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #1e3a8a; cursor: pointer; border-radius: 50%; }
+        .slider::-moz-range-thumb { width: 20px; height: 20px; background: #1e3a8a; cursor: pointer; border-radius: 50%; }
+        .output-card { background-color: #eef2ff; border-radius: 0.5rem; padding: 1rem; text-align: center; }
+        .output-label { font-weight: 500; color: #4338ca; }
+        .output-value { font-size: 1.5rem; line-height: 2rem; font-weight: 700; color: #312e81; }
+        .chart-container { position: relative; width: 100%; max-width: 450px; margin-left: auto; margin-right: auto; height: 300px; max-height: 350px; }
+    </style>
+</head>
+<body x-data="mainController" x-init="init()">
+    
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3">
+                <img src="InvestSherpa logo.png" alt="InvestSherpa.in Logo" class="h-14 w-auto">
+                <span class="text-2xl font-bold">
+                    <span class="text-blue-900">Invest</span><span class="text-amber-500">Sherpa</span>
+                </span>
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-gray-600 hover:text-brand-green font-medium">Home</a>
+                <a href="browselisting.html" class="text-gray-600 hover:text-brand-green font-medium">Browse</a>
+                <a href="forprofessionals.html" class="text-gray-600 hover:text-brand-green font-medium">For Professionals</a>
+                <a href="learnplan.html" class="text-brand-green font-semibold">Learn & Plan</a>
+            </nav>
+            <div class="hidden md:flex items-center space-x-4">
+                <div id="guest-view">
+                    <a href="login.html" class="text-brand-dark font-semibold hover:underline">Login</a>
+                    <a href="addlisting.html" class="btn-green font-semibold py-2 px-4 rounded-lg shadow-md ml-4">List Your Business</a>
+                </div>
+                <div id="user-view" class="hidden items-center space-x-4">
+                    <div class="text-right">
+                        <a id="user-profile-link" href="#" class="text-sm text-gray-600 hover:text-brand-green hover:underline truncate"></a>
+                        <button id="logout-button" class="btn-primary text-sm font-semibold py-2 px-4 rounded-lg shadow-md block">Logout</button>
+                    </div>
+                </div>
+            </div>
+            <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden text-brand-dark text-2xl focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <div x-show="isMobileMenuOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center space-y-8"
+         @click.away="isMobileMenuOpen = false" x-cloak>
+        
+        <button @click="isMobileMenuOpen = false" class="absolute top-6 right-6 text-gray-800 focus:outline-none">
+            <i class="fas fa-times text-3xl"></i>
+        </button>
+
+        <a href="index.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">Home</a>
+        <a href="browselisting.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">Browse</a>
+        <a href="forprofessionals.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">For Professionals</a>
+        <a href="learnplan.html" @click="isMobileMenuOpen = false" class="text-2xl text-brand-green font-bold">Learn & Plan</a>
+        <div class="border-t w-1/2 my-4"></div>
+        <a href="login.html" @click="isMobileMenuOpen = false" class="text-xl text-brand-dark font-semibold hover:underline">Login</a>
+        <a href="addlisting.html" @click="isMobileMenuOpen = false" class="btn-green text-lg py-3 px-8 rounded-lg shadow-md">List Your Business</a>
+    </div>
+
+    <div class="container mx-auto px-6 py-8">
+        <div class="lg:flex lg:space-x-8">
+            <aside class="w-full lg:w-1/4 mb-8 lg:mb-0">
+                <div class="sticky top-24">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Learn & Plan</h2>
+                    <nav class="space-y-2">
+                        <a href="#calculators" @click="activeSection = 'calculators'" :class="{'active': activeSection === 'calculators'}" class="sidebar-link"><i class="fas fa-calculator w-6"></i> Calculators</a>
+                        <a href="#guides" @click="activeSection = 'guides'" :class="{'active': activeSection === 'guides'}" class="sidebar-link"><i class="fas fa-book-open w-6"></i> Investment & Insurance Guides</a>
+                        <a href="#personal-finance" @click="activeSection = 'personal-finance'" :class="{'active': activeSection === 'personal-finance'}" class="sidebar-link"><i class="fas fa-wallet w-6"></i> Personal Finance</a>
+                        <a href="#insights" @click="activeSection = 'insights'" :class="{'active': activeSection === 'insights'}" class="sidebar-link"><i class="fas fa-chart-line w-6"></i> Market Insights</a>
+                        <a href="#tools" @click="activeSection = 'tools'" :class="{'active': activeSection === 'tools'}" class="sidebar-link"><i class="fas fa-tools w-6"></i> Powerful Tools</a>
+                    </nav>
+                </div>
+            </aside>
+
+            <main class="w-full lg:w-3/4">
+                <div class="space-y-16">
+                    <section id="calculators" x-data="calculatorTabs">
+                        <h2 class="text-3xl font-bold invest-sherpa-blue mb-6">Financial Calculators</h2>
+                        <div class="bg-white rounded-lg shadow p-2 sm:p-4 mb-8">
+                            <nav class="flex flex-wrap justify-center -mb-px">
+                                <template x-for="tab in tabs" :key="tab.id">
+                                    <button @click="activeTab = tab.id" :class="{'active': activeTab === tab.id}" class="tab-btn text-sm sm:text-base px-3 sm:px-4 py-3 border-b-2 border-transparent whitespace-nowrap" x-text="tab.name"></button>
+                                </template>
+                            </nav>
+                        </div>
+                        
+                        <div x-show="activeTab === 'sip'" x-cloak><div class="calculator-card" x-data="sipCalculator()" x-init="init()"></div></div>
+                        <div x-show="activeTab === 'stepUpSip'" x-cloak><div class="calculator-card" x-data="stepUpSipCalculator()" x-init="init()"></div></div>
+                        <div x-show="activeTab === 'retirement'" x-cloak><div class="calculator-card" x-data="retirementCalculator()" x-init="init()"></div></div>
+                        <div x-show="activeTab === 'goal'" x-cloak><div class="calculator-card" x-data="goalCalculator()" x-init="init()"></div></div>
+                        <div x-show="activeTab === 'hlv'" x-cloak><div class="calculator-card" x-data="hlvCalculator()" x-init="init()"></div></div>
+                        <div x-show="activeTab === 'emi'" x-cloak><div class="calculator-card" x-data="emiCalculator()" x-init="init()"></div></div>
+                        <div x-show="activeTab === 'repayment'" x-cloak><div class="calculator-card" x-data="repaymentCalculator()" x-init="init()"></div></div>
+                        <div x-show="activeTab === 'lumpsum'" x-cloak><div class="calculator-card" x-data="lumpsumCalculator()" x-init="init()"></div></div>
+                    </section>
+                    
+                    <section id="guides" x-data="{ openAccordion: 'investing' }">
+                        <h2 class="text-3xl font-bold invest-sherpa-blue mb-6">Investment & Insurance Guides</h2>
+                        <div class="space-y-4">
+                            <div class="bg-white rounded-lg shadow">
+                                <div @click="openAccordion = openAccordion === 'investing' ? '' : 'investing'" class="accordion-header p-6 flex justify-between items-center">
+                                    <h3 class="text-xl font-semibold text-gray-800">A Guide to Smart Investing</h3>
+                                    <i class="fas fa-chevron-down transition-transform" :class="{'rotate-180': openAccordion === 'investing'}"></i>
+                                </div>
+                                <div x-show="openAccordion === 'investing'" x-collapse x-cloak class="p-6 border-t space-y-4 text-gray-700">
+                                    <div>
+                                        <h4 class="font-semibold text-lg mb-2">The Power of Compounding</h4>
+                                        <p>Compounding is the engine of wealth creation. It's the process where your investment returns start earning returns of their own. The earlier you start, the more powerful it becomes. For example, a monthly SIP of ₹10,000 at 12% p.a. grows to over ₹1 crore in 20 years, but the same SIP grows to nearly ₹2.5 crores in 25 years. Those extra 5 years almost double your wealth because of compounding.</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-lg mb-2">SIP vs. Lumpsum: Which is for You?</h4>
+                                        <p>A <strong>Systematic Investment Plan (SIP)</strong> involves investing a fixed amount regularly (e.g., monthly). This strategy benefits from Rupee Cost Averaging—you buy more units when prices are low and fewer when prices are high, averaging out your purchase cost. It's ideal for salaried individuals as it builds discipline and mitigates the risk of timing the market. A <strong>Lumpsum</strong> investment is a one-time bulk investment. It can be highly effective if you have a large sum of money and believe the market is undervalued, but it carries higher timing risk.</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-lg mb-2">Understanding Different Mutual Funds</h4>
+                                        <ul class="list-disc list-inside space-y-2">
+                                            <li><strong>Equity Funds:</strong> These invest primarily in stocks and are ideal for long-term goals like retirement and wealth creation. They are categorized by market capitalization: Large-cap (stable, established companies), Mid-cap (high-growth potential), and Small-cap (very high-risk, very high-return potential).</li>
+                                            <li><strong>Debt Funds:</strong> These invest in fixed-income securities like government bonds and corporate debentures. They are less volatile than equity funds and are suitable for short-to-medium term goals and capital preservation.</li>
+                                            <li><strong>Hybrid Funds:</strong> These invest in a mix of equity and debt, offering a balance between growth and stability. They are a great starting point for new investors.</li>
+                                            <li><strong>ELSS (Equity Linked Savings Scheme):</strong> These are equity funds that come with a tax deduction of up to ₹1.5 lakh under Section 80C and have a lock-in period of 3 years.</li>
+                                        </ul>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-lg mb-2">A Simple Guide to Investment Taxation</h4>
+                                        <p>Understanding taxes is key to maximizing your returns. In India, the two main components are the choice of tax regime and capital gains tax.</p>
+                                        <p><strong>Old vs. New Tax Regime:</strong> The <strong>Old Regime</strong> allows you to claim various deductions like Section 80C (up to ₹1.5 lakh), HRA, and home loan interest, which can significantly reduce your taxable income. The <strong>New Regime</strong> offers lower, simplified tax slabs but requires you to forgo most of these deductions. The best choice depends entirely on how many deductions you can claim.</p>
+                                        <p><strong>Capital Gains Tax on Investments:</strong></p>
+                                        <ul class="list-disc list-inside space-y-2 mt-2">
+                                            <li><strong>Equity & Equity MFs:</strong> If you sell after holding for more than 12 months, it's a Long-Term Capital Gain (LTCG), taxed at 10% on gains exceeding ₹1 lakh per year. If sold within 12 months, it's a Short-Term Capital Gain (STCG), taxed at a flat 15%.</li>
+                                            <li><strong>Debt Mutual Funds:</strong> Gains from debt funds purchased after April 1, 2023, are now taxed at your individual income slab rate, regardless of the holding period, removing the previous LTCG with indexation benefit.</li>
+                                            <li><strong>Real Estate:</strong> If held for more than 24 months, gains are considered LTCG and taxed at 20% with the benefit of indexation (which adjusts the purchase price for inflation, lowering your taxable gain).</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-lg shadow">
+                                <div @click="openAccordion = openAccordion === 'insurance' ? '' : 'insurance'" class="accordion-header p-6 flex justify-between items-center">
+                                    <h3 class="text-xl font-semibold text-gray-800">A Guide to Securing Your Future with Insurance</h3>
+                                    <i class="fas fa-chevron-down transition-transform" :class="{'rotate-180': openAccordion === 'insurance'}"></i>
+                                </div>
+                                <div x-show="openAccordion === 'insurance'" x-collapse x-cloak class="p-6 border-t space-y-4 text-gray-700">
+                                    <div>
+                                        <h4 class="font-semibold text-lg mb-2">Why Term Insurance is Non-Negotiable</h4>
+                                        <p>Term insurance is the simplest and most vital form of life insurance. It provides a large financial payout (sum assured) to your family for a very low premium if the unthinkable happens to you during the policy term. Unlike other insurance products, it has no investment component or maturity value, which is why it's so affordable. The primary goal is to ensure that your family can maintain their lifestyle, meet financial goals like children's education, and pay off any outstanding loans in your absence. Your Human Life Value (HLV) is a good indicator of how much cover you need.</p>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-lg mb-2">Understanding Different Insurance Products</h4>
+                                        <ul class="list-disc list-inside space-y-2">
+                                            <li><strong>Endowment Plans:</strong> These are a combination of insurance and investment. They offer a lump sum amount on maturity or death. However, they typically provide low insurance cover and low returns compared to a combination of term insurance and mutual funds.</li>
+                                            <li><strong>ULIPs (Unit Linked Insurance Plans):</strong> These products also combine insurance and investment, but the investment portion is market-linked, similar to mutual funds. They offer more transparency and flexibility than traditional endowment plans but come with various charges.</li>
+                                            <li><strong>Health Insurance:</strong> An absolute necessity in an era of rising medical costs. A comprehensive health insurance policy covers hospitalization expenses, protecting your savings from being wiped out by a medical emergency. Always check for features like room rent limits, co-payments, and waiting periods for pre-existing diseases.</li>
+                                        </ul>
+                                    </div>
+                                     <div>
+                                        <h4 class="font-semibold text-lg mb-2">Taxation of Insurance Policies</h4>
+                                        <p>While insurance is a great tool, it's important to know the tax rules, especially after recent changes.</p>
+                                        <ul class="list-disc list-inside space-y-2">
+                                            <li><strong>Premium Payment:</strong> Premiums paid for life insurance policies are eligible for deduction under Section 80C up to ₹1.5 lakh. Health insurance premiums are deductible under Section 80D.</li>
+                                            <li><strong>Maturity Proceeds:</strong> For policies issued after April 1, 2023, maturity proceeds from traditional/endowment plans are now taxable if the total annual premium you pay across all such policies exceeds ₹5 lakh. For ULIPs, this limit is ₹2.5 lakh per year.</li>
+                                            <li><strong>The Golden Rule (Death Benefit):</strong> The most important aspect to remember is that the death benefit—the amount paid to the nominee upon the policyholder's death—is <strong class="underline">always completely tax-exempt</strong>, regardless of the premium size. This reinforces insurance's primary role as a tool for financial protection.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <section id="personal-finance">
+                        <h2 class="text-3xl font-bold invest-sherpa-blue mb-6">Personal Finance 101: Building a Strong Foundation</h2>
+                        <div class="space-y-6">
+                           <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">The Critical Importance of an Emergency Fund</h3>
+                                <p class="text-gray-600 mb-4">An emergency fund is your financial safety net. It is a pool of money set aside specifically to cover large, unforeseen expenses, such as a job loss, a medical crisis, or an urgent home repair. Without this fund, you might be forced to sell your long-term investments at an inopportune time or take on high-interest debt, derailing your financial goals.</p>
+                                <h4 class="font-semibold text-lg mb-2">How Much is Enough?</h4>
+                                <p class="text-gray-600 mb-4">A common rule of thumb is to have <strong>3 to 6 months' worth of essential living expenses</strong> saved. Essential expenses include rent/EMI, utilities, groceries, transportation, and insurance premiums—basically, anything you absolutely must pay each month. If your income is unstable or you have dependents, aiming for 9-12 months of expenses provides an even stronger buffer.</p>
+                                <h4 class="font-semibold text-lg mb-2">Where to Keep Your Emergency Fund?</h4>
+                                <p class="text-gray-600">The key attributes for an emergency fund are **safety** and **liquidity** (easy access). It should not be invested in volatile assets like stocks. The best places are:</p>
+                                <ul class="list-disc list-inside space-y-2 mt-2 text-gray-600">
+                                    <li><strong>High-Yield Savings Account:</strong> Offers better interest rates than a standard savings account while being completely safe and accessible.</li>
+                                    <li><strong>Liquid Mutual Funds:</strong> These are debt funds that invest in very short-term instruments. They offer slightly higher returns than savings accounts and you can typically redeem your money within one business day.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-white p-6 rounded-lg shadow">
+                                <h3 class="text-xl font-semibold text-gray-800 mb-2">A Strategic Approach to Effective Debt Management</h3>
+                                <p class="text-gray-600 mb-4">Not all debt is bad. A home loan is "good debt" as it helps build an asset. However, high-interest "bad debt" like credit card balances and personal loans can cripple your financial progress. Managing debt effectively is about having a clear strategy to eliminate it.</p>
+                                <h4 class="font-semibold text-lg mb-2">Popular Debt Repayment Strategies</h4>
+                                <p class="text-gray-600 mb-4">There are two popular methods to tackle multiple debts:</p>
+                                <ul class="list-disc list-inside space-y-2 mt-2 text-gray-600">
+                                    <li><strong>The Avalanche Method:</strong> You list all your debts from the highest interest rate to the lowest. You make minimum payments on all debts, but put any extra money towards the debt with the highest interest rate. This method saves you the most money in interest over time.</li>
+                                    <li><strong>The Snowball Method:</strong> You list your debts from the smallest balance to the largest. You make minimum payments on all, but put extra money towards the smallest balance first. Once it's paid off, you "snowball" that payment amount onto the next smallest debt. This method provides psychological wins that can keep you motivated.</li>
+                                </ul>
+                                <h4 class="font-semibold text-lg mb-2">The Power of Prepayment</h4>
+                                <p class="text-gray-600">Making extra payments on your loans, especially home loans, can save you a fortune in interest and significantly reduce your loan tenure. Even a small monthly prepayment or a one-time lumpsum payment can cut years off your loan. Use the Loan Prepayment calculators to see how much you could save.</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="insights" x-data="{ activeContent: 'insights' }">
+                        <h2 class="text-3xl font-bold invest-sherpa-blue mb-6">Insights & Content Hub</h2>
+                        <div class="flex border-b mb-6">
+                            <button @click="activeContent = 'insights'" :class="{'border-b-2 border-invest-sherpa-blue text-invest-sherpa-blue': activeContent === 'insights'}" class="px-4 py-2 font-semibold">Market Insights</button>
+                            <button @click="activeContent = 'blogs'" :class="{'border-b-2 border-invest-sherpa-blue text-invest-sherpa-blue': activeContent === 'blogs'}" class="px-4 py-2 font-semibold">Featured Blogs</button>
+                            <button @click="activeContent = 'videos'" :class="{'border-b-2 border-invest-sherpa-blue text-invest-sherpa-blue': activeContent === 'videos'}" class="px-4 py-2 font-semibold">Featured Videos</button>
+                        </div>
+                        
+                        <div x-show="activeContent === 'insights'" class="bg-white p-6 rounded-lg shadow space-y-4">
+                             <h3 class="text-xl font-semibold text-gray-800">Weekly Market Commentary</h3>
+                             <p class="text-sm text-gray-500">For the week ending September 18, 2025</p>
+                             
+                             <div class="overflow-x-auto">
+                                <table class="w-full text-left text-sm">
+                                    <thead class="bg-gray-100"><tr><th class="p-2 font-semibold">Indicator</th><th class="p-2 font-semibold">Current Value</th><th class="p-2 font-semibold">Weekly Change</th></tr></thead>
+                                    <tbody>
+                                        <tr class="border-b"><td class="p-2">BSE Sensex</td><td class="p-2">74,105.16</td><td class="p-2 text-green-600">+1.2% (+880 pts)</td></tr>
+                                        <tr class="border-b"><td class="p-2">NSE Nifty 50</td><td class="p-2">22,550.70</td><td class="p-2 text-green-600">+1.1% (+245 pts)</td></tr>
+                                        <tr class="border-b"><td class="p-2">Gold (MCX, per 10g)</td><td class="p-2">₹ 68,500</td><td class="p-2 text-red-600">-0.5%</td></tr>
+                                        <tr class="border-b"><td class="p-2">Silver (MCX, per kg)</td><td class="p-2">₹ 85,200</td><td class="p-2 text-green-600">+0.8%</td></tr>
+                                        <tr><td class="p-2">Crude Oil (Brent, per barrel)</td><td class="p-2">~ ₹ 7,150 ($86)</td><td class="p-2 text-green-600">+2.1%</td></tr>
+                                    </tbody>
+                                </table>
+                             </div>
+                             
+                             <p class="text-gray-700"><strong>Domestic Market Overview:</strong> Indian equity markets demonstrated resilience this week, closing with healthy gains despite mixed global cues. The BSE Sensex and NSE Nifty 50 were primarily driven by strong performances in the banking and IT sectors. Positive commentary from major IT firms regarding deal pipelines boosted sentiment, leading to a sharp rebound in technology stocks midweek. Banking stocks continued their upward momentum on the back of strong credit growth data and stable asset quality reports.</p>
+                             <p class="text-gray-700"><strong>Global Cues & FII/DII Activity:</strong> Global markets remained cautious ahead of the upcoming US Federal Reserve meeting. Inflation data from Europe came in slightly higher than expected, leading to some volatility. Foreign Institutional Investors (FIIs) were net sellers for the week, offloading approximately ₹2,500 crores. However, this outflow was robustly absorbed by Domestic Institutional Investors (DIIs), who were net buyers to the tune of ₹3,100 crores, showcasing the increasing strength of the domestic investor base.</p>
+                             <p class="text-gray-700"><strong>Outlook for the Coming Week:</strong> The market's direction next week will largely be dictated by the outcome of the US Fed meeting and their commentary on future interest rate trajectories. On the domestic front, monsoon progress and early corporate earnings previews will be in focus. Investors are advised to stick to a disciplined, asset-allocated approach. A staggered investment strategy via SIPs remains the most prudent way to navigate potential volatility.</p>
+                        </div>
+
+                        <div x-show="activeContent === 'blogs'" x-cloak class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-white rounded-lg shadow overflow-hidden"><img src="https://images.unsplash.com/photo-1640622300473-977435c38c04?q=80" alt="Blog post image" class="w-full h-48 object-cover"><div class="p-4"><h3 class="font-semibold text-lg">The Hidden Power of Asset Allocation</h3><p class="text-sm text-gray-500 mb-2">by Jane Doe, Certified Financial Planner</p><p class="text-gray-600 text-sm line-clamp-2">Discover why the right mix of assets is more important than picking individual winning stocks for long-term success.</p><a href="#" class="text-sm font-semibold invest-sherpa-blue hover:underline mt-2 inline-block">Read More &rarr;</a></div></div>
+                            <div class="bg-white rounded-lg shadow overflow-hidden"><img src="https://images.unsplash.com/photo-1554224155-8d04421cd695?q=80" alt="Blog post image" class="w-full h-48 object-cover"><div class="p-4"><h3 class="font-semibold text-lg">Navigating Small-Cap Volatility</h3><p class="text-sm text-gray-500 mb-2">by John Smith, Equity Analyst</p><p class="text-gray-600 text-sm line-clamp-2">Small-cap stocks offer high growth potential but come with risks. Learn strategies to invest wisely in this exciting market segment.</p><a href="#" class="text-sm font-semibold invest-sherpa-blue hover:underline mt-2 inline-block">Read More &rarr;</a></div></div>
+                        </div>
+
+                        <div x-show="activeContent === 'videos'" x-cloak class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-white rounded-lg shadow overflow-hidden group"><div class="relative"><img src="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80" alt="Video thumbnail" class="w-full h-48 object-cover"><div class="absolute inset-0 bg-black/40 flex items-center justify-center"><i class="fas fa-play text-white text-4xl transform group-hover:scale-125 transition-transform"></i></div></div><div class="p-4"><h3 class="font-semibold text-lg">SIPs Explained in 5 Minutes</h3><p class="text-sm text-gray-500">by InvestSherpa Academy</p></div></div>
+                             <div class="bg-white rounded-lg shadow overflow-hidden group"><div class="relative"><img src="https://images.unsplash.com/photo-1624953901969-22a46aab02b5?q=80" alt="Video thumbnail" class="w-full h-48 object-cover"><div class="absolute inset-0 bg-black/40 flex items-center justify-center"><i class="fas fa-play text-white text-4xl transform group-hover:scale-125 transition-transform"></i></div></div><div class="p-4"><h3 class="font-semibold text-lg">How to Choose a Term Insurance Plan</h3><p class="text-sm text-gray-500">by Sarah Lee, Insurance Expert</p></div></div>
+                        </div>
+                    </section>
+
+                    <section id="tools">
+                        <h2 class="text-3xl font-bold invest-sherpa-blue mb-6">Powerful Planning Tools</h2>
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <a href="riskcalc.html" class="block bg-invest-sherpa-blue text-white p-8 rounded-xl shadow-lg transform transition-transform hover:-translate-y-2"><h3 class="text-2xl font-bold mb-2">Risk Appetite Calculator</h3><p class="mb-4">Understand your tolerance for risk to build a portfolio that lets you sleep at night. Get a personalized report.</p><span class="font-semibold hover:underline">Start Assessment &rarr;</span></a>
+                            <a href="Roadmap.html" class="block bg-invest-sherpa-amber text-gray-800 p-8 rounded-xl shadow-lg transform transition-transform hover:-translate-y-2"><h3 class="text-2xl font-bold mb-2">Financial Roadmap Generator</h3><p class="mb-4">Answer a few questions about your age, income, and goals to generate a personalized, step-by-step financial plan.</p><span class="font-semibold hover:underline">Create Your Roadmap &rarr;</span></a>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <footer class="bg-blue-900 text-white">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+                <div class="col-span-1 md:col-span-2"><a href="index.html" class="flex items-center space-x-2 mb-4"><img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-12 bg-white rounded-md p-1"></a><p class="text-blue-200 text-sm mb-4 max-w-sm">India's most trusted platform connecting investors with verified financial advisors. Make informed decisions with expert guidance tailored to your financial goals.</p><div class="space-y-2 text-sm"><p><i class="fas fa-phone-alt w-5 text-blue-300"></i> <a href="tel:+919152049967" class="text-blue-200 hover:underline">+91 9152049967</a></p><p><i class="fas fa-envelope w-5 text-blue-300"></i> <a href="mailto:support@investsherpa.com" class="text-blue-200 hover:underline">support@investsherpa.com</a></p><p><i class="fas fa-map-marker-alt w-5 text-blue-300"></i> <span class="text-blue-200">Mumbai, Delhi, Bangalore & 25+ Cities</span></p></div><div class="flex space-x-4 mt-6"><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-linkedin-in text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-twitter text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-facebook-f text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-instagram text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-youtube text-xl"></i></a></div></div>
+                <div>
+                    <h4 class="font-bold mb-4">For Investors</h4>
+                    <ul class="space-y-2 text-sm text-blue-200">
+                        <li><a href="browselisting.html" class="hover:underline">Find Professionals</a></li>
+                        <li><a href="browselisting.html?service=Investment%20Planning" class="hover:underline">Investment Planning</a></li>
+                        <li><a href="browselisting.html?service=Insurance%20Solutions" class="hover:underline">Insurance Solutions</a></li>
+                        <li><a href="browselisting.html?service=Tax%20Planning" class="hover:underline">Tax Planning</a></li>
+                        <li><a href="browselisting.html?service=Retirement%20Planning" class="hover:underline">Retirement Planning</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">For Professionals</h4>
+                    <ul class="space-y-2 text-sm text-blue-200">
+                        <li><a href="addlisting.html" class="hover:underline">Join Network</a></li>
+                        <li><a href="professionaldb.html" class="hover:underline">Business Dashboard</a></li>
+                        <li><a href="addlisting.html" class="hover:underline">Lead Generation</a></li>
+                        <li><a href="addlisting.html" class="hover:underline">Profile Management</a></li>
+                        <li><a href="professionaldb.html" class="hover:underline">Success Stories</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm text-blue-200">
+                        <li><a href="learnplan.html" class="hover:underline">Knowledge Hub</a></li>
+                        <li><a href="learnplan.html#calculators" class="hover:underline">Financial Calculators</a></li>
+                        <li><a href="learnplan.html#insights" class="hover:underline">Market Insights</a></li>
+                        <li><a href="learnplan.html#guides" class="hover:underline">Investment Guides</a></li>
+                        <li><a href="learnplan.html#tools" class="hover:underline">Powerful Planning Tools</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-10 border-t border-blue-800 pt-6">
+                 <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                     <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-sm text-blue-200">
+                        <span>Find Professionals:</span>
+                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> SEBI Registered</span>
+                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> IRDAI Verified</span>
+                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> ISO 27001</span>
+                        <span class="font-semibold"><i class="fas fa-lock mr-1"></i> SSL Secured</span>
+                    </div>
+                     <div class="w-full md:w-auto">
+                        <h4 class="font-bold mb-2 text-center md:text-left">Stay Updated</h4>
+                        <p class="text-blue-200 text-sm mb-2 text-center md:text-left">Get weekly market insights and investment tips.</p>
+                        <a href="subscribe.html" class="btn-primary font-bold px-4 py-2 rounded-md shadow-md inline-block w-full text-center">Subscribe</a>
+                    </div>
+                 </div>
+            </div>
+            <div class="mt-8 border-t border-blue-800 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-blue-300">
+                <p>&copy; 2025 InvestSherpa. All Rights Reserved.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="policy.html" class="hover:underline">Privacy Policy</a>
+                    <a href="policy.html" class="hover:underline">Terms of Service</a>
+                    <a href="policy.html" class="hover:underline">Cookie Policy</a>
+                </div>
+                 <p class="mt-4 md:mt-0">Made with <i class="fas fa-heart"></i> in India</p>
+            </div>
+        </div>
+    </footer>
+
+<script>
+    const charts = {};
+    const formatCurrency = (value) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(Math.max(0, value || 0));
+    const createOrUpdateChart = (chartId, type, data, options) => {
+        const ctx = document.getElementById(chartId)?.getContext('2d');
+        if (!ctx) return;
+        if (charts[chartId]) charts[chartId].destroy();
+        charts[chartId] = new Chart(ctx, { type, data, options });
+    };
+
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('mainController', () => ({
+            activeSection: 'calculators',
+            isMobileMenuOpen: false,
+            init() {
+                const options = { rootMargin: '-40% 0px -60% 0px' };
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => { if (entry.isIntersecting) this.activeSection = entry.target.id; });
+                }, options);
+                document.querySelectorAll('main section').forEach(section => observer.observe(section));
+            }
+        }));
+
+        Alpine.data('calculatorTabs', () => ({
+            activeTab: 'sip',
+            tabs: [
+                { id: 'sip', name: 'SIP' }, { id: 'stepUpSip', name: 'Step-up SIP' }, { id: 'retirement', name: 'Retirement' },
+                { id: 'goal', name: 'Goal Journey' }, { id: 'hlv', name: 'HLV' }, { id: 'emi', name: 'EMI' },
+                { id: 'repayment', name: 'Loan Prepayment' }, { id: 'lumpsum', name: 'Lumpsum Repayment' }
+            ]
+        }));
+        
+        Alpine.data('sipCalculator', () => ({
+            amount: 5000, rate: 12, years: 10,
+            calculate() {
+                const P = this.amount, R = this.rate / 100, N = this.years;
+                const i = R / 12, n = N * 12;
+                const fv = n > 0 ? P * (((Math.pow(1 + i, n) - 1) / i) * (1 + i)) : P;
+                const invested = P * n, returns = fv - invested;
+                this.$refs.invested.textContent = formatCurrency(invested);
+                this.$refs.returns.textContent = formatCurrency(returns);
+                this.$refs.futureValue.textContent = formatCurrency(fv);
+                createOrUpdateChart('sip-chart', 'doughnut', { labels: ['Invested', 'Returns'], datasets: [{ data: [invested, returns], backgroundColor: ['#f59e0b', '#1e3a8a'] }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } });
+            },
+            init() { this.$root.innerHTML = this.template; this.calculate(); },
+            template: `<h3 class="text-2xl font-bold text-gray-800 mb-1">SIP Calculator</h3><p class="text-gray-600 mb-6">Estimate the future value of your monthly investments.</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="mb-6"><label class="input-label">Monthly Investment (₹)</label><input type="number" x-model.number="amount" class="input-field" @input="calculate()"></div><div class="mb-6"><label class="input-label">Expected Return Rate (% p.a.) - <span x-text="rate"></span>%</label><input type="range" x-model="rate" class="slider" min="1" max="30" step="0.5" @input="calculate()"></div><div class="mb-6"><label class="input-label">Investment Period (Years) - <span x-text="years"></span> years</label><input type="range" x-model="years" class="slider" min="1" max="40" @input="calculate()"></div></div><div class="flex flex-col justify-center items-center space-y-4"><div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4"><div class="output-card"><p class="output-label">Invested Amount</p><p x-ref="invested" class="output-value">₹0</p></div><div class="output-card"><p class="output-label">Est. Returns</p><p x-ref="returns" class="output-value">₹0</p></div><div class="output-card"><p class="output-label">Future Value</p><p x-ref="futureValue" class="output-value">₹0</p></div></div><div class="chart-container"><canvas id="sip-chart"></canvas></div></div></div>`
+        }));
+
+        Alpine.data('stepUpSipCalculator', () => ({
+            amount: 5000, rate: 12, years: 10, stepUp: 10,
+            calculate() {
+                const P = this.amount, R = this.rate / 100, N = this.years, S = this.stepUp / 100;
+                const i = R / 12;
+                let fv = 0, invested = 0, currentP = P;
+                for (let y = 1; y <= N; y++) {
+                    for (let m = 1; m <= 12; m++) { fv = (fv + currentP) * (1 + i); }
+                    invested += currentP * 12;
+                    currentP *= (1 + S);
+                }
+                const returns = fv - invested;
+                this.$refs.invested.textContent = formatCurrency(invested);
+                this.$refs.returns.textContent = formatCurrency(returns);
+                this.$refs.futureValue.textContent = formatCurrency(fv);
+                createOrUpdateChart('step-up-sip-chart', 'doughnut', { labels: ['Invested', 'Returns'], datasets: [{ data: [invested, returns], backgroundColor: ['#f59e0b', '#1e3a8a'] }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } });
+            },
+            init() { this.$root.innerHTML = this.template; this.calculate(); },
+            template: `<h3 class="text-2xl font-bold text-gray-800 mb-1">Step-up SIP Calculator</h3><p class="text-gray-600 mb-6">See how annually increasing your SIP can accelerate wealth creation.</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="mb-6"><label class="input-label">Initial Monthly Investment (₹)</label><input type="number" x-model.number="amount" class="input-field" @input="calculate()"></div><div class="mb-6"><label class="input-label">Expected Return Rate (% p.a.) - <span x-text="rate"></span>%</label><input type="range" x-model="rate" class="slider" min="1" max="30" step="0.5" @input="calculate()"></div><div class="mb-6"><label class="input-label">Investment Period (Years) - <span x-text="years"></span> years</label><input type="range" x-model="years" class="slider" min="1" max="40" @input="calculate()"></div><div class="mb-6"><label class="input-label">Annual Step-up (%) - <span x-text="stepUp"></span>%</label><input type="range" x-model="stepUp" class="slider" min="0" max="25" step="1" @input="calculate()"></div></div><div class="flex flex-col justify-center items-center space-y-4"><div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4"><div class="output-card"><p class="output-label">Invested Amount</p><p x-ref="invested" class="output-value">₹0</p></div><div class="output-card"><p class="output-label">Est. Returns</p><p x-ref="returns" class="output-value">₹0</p></div><div class="output-card"><p class="output-label">Future Value</p><p x-ref="futureValue" class="output-value">₹0</p></div></div><div class="chart-container"><canvas id="step-up-sip-chart"></canvas></div></div></div>`
+        }));
+        
+        Alpine.data('retirementCalculator', () => ({
+            currentAge: 30, retireAge: 60, monthlyExpense: 50000, currentSavings: 500000, inflation: 6,
+            calculate() {
+                const yearsToRetire = this.retireAge - this.currentAge;
+                const preRetireRate = 0.12, postRetireRate = 0.07;
+                const inflatedExpense = this.monthlyExpense * Math.pow(1 + this.inflation / 100, yearsToRetire);
+                const realPostRetireRate = ((1 + postRetireRate) / (1 + this.inflation / 100)) - 1;
+                const corpusNeeded = realPostRetireRate > 0 ? (inflatedExpense * 12) / realPostRetireRate : (inflatedExpense * 12 * 25);
+                const futureOfCurrentSavings = this.currentSavings * Math.pow(1 + preRetireRate, yearsToRetire);
+                const shortfall = corpusNeeded - futureOfCurrentSavings;
+                const i = preRetireRate / 12, n = yearsToRetire * 12;
+                const requiredSIP = (n > 0 && shortfall > 0) ? (shortfall * i) / (Math.pow(1 + i, n) - 1) : 0;
+                this.$refs.corpusNeeded.textContent = formatCurrency(corpusNeeded);
+                this.$refs.corpusHave.textContent = formatCurrency(futureOfCurrentSavings);
+                this.$refs.reqSip.textContent = formatCurrency(requiredSIP);
+            },
+            init() { this.$root.innerHTML = this.template; this.calculate(); },
+            template: `<h3 class="text-2xl font-bold text-gray-800 mb-1">Retirement Planner</h3><p class="text-gray-600 mb-6">Plan for your golden years by estimating the corpus you need.</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="mb-4"><label class="input-label">Current Age - <span x-text="currentAge"></span> years</label><input type="range" x-model="currentAge" class="slider" min="18" max="60" @input="calculate()"></div><div class="mb-4"><label class="input-label">Retirement Age - <span x-text="retireAge"></span> years</label><input type="range" x-model="retireAge" class="slider" min="40" max="70" @input="calculate()"></div><div class="mb-4"><label class="input-label">Current Monthly Expenses (₹)</label><input type="number" x-model.number="monthlyExpense" class="input-field" @input="calculate()"></div><div class="mb-4"><label class="input-label">Current Retirement Savings (₹)</label><input type="number" x-model.number="currentSavings" class="input-field" @input="calculate()"></div><div class="mb-4"><label class="input-label">Expected Inflation Rate - <span x-text="inflation"></span>%</label><input type="range" x-model="inflation" class="slider" min="1" max="10" step="0.5" @input="calculate()"></div></div><div class="flex flex-col justify-center items-center space-y-4"><div class="w-full grid grid-cols-1 gap-4"><div class="output-card"><p class="output-label">Retirement Corpus Needed</p><p x-ref="corpusNeeded" class="output-value">₹0</p></div><div class="output-card"><p class="output-label">Corpus From Existing Savings</p><p x-ref="corpusHave" class="output-value">₹0</p></div><div class="output-card bg-green-100 border border-green-200"><p class="output-label text-green-600">Required Monthly SIP</p><p x-ref="reqSip" class="output-value text-green-800">₹0</p></div></div></div></div>`
+        }));
+
+        Alpine.data('goalCalculator', () => ({
+            target: 2500000, years: 10, rate: 12, initial: 100000,
+            calculate() {
+                const i = this.rate / 100 / 12, n = this.years * 12;
+                const futureOfInitial = this.initial * Math.pow(1 + i, n);
+                const shortfall = this.target - futureOfInitial;
+                const requiredSIP = (shortfall > 0 && n > 0) ? (shortfall * i) / (Math.pow(1 + i, n) - 1) : 0;
+                const totalInvested = this.initial + (requiredSIP * n);
+                const totalReturns = this.target - totalInvested;
+                this.$refs.reqSip.textContent = formatCurrency(requiredSIP);
+                createOrUpdateChart('goal-chart', 'doughnut', { labels: ['Total Investment', 'Est. Returns'], datasets: [{ data: [totalInvested, totalReturns], backgroundColor: ['#f59e0b', '#1e3a8a'] }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } });
+            },
+            init() { this.$root.innerHTML = this.template; this.calculate(); },
+            template: `<h3 class="text-2xl font-bold text-gray-800 mb-1">Goal Journey Calculator</h3><p class="text-gray-600 mb-6">Determine the monthly investment needed to reach your financial goals.</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="mb-6"><label class="input-label">Target Amount (₹)</label><input type="number" x-model.number="target" class="input-field" @input="calculate()"></div><div class="mb-6"><label class="input-label">Time to Achieve Goal (Years) - <span x-text="years"></span> years</label><input type="range" x-model="years" class="slider" min="1" max="40" @input="calculate()"></div><div class="mb-6"><label class="input-label">Expected Return Rate (% p.a.) - <span x-text="rate"></span>%</label><input type="range" x-model="rate" class="slider" min="1" max="30" step="0.5" @input="calculate()"></div><div class="mb-6"><label class="input-label">Initial Investment (₹)</label><input type="number" x-model.number="initial" class="input-field" @input="calculate()"></div></div><div class="flex flex-col justify-center items-center space-y-4"><div class="w-full grid grid-cols-1 gap-4"><div class="output-card bg-green-100 border border-green-200"><p class="output-label text-green-600">Required Monthly SIP</p><p x-ref="reqSip" class="output-value text-green-800">₹0</p></div></div><div class="chart-container mt-4"><canvas id="goal-chart"></canvas></div></div></div>`
+        }));
+
+        Alpine.data('hlvCalculator', () => ({
+            age: 30, retireAge: 60, income: 1000000, savings: 500000, liabilities: 1000000,
+            calculate() {
+                const yearsToRetire = this.retireAge - this.age;
+                if (yearsToRetire <= 0) { this.$refs.hlvValue.textContent = formatCurrency(0); this.$refs.hlvCover.textContent = formatCurrency(0); return; }
+                const hlv = this.income * yearsToRetire;
+                const coverNeeded = hlv + this.liabilities - this.savings;
+                this.$refs.hlvValue.textContent = formatCurrency(hlv);
+                this.$refs.hlvCover.textContent = formatCurrency(coverNeeded);
+            },
+            init() { this.$root.innerHTML = this.template; this.calculate(); },
+            template: `<h3 class="text-2xl font-bold text-gray-800 mb-1">Human Life Value (HLV) Calculator</h3><p class="text-gray-600 mb-6">Estimate your economic value to determine adequate life insurance coverage.</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="mb-4"><label class="input-label">Current Age - <span x-text="age"></span> years</label><input type="range" x-model="age" class="slider" min="18" max="60" @input="calculate()"></div><div class="mb-4"><label class="input-label">Retirement Age - <span x-text="retireAge"></span> years</label><input type="range" x-model="retireAge" class="slider" min="40" max="70" @input="calculate()"></div><div class="mb-4"><label class="input-label">Current Annual Income (₹)</label><input type="number" x-model.number="income" class="input-field" @input="calculate()"></div><div class="mb-4"><label class="input-label">Existing Savings & Insurance (₹)</label><input type="number" x-model.number="savings" class="input-field" @input="calculate()"></div><div class="mb-4"><label class="input-label">Total Liabilities (Loans, etc.) (₹)</label><input type="number" x-model.number="liabilities" class="input-field" @input="calculate()"></div></div><div class="flex flex-col justify-center items-center space-y-4"><div class="output-card"><p class="output-label">Your Human Life Value (HLV)</p><p x-ref="hlvValue" class="output-value">₹0</p></div><div class="output-card bg-green-100 border border-green-200"><p class="output-label text-green-600">Required Insurance Cover</p><p x-ref="hlvCover" class="output-value text-green-800">₹0</p></div></div></div>`
+        }));
+
+        Alpine.data('emiCalculator', () => ({
+            amount: 2500000, rate: 8.5, years: 20,
+            calculate() {
+                const P = this.amount, R = this.rate / 100, N = this.years;
+                const r = R / 12, n = N * 12;
+                if (P <= 0 || r <= 0 || n <= 0) { this.$refs.monthly.textContent = formatCurrency(0); this.$refs.interest.textContent = formatCurrency(0); this.$refs.total.textContent = formatCurrency(0); return; }
+                const emi = P * r * (Math.pow(1 + r, n) / (Math.pow(1 + r, n) - 1));
+                const totalPayment = emi * n;
+                const totalInterest = totalPayment - P;
+                this.$refs.monthly.textContent = formatCurrency(emi);
+                this.$refs.interest.textContent = formatCurrency(totalInterest);
+                this.$refs.total.textContent = formatCurrency(totalPayment);
+                createOrUpdateChart('emi-chart', 'doughnut', { labels: ['Principal', 'Interest'], datasets: [{ data: [P, totalInterest], backgroundColor: ['#f59e0b', '#1e3a8a'] }] }, { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } });
+            },
+            init() { this.$root.innerHTML = this.template; this.calculate(); },
+            template: `<h3 class="text-2xl font-bold text-gray-800 mb-1">EMI Calculator</h3><p class="text-gray-600 mb-6">Calculate your Equated Monthly Installment for loans.</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="mb-6"><label class="input-label">Loan Amount (₹)</label><input type="number" x-model.number="amount" class="input-field" @input="calculate()"></div><div class="mb-6"><label class="input-label">Interest Rate (% p.a.) - <span x-text="rate"></span>%</label><input type="range" x-model="rate" class="slider" min="1" max="20" step="0.1" @input="calculate()"></div><div class="mb-6"><label class="input-label">Loan Tenure (Years) - <span x-text="years"></span> years</label><input type="range" x-model="years" class="slider" min="1" max="30" @input="calculate()"></div></div><div class="flex flex-col justify-center items-center space-y-4"><div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4"><div class="output-card"><p class="output-label">Monthly EMI</p><p x-ref="monthly" class="output-value">₹0</p></div><div class="output-card"><p class="output-label">Total Interest</p><p x-ref="interest" class="output-value">₹0</p></div><div class="output-card"><p class="output-label">Total Payment</p><p x-ref="total" class="output-value">₹0</p></div></div><div class="chart-container"><canvas id="emi-chart"></canvas></div></div></div>`
+        }));
+
+        Alpine.data('repaymentCalculator', () => ({
+            principal: 5000000, rate: 8.5, tenure: 20, prepayment: 10000,
+            calculate() {
+                const P = this.principal, R = this.rate / 100, N = this.tenure;
+                const r = R / 12, original_n = N * 12;
+                if (P <= 0 || r <= 0 || original_n <= 0) return;
+                const emi = P * r * (Math.pow(1 + r, original_n) / (Math.pow(1 + r, original_n) - 1));
+                const originalTotalInterest = (emi * original_n) - P;
+                let balance = P, new_n = 0, newTotalInterest = 0;
+                while (balance > 0) {
+                    const interestComponent = balance * r;
+                    balance -= ((emi - interestComponent) + this.prepayment);
+                    newTotalInterest += interestComponent;
+                    new_n++;
+                    if (new_n > original_n * 2) break;
+                }
+                const interestSaved = originalTotalInterest - newTotalInterest;
+                const tenureReducedMonths = original_n - new_n;
+                const yearsReduced = Math.floor(tenureReducedMonths / 12);
+                const monthsReduced = Math.round(tenureReducedMonths % 12);
+                this.$refs.interestSaved.textContent = formatCurrency(interestSaved);
+                this.$refs.tenureReduced.textContent = `${yearsReduced}y ${monthsReduced}m`;
+                createOrUpdateChart('repayment-chart', 'bar', { labels: ['Original Tenure', 'New Tenure'], datasets: [{ label: 'Tenure in Years', data: [N, new_n / 12], backgroundColor: ['#f59e0b', '#1e3a8a'] }] }, { responsive: true, maintainAspectRatio: false, indexAxis: 'y' });
+            },
+            init() { this.$root.innerHTML = this.template; this.calculate(); },
+            template: `<h3 class="text-2xl font-bold text-gray-800 mb-1">Loan Prepayment Calculator</h3><p class="text-gray-600 mb-6">Discover how much you can save by making regular prepayments on your loan.</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="mb-6"><label class="input-label">Outstanding Loan Amount (₹)</label><input type="number" x-model.number="principal" class="input-field" @input="calculate()"></div><div class="mb-6"><label class="input-label">Interest Rate (% p.a.) - <span x-text="rate"></span>%</label><input type="range" x-model="rate" class="slider" min="1" max="20" step="0.1" @input="calculate()"></div><div class="mb-6"><label class="input-label">Remaining Tenure (Years) - <span x-text="tenure"></span> years</label><input type="range" x-model="tenure" class="slider" min="1" max="30" @input="calculate()"></div><div class="mb-6"><label class="input-label">Monthly Prepayment (₹)</label><input type="number" x-model.number="prepayment" class="input-field" @input="calculate()"></div></div><div class="flex flex-col justify-center items-center space-y-4"><div class="output-card bg-green-100 border border-green-200"><p class="output-label text-green-600">Total Interest Saved</p><p x-ref="interestSaved" class="output-value text-green-800">₹0</p></div><div class="output-card"><p class="output-label">Tenure Reduced By</p><p x-ref="tenureReduced" class="output-value">0y 0m</p></div><div class="chart-container mt-4"><canvas id="repayment-chart"></canvas></div></div></div>`
+        }));
+
+        Alpine.data('lumpsumCalculator', () => ({
+            principal: 5000000, rate: 8.5, tenure: 20, payment: 1000000,
+            calculate() {
+                const P = this.principal, R = this.rate / 100, N_years = this.tenure;
+                const r = R / 12, original_n = N_years * 12;
+                if (P <= 0 || r <= 0 || original_n <= 0) return;
+                const originalEmi = (P * r * Math.pow(1 + r, original_n)) / (Math.pow(1 + r, original_n) - 1);
+                const originalTotalInterest = (originalEmi * original_n) - P;
+                const newPrincipal = P - this.payment;
+                if (newPrincipal <= 0) {
+                    this.$refs.interestSaved.textContent = formatCurrency(originalTotalInterest); this.$refs.newTenure.textContent = 'Paid Off'; return;
+                }
+                const new_n = Math.log(originalEmi / (originalEmi - newPrincipal * r)) / Math.log(1 + r);
+                const newTotalPayment = originalEmi * new_n;
+                const newTotalInterest = newTotalPayment - newPrincipal;
+                const interestSaved = originalTotalInterest - newTotalInterest;
+                const years = Math.floor(new_n / 12);
+                const months = Math.round(new_n % 12);
+                this.$refs.interestSaved.textContent = formatCurrency(interestSaved);
+                this.$refs.newTenure.textContent = `${years}y ${months}m`;
+            },
+            init() { this.$root.innerHTML = this.template; this.calculate(); },
+            template: `<h3 class="text-2xl font-bold text-gray-800 mb-1">Lumpsum Loan Repayment Calculator</h3><p class="text-gray-600 mb-6">See how a one-time payment can reduce your loan burden.</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div><div class="mb-4"><label class="input-label">Outstanding Loan (₹)</label><input type="number" x-model.number="principal" class="input-field" @input="calculate()"></div><div class="mb-4"><label class="input-label">Interest Rate (% p.a.) - <span x-text="rate"></span>%</label><input type="range" x-model="rate" class="slider" min="1" max="20" step="0.1" @input="calculate()"></div><div class="mb-4"><label class="input-label">Remaining Tenure (Years) - <span x-text="tenure"></span> years</label><input type="range" x-model="tenure" class="slider" min="1" max="30" @input="calculate()"></div><div class="mb-4"><label class="input-label">Lumpsum Payment (₹)</label><input type="number" x-model.number="payment" class="input-field" @input="calculate()"></div></div><div class="flex flex-col justify-center items-center space-y-4"><div class="output-card bg-green-100 border border-green-200"><p class="output-label text-green-600">Total Interest Saved</p><p x-ref="interestSaved" class="output-value text-green-800">₹0</p></div><div class="output-card"><p class="output-label">New Loan Tenure</p><p x-ref="newTenure" class="output-value">0y 0m</p></div></div></div>`
+        }));
+    });
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        const supabaseClient = supabase.createClient(
+            'https://fjqvfzlfhhkfohprlqhm.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ'
+        );
+        const guestView = document.getElementById('guest-view'), userView = document.getElementById('user-view'),
+        userProfileLink = document.getElementById('user-profile-link'), logoutButton = document.getElementById('logout-button');
+        const handleAuthChange = async (session) => {
+            if (session) {
+                guestView.classList.add('hidden'); userView.classList.remove('hidden'); userView.classList.add('flex');
+                const user = session.user; userProfileLink.textContent = user.email;
+                const { data: profile } = await supabaseClient.from('user_profiles').select('role').eq('id', user.id).single();
+                if (profile && profile.role === 'professional') {
+                    const { data: profProfile } = await supabaseClient.from('professional_profiles').select('id').eq('user_id', user.id).single();
+                    userProfileLink.href = profProfile ? `listingdetail.html?id=${profProfile.id}` : 'addlisting.html';
+                } else { userProfileLink.href = 'userprofile.html'; }
+            } else {
+                guestView.classList.remove('hidden'); userView.classList.add('hidden'); userView.classList.remove('flex');
+            }
+        };
+        logoutButton.addEventListener('click', async () => await supabaseClient.auth.signOut());
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        handleAuthChange(session);
+        supabaseClient.auth.onAuthStateChange((_event, session) => handleAuthChange(session));
+    });
+</script>
+</body>
+</html>
