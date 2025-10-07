@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Center | InvestSherpa.in</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* Shared Branding Styles from index.html */
+        body { font-family: 'Inter', sans-serif; }
+        .hero-bg { background-color: #E6F7F2; }
+        .text-brand-dark { color: #0D244F; }
+        .text-brand-green { color: #008060; }
+        .bg-brand-blue { background-color: #0D244F; }
+        .btn-primary { background-color: #F59E0B; color: #ffffff; font-weight: 600; transition: background-color 0.3s ease; }
+        .btn-primary:hover { background-color: #D97706; }
+        .btn-green { background-color: #008060; color: white; font-weight: 600; transition: background-color 0.3s ease; }
+        .btn-green:hover { background-color: #00664d; }
+        .search-input::placeholder { color: #9ca3af; }
+        [x-cloak] { display: none !important; }
+
+        /* Custom Styles for Legal Accordion Layout */
+        h2 {
+            color: #0D244F; /* Using Brand Dark Blue */
+            border-bottom: 2px solid #e2e8f0; /* Light gray border */
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        details {
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #f8f9fa;
+        }
+        summary {
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px 15px;
+            cursor: pointer;
+            outline: none;
+            color: #0D244F; /* Using Brand Dark Blue */
+            list-style: none;
+        }
+        summary::-webkit-details-marker { display: none; }
+        summary:after {
+            content: '+';
+            float: right;
+            font-size: 1.5em;
+            transition: 0.2s;
+        }
+        details[open] summary:after {
+            content: '-';
+        }
+        .policy-content {
+            padding: 10px 15px 5px 15px;
+            border-top: 1px solid #dee2e6;
+            margin-top: 10px;
+        }
+        .disclaimer-critical {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .contact-info {
+            text-align: center;
+            padding: 20px 0;
+            background-color: #f0f4f7;
+            border-radius: 6px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800" x-data="{ isMobileMenuOpen: false }">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <a href="index.html" class="flex items-center space-x-3">
+                <img src="InvestSherpa logo.png" alt="InvestSherpa.in Logo" class="h-14 w-auto">
+                <span class="text-2xl font-bold">
+                    <span class="text-blue-900">Invest</span><span class="text-amber-500">Sherpa</span>
+                </span>
+            </a>
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="index.html" class="text-gray-600 hover:text-brand-green font-medium">Home</a>
+                <a href="browselisting.html" class="text-gray-600 hover:text-brand-green font-medium">Browse</a>
+                <a href="forprofessionals.html" class="text-gray-600 hover:text-brand-green font-medium">For Professionals</a>
+                <a href="learnplan.html" class="text-gray-600 hover:text-brand-green font-medium">Learn & Plan</a>
+            </nav>
+            <div class="hidden md:flex items-center space-x-4">
+                <div id="guest-view">
+                    <a href="login.html" class="text-brand-dark font-semibold hover:underline">Login</a>
+                    <a href="addlisting.html" class="btn-green font-semibold py-2 px-4 rounded-lg shadow-md ml-4">List Your Business</a>
+                </div>
+                <div id="user-view" class="hidden items-center space-x-4">
+                    <div class="text-right">
+                        <a id="user-profile-link" href="#" class="text-sm text-gray-600 hover:text-brand-green hover:underline truncate"></a>
+                        <button id="logout-button" class="btn-primary text-sm font-semibold py-2 px-4 rounded-lg shadow-md block">Logout</button>
+                    </div>
+                </div>
+            </div>
+            <button @click="isMobileMenuOpen = !isMobileMenuOpen" class="md:hidden text-brand-dark text-2xl focus:outline-none">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <div x-show="isMobileMenuOpen" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center space-y-8"
+         @click.away="isMobileMenuOpen = false" x-cloak>
+        
+        <button @click="isMobileMenuOpen = false" class="absolute top-6 right-6 text-gray-800 focus:outline-none">
+            <i class="fas fa-times text-3xl"></i>
+        </button>
+
+        <a href="index.html" @click="isMobileMenuOpen = false" class="text-2xl text-brand-green font-bold">Home</a>
+        <a href="browselisting.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">Browse</a>
+        <a href="forprofessionals.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">For Professionals</a>
+        <a href="learnplan.html" @click="isMobileMenuOpen = false" class="text-2xl text-gray-800 hover:text-brand-green font-bold">Learn & Plan</a>
+        <div class="border-t w-1/2 my-4"></div>
+        <a href="login.html" @click="isMobileMenuOpen = false" class="text-xl text-brand-dark font-semibold hover:underline">Login</a>
+        <a href="addlisting.html" @click="isMobileMenuOpen = false" class="btn-green text-lg py-3 px-8 rounded-lg shadow-md">List Your Business</a>
+    </div>
+
+    <main>
+        <section class="py-12 md:py-16 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="max-w-4xl mx-auto">
+                    <h1 class="text-3xl md:text-4xl text-brand-dark font-bold mb-2">InvestSherpa.in Legal Center</h1>
+                    <p style="text-align: center; color: #6c757d; margin-bottom: 40px;">Last Updated: October 7, 2025</p>
+
+                    <details open>
+                        <summary>Website Policy & Terms and Conditions (T&C)</summary>
+                        <div class="policy-content">
+                            <h2>1. General Terms & Agreement</h2>
+                            <p>These Terms and Conditions constitute a legally binding agreement between InvestSherpa.in ("The Platform," "We," "Us") and any user or business accessing or utilizing our website and services ("User," "You," "Business"). By accessing this Platform, you agree to be bound by these Terms and our Privacy Policy.</p>
+
+                            <h3>1.1. Nature of Service (The Passive Directory Model)</h3>
+                            <p>InvestSherpa.in is an online directory and information listing service. Our sole function is to act as a neutral medium between the public and financial professionals by publishing business contact information, descriptions, and user reviews. We are NOT a financial product seller, comparison engine, or registered financial advisor.</p>
+
+                            <h3>1.2. Changes to Terms</h3>
+                            <p>We reserve the right to change these Terms at any time. Your continued use of the Platform signifies your acceptance of any new terms.</p>
+
+                            <h2>2. Non-Advisory and Financial Disclaimer (CRITICAL)</h2>
+                            
+                            <h3>2.1. NO FINANCIAL ADVICE</h3>
+                            <p class="disclaimer-critical">The content, business listings, reviews, and blog articles published on InvestSherpa.in are for general informational purposes only and do not constitute financial, investment, tax, legal, or professional advice. You should not rely on any information on this Platform as a substitute for professional advice from a qualified, licensed professional.</p>
+
+                            <h3>2.2. NO SOLICITATION OR RECOMMENDATION</h3>
+                            <p>InvestSherpa.in does not recommend, endorse, vet, compare, or solicit any specific financial product, security, scheme, investment, or insurance policy offered by the listed businesses. The inclusion of any business or advertisement does not imply recommendation or superiority.</p>
+
+                            <h3>2.3. DUE DILIGENCE</h3>
+                            <p>You are solely responsible for conducting your own due diligence, verification, and assessment of any financial professional or business listed on the Platform before engaging their services. You must verify their registration status (SEBI, IRDAI, AMFI, etc.) directly with the respective regulatory body.</p>
+                            
+                            <h3>2.4. Liability</h3>
+                            <p>We are not liable for any losses, damages, or claims arising from your reliance on information or your engagement with any professional found through this Platform.</p>
+                            
+                            <h2>3. Terms for Listed Businesses (Business Admins)</h2>
+                            <h3>3.1. Eligibility and Warranties</h3>
+                            <p>Every business listing on InvestSherpa.in must be a legally registered entity or individual. By submitting a listing, the Business warrants that:
+                                <ul>
+                                    <li>It holds all **necessary and current registrations and licenses** (e.g., SEBI, IRDAI, AMFI) required to offer its services in India and the stated location(s).</li>
+                                    <li>The information provided (Name, Address, Phone, Registrations) is **true, accurate, and kept updated** at all times.</li>
+                                    <li>The Business will **not** use its listing or our inquiry forms to violate any regulatory compliance rules (e.g., sharing false information or soliciting unauthorized products).</li>
+                                </ul>
+                            </p>
+
+                            <h3>3.2. Listing Approval and Moderation</h3>
+                            <p>All listings are subject to verification by InvestSherpa.in administrators. We reserve the right to display or reject any listing without prior notice, especially if the regulatory status cannot be confirmed. We reserve the right to edit, modify, or remove any part of a listing's text or imagery that is deemed misleading, non-compliant, or offensive.</p>
+
+                            <h3>3.3. Premium Listings & Advertisements (Monetization)</h3>
+                            <p>Payment for Premium Listings grants **enhanced visibility** (e.g., higher search ranking, featured placement) but **DOES NOT** imply endorsement, recommendation, or any special compliance status from the Platform. We derive income from third-party advertisements displayed on the Platform. We are **not responsible** for the content or claims made in these advertisements.</p>
+
+                            <h2>4. User Reviews and Content Policy</h2>
+                            <h3>4.1. Accuracy of Reviews</h3>
+                            <p>Users agree that all submitted reviews and ratings must be **honest, factual, and based on their genuine personal experience** with the listed business. False, defamatory, misleading, or irrelevant reviews are prohibited.</p>
+                            
+                            <h3>4.2. Moderation and Removal</h3>
+                            <p>We reserve the right, but have no obligation, to review, hide, or remove any review at our sole discretion, especially if it violates these Terms, contains hate speech, spam, or unsubstantiated accusations.</p>
+
+                            <h3>4.3. Grant of License</h3>
+                            <p>By submitting reviews or any other user-generated content, you grant InvestSherpa.in a worldwide, royalty-free, perpetual, and irrevocable license to use, reproduce, modify, and publish that content on the Platform.</p>
+
+                            <h2>5. Privacy and Data Handling</h2>
+                            <p>All data collected through this Platform, including registration details and inquiry forms, is handled according to our Privacy Policy. By submitting an inquiry via the "Contact Business" form, you **consent to having your contact details shared with the specific listed business** for the purpose of follow-up. We are not responsible for how the listed business handles your data thereafter.</p>
+
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Privacy Policy</summary>
+                        <div class="policy-content">
+                            <h2>1. Information We Collect</h2>
+                            <p>We collect information primarily to provide, maintain, and improve our directory service, and to comply with legal obligations.</p>
+
+                            <h3>A. Information You Provide Directly (Active Collection):</h3>
+                            <ul>
+                                <li>**User Account Data:** Name, Email address, Phone number, and hashed Password when you register as an end-user or business admin, collected to manage your account, authenticate access, and communicate essential service updates.</li>
+                                <li>**Business Listing Data:** Business Name, Address, Contact details, Regulatory registration numbers (SEBI/IRDAI), etc., collected to create and maintain the public directory listing and verify legitimacy.</li>
+                                <li>**Inquiry/Lead Data:** Your Name, Email address, Phone number, and the Message you submit via the "Contact Business" forms, collected **To share directly with the specific listed business you intended to contact**.</li>
+                                <li>**Reviews & Feedback:** Star ratings and written reviews, collected to populate the directory (reviews) and improve our service quality.</li>
+                            </ul>
+
+                            <h3>B. Information Collected Automatically (Passive Collection):</h3>
+                            <ul>
+                                <li>**Usage Data:** Information about how you use the Services, such as pages viewed, time spent on pages, click patterns, and search queries (e.g., "financial advisor in Mumbai").</li>
+                                <li>**Device Data:** IP address, browser type, operating system, unique device identifiers, and language preferences.</li>
+                                <li>**Cookies and Tracking Technologies:** We use cookies, web beacons, and similar technologies to track activity on our Services, maintain your session, and remember your preferences.</li>
+                            </ul>
+
+                            <h2>2. How We Use Your Information</h2>
+                            <p>We use the collected information for the following purposes:
+                                <ul>
+                                    <li>**Service Provision:** To operate and maintain the directory, facilitate your access to listings, and display business information accurately.</li>
+                                    <li>**Verification and Trust:** To verify the licensing and contact information of listed businesses before approving their public profile.</li>
+                                    <li>**Monetization and Lead Transfer:** To transfer your contact information directly to the specific listed business when you submit an inquiry form.</li>
+                                    <li>**Advertising:** To display relevant third-party advertisements (banner ads) and measure their performance, thereby generating revenue to support the Platform.</li>
+                                </ul>
+                            </p>
+
+                            <h2>3. Sharing and Disclosure of Information</h2>
+                            <p>We do not sell your personal data. We share your information only in the following limited circumstances:
+                                <ul>
+                                    <li>**With Listed Businesses (Consent-Based):** When you use a contact form or inquiry button on a specific business's profile, we share the data you provided in that form directly with that business. We are not responsible for how the listed business subsequently uses or protects your data.</li>
+                                    <li>**With Third-Party Service Providers:** We share necessary data with vendors who perform services on our behalf, such as cloud hosting providers and analytics tools.</li>
+                                    <li>**For Advertising:** We share anonymized and aggregated usage data with third-party advertising networks (e.g., Google AdSense) to facilitate the display of relevant advertisements.</li>
+                                    <li>**Legal Requirements:** We may disclose your information if required to do so by law, subpoena, or if we believe such action is necessary to comply with a legal obligation.</li>
+                                </ul>
+                            </p>
+
+                            <h2>4. Your Rights and Choices</h2>
+                            <ul>
+                                <li>**Opting Out of Communications:** You can unsubscribe from our marketing emails at any time by clicking the "unsubscribe" link.</li>
+                                <li>**Accessing and Editing Your Data:** You can review and edit most of your personal data directly through your User Dashboard/Profile settings.</li>
+                                <li>**Deleting Your Account:** You may request the deletion of your account and associated data by contacting us directly.</li>
+                                <li>**Cookies:** You can instruct your browser, by changing its settings, to stop accepting cookies. However, if you do not accept cookies, you may not be able to use some portions of our Service.</li>
+                            </ul>
+
+                            <h2>5. Security and Data Retention</h2>
+                            <p>We employ industry-standard security measures (including data encryption, firewalls, and secure server access protocols) to protect your personal information from unauthorized access, loss, or misuse. We retain your personal data only for as long as necessary to fulfill the purposes outlined in this Privacy Policy.</p>
+
+                            <h2>6. Children's Privacy</h2>
+                            <p>Our Service is not directed to individuals under the age of 18, and we do not knowingly collect personal information from children under 18.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Cookie Policy</summary>
+                        <div class="policy-content">
+                            <h2>1. What Are Cookies?</h2>
+                            <p>Cookies are small text files that are placed on your computer, tablet, or mobile phone by websites that you visit. They are widely used to make websites work more efficiently and to provide reporting information.</p>
+                            <p>Cookies can be classified into:
+                                <ul>
+                                    <li>**Session Cookies:** These are temporary and are deleted once you close your browser.</li>
+                                    <li>**Persistent Cookies:** These remain on your device for a set period or until you manually delete them.</li>
+                                </ul>
+                            </p>
+
+                            <h2>2. How We Use Cookies</h2>
+                            <p>We use cookies for two main purposes: **Functionality** and **Monetization/Analytics**.</p>
+
+                            <h3>A. Essential (Strictly Necessary) Cookies</h3>
+                            <p>These cookies are required for the website to function properly and cannot be switched off in our systems. They are usually only set in response to actions made by you, such as logging in or setting your privacy preferences. Examples include storing a session ID to keep you logged in to your user or business dashboard and preventing fraudulent activity.</p>
+
+                            <h3>B. Performance and Functionality Cookies (First-Party)</h3>
+                            <p>These cookies allow us to remember the choices you make (such as your preferred city or category filter) and provide enhanced, more personalized features. They also help us track how the site is performing. They are used to track the number of visitors, which pages are most popular, and how users move around the site (using tools like Google Analytics).</p>
+
+                            <h3>C. Targeting and Advertising Cookies (Third-Party)</h3>
+                            <p>These cookies are set by third-party advertising partners and are crucial for our revenue model.
+                                <ul>
+                                    <li>**Ad Delivery & Relevance:** They track your browsing habits across different websites to serve you advertisements that are most relevant to your interests.</li>
+                                    <li>**Frequency Capping:** Ensures you don't see the same advertisement too many times.</li>
+                                    <li>**Affiliate Tracking:** Tracks if you were redirected to a partner site (like a bank or mutual fund AMC) from InvestSherpa.in to ensure we receive the correct commission.</li>
+                                </ul>
+                            </p>
+
+                            <h2>3. Your Choices Regarding Cookies</h2>
+                            <p>You have the right to decide whether to accept or reject cookies.</p>
+
+                            <h3>Browser Controls</h3>
+                            <p>Most web browsers automatically accept cookies, but you can usually modify your browser setting to decline cookies if you prefer.
+                                <ul>
+                                    <li>**Chrome:** Settings > Privacy and Security > Site Settings > Cookies and site data.</li>
+                                    <li>**Firefox:** Options > Privacy & Security > Cookies and Site Data.</li>
+                                    <li>**Edge/Internet Explorer:** Settings > Privacy, search, and services.</li>
+                                </ul>
+                            If you choose to decline cookies, some features of our Service may not function correctly, particularly login access and saving your search filters.</p>
+                            
+                            <h3>Advertising Networks</h3>
+                            <p>You can opt-out of interest-based advertising from Google and other ad networks. You can manage your preferences for the advertisements Google shows you by visiting the Google Ad Settings page. Organizations like the Digital Advertising Alliance (DAA) / Network Advertising Initiative (NAI) provide tools that allow you to opt-out of many third-party ad networks in one place.</p>
+
+                            <h3>Cookie Consent Banner</h3>
+                            <p>Upon your first visit to InvestSherpa.in, you will see a Cookie Consent Banner giving you the option to **Accept** or **Manage Preferences** for our use of non-essential cookies.</p>
+
+                            <h2>4. Changes to This Policy</h2>
+                            <p>We may update this Cookie Policy from time to time. Any changes will be posted on this page with an updated "Last Updated" date.</p>
+                        </div>
+                    </details>
+
+                    <div class="contact-info">
+                        <h2>Contact Information</h2>
+                        <p>If you have any questions about these policies, please contact us:</p>
+                        <p style="font-size: 1.1em; font-weight: bold;">Email: <a href="mailto:support@investsherpa.in" style="color: #007bff;">support@investsherpa.in</a></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-blue-900 text-white">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+                <div class="col-span-1 md:col-span-2"><a href="index.html" class="flex items-center space-x-2 mb-4"><img src="InvestSherpa logo.png" alt="InvestSherpa Logo" class="h-12 bg-white rounded-md p-1"></a><p class="text-blue-200 text-sm mb-4 max-w-sm">India's most trusted platform connecting investors with verified financial advisors. Make informed decisions with expert guidance tailored to your financial goals.</p><div class="space-y-2 text-sm"><p><i class="fas fa-phone-alt w-5 text-blue-300"></i> <a href="tel:+919152049967" class="text-blue-200 hover:underline">+91 9152049967</a></p><p><i class="fas fa-envelope w-5 text-blue-300"></i> <a href="mailto:support@investsherpa.com" class="text-blue-200 hover:underline">support@investsherpa.com</a></p><p><i class="fas fa-map-marker-alt w-5 text-blue-300"></i> <span class="text-blue-200">Mumbai, Delhi, Bangalore & 25+ Cities</span></p></div><div class="flex space-x-4 mt-6"><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-linkedin-in text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-twitter text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-facebook-f text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-instagram text-xl"></i></a><a href="#" class="text-blue-200 hover:text-white"><i class="fab fa-youtube text-xl"></i></a></div></div>
+                <div>
+                    <h4 class="font-bold mb-4">For Investors</h4>
+                    <ul class="space-y-2 text-sm text-blue-200">
+                        <li><a href="browselisting.html" class="hover:underline">Find Professionals</a></li>
+                        <li><a href="browselisting.html?service=Investment%20Planning" class="hover:underline">Investment Planning</a></li>
+                        <li><a href="browselisting.html?service=Insurance%20Solutions" class="hover:underline">Insurance Solutions</a></li>
+                        <li><a href="browselisting.html?service=Tax%20Planning" class="hover:underline">Tax Planning</a></li>
+                        <li><a href="browselisting.html?service=Retirement%20Planning" class="hover:underline">Retirement Planning</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">For Professionals</h4>
+                    <ul class="space-y-2 text-sm text-blue-200">
+                        <li><a href="addlisting.html" class="hover:underline">Join Network</a></li>
+                        <li><a href="professionaldb.html" class="hover:underline">Business Dashboard</a></li>
+                        <li><a href="addlisting.html" class="hover:underline">Lead Generation</a></li>
+                        <li><a href="addlisting.html" class="hover:underline">Profile Management</a></li>
+                        <li><a href="professionaldb.html" class="hover:underline">Success Stories</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm text-blue-200">
+                        <li><a href="learnplan.html" class="hover:underline">Knowledge Hub</a></li>
+                        <li><a href="learnplan.html#calculators" class="hover:underline">Financial Calculators</a></li>
+                        <li><a href="learnplan.html#insights" class="hover:underline">Market Insights</a></li>
+                        <li><a href="learnplan.html#guides" class="hover:underline">Investment Guides</a></li>
+                        <li><a href="learnplan.html#tools" class="hover:underline">Powerful Planning Tools</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-10 border-t border-blue-800 pt-6">
+                 <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+                     <div class="flex flex-wrap justify-center items-center gap-x-6 gap-y-2 text-sm text-blue-200">
+                        <span>Find Professionals:</span>
+                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> SEBI Registered</span>
+                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> IRDAI Verified</span>
+                        <span class="font-semibold"><i class="fas fa-check-circle mr-1"></i> ISO 27001</span>
+                        <span class="font-semibold"><i class="fas fa-lock mr-1"></i> SSL Secured</span>
+                    </div>
+                     <div class="w-full md:w-auto">
+                        <h4 class="font-bold mb-2 text-center md:text-left">Stay Updated</h4>
+                        <p class="text-blue-200 text-sm mb-2 text-center md:text-left">Get weekly market insights and investment tips.</p>
+                        <a href="subscribe.html" class="btn-primary font-bold px-4 py-2 rounded-md shadow-md inline-block w-full text-center">Subscribe</a>
+                    </div>
+                 </div>
+            </div>
+            <div class="mt-8 border-t border-blue-800 pt-6 flex flex-col md:flex-row justify-between items-center text-sm text-blue-300">
+                <p>&copy; 2025 InvestSherpa. All Rights Reserved.</p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="policy.html" class="hover:underline">Privacy Policy</a>
+                    <a href="policy.html" class="hover:underline">Terms of Service</a>
+                    <a href="policy.html" class="hover:underline">Cookie Policy</a>
+                </div>
+                 <p class="mt-4 md:mt-0">Made with <i class="fas fa-heart"></i> in India</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+        const SUPABASE_URL = 'https://fjqvfzlfhhkfohprlqhm.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZqcXZmemxmaGhrZm9ocHJscWhtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTY0ODYyNzAsImV4cCI6MjA3MjA2MjI3MH0.QB_QA-aKeoaxswUpnjBXxerzc-z0tSxerQCQ-hHyLXQ';
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const guestView = document.getElementById('guest-view');
+        const userView = document.getElementById('user-view');
+        const userProfileLink = document.getElementById('user-profile-link');
+        const logoutButton = document.getElementById('logout-button');
+
+        const handleAuthChange = async (session) => {
+            if (session) {
+                guestView.classList.add('hidden');
+                userView.classList.remove('hidden');
+                userView.classList.add('flex');
+                const user = session.user;
+                userProfileLink.textContent = user.email;
+                
+                const { data: profile } = await supabase.from('user_profiles').select('role').eq('id', user.id).single();
+
+                if (profile && profile.role === 'professional') {
+                    const { data: profProfile } = await supabase.from('professional_profiles').select('id').eq('user_id', user.id).single();
+                    userProfileLink.href = profProfile ? `listingdetail.html?id=${profProfile.id}` : 'addlisting.html';
+                } else {
+                    userProfileLink.href = 'userprofile.html';
+                }
+            } else {
+                guestView.classList.remove('hidden');
+                userView.classList.add('hidden');
+                userView.classList.remove('flex');
+            }
+        };
+
+        logoutButton.addEventListener('click', async () => await supabase.auth.signOut());
+        
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            handleAuthChange(session);
+            supabase.auth.onAuthStateChange((_event, session) => {
+                handleAuthChange(session);
+            });
+        });
+    </script>
+</body>
+</html>
